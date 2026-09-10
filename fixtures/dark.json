@@ -1,0 +1,777 @@
+{
+  "meta": {
+    "id": "dark",
+    "title": "Dark",
+    "year": 2017,
+    "medium": "tv",
+    "sources": [
+      "Baran bo Odar & Jantje Friese, Dark (2017–2020)",
+      "time-travel-archive/tv/dark.md",
+      "time-travel-archive true-deep wave 2026-09-06",
+      "tenet-class deepen 2026-09-06"
+    ]
+  },
+  "ruleSetIds": [
+    "bootstrap_ontological",
+    "predestination_closed_loop",
+    "fixed_novikov"
+  ],
+  "primaryRuleSetId": "bootstrap_ontological",
+  "mixinRuleSetIds": [
+    "predestination_closed_loop",
+    "fixed_novikov"
+  ],
+  "topologyPatternId": "origin_plus_twins",
+  "worlds": [
+    {
+      "kind": "timeline",
+      "id": "w_origin",
+      "label": "Origin world (pre-knot)",
+      "spanLabel": "pre-accident",
+      "isOriginWorld": true
+    },
+    {
+      "kind": "timeline",
+      "id": "w_adam",
+      "label": "Adam's world (Winden knot)",
+      "spanLabel": "1953–2053",
+      "originWorldRef": "w_origin"
+    },
+    {
+      "kind": "parallel_world",
+      "id": "w_eva",
+      "label": "Eva's mirror world",
+      "correspondenceKey": "winden_twins",
+      "mirrorOf": "w_adam",
+      "originWorldRef": "w_origin",
+      "correspondenceMap": [
+        {
+          "localKey": "jonas",
+          "remoteWorldRef": "w_adam",
+          "remoteKey": "jonas"
+        },
+        {
+          "localKey": "martha",
+          "remoteWorldRef": "w_adam",
+          "remoteKey": "martha"
+        },
+        {
+          "localKey": "winden",
+          "remoteWorldRef": "w_adam",
+          "remoteKey": "winden"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "id": "jonas",
+      "label": "Jonas / Adam",
+      "identityGroup": "jonas_adam",
+      "continuityRole": "primary",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "martha",
+      "label": "Martha / Eva",
+      "identityGroup": "martha_eva",
+      "continuityRole": "primary",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "martha_eva_w",
+      "label": "Martha (Eva's world)",
+      "identityGroup": "martha_eva",
+      "continuityRole": "counterpart",
+      "homeWorldRef": "w_eva"
+    },
+    {
+      "id": "unknown",
+      "label": "The Unknown (triune child)",
+      "identityGroup": "unknown",
+      "continuityRole": "bootstrap_sink",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "claudia",
+      "label": "Claudia Tiedemann",
+      "identityGroup": "claudia",
+      "continuityRole": "observer_persistent",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "claudia_alt",
+      "label": "Claudia (other world)",
+      "identityGroup": "claudia",
+      "continuityRole": "counterpart",
+      "homeWorldRef": "w_eva"
+    },
+    {
+      "id": "mikkel",
+      "label": "Mikkel / Michael Kahnwald",
+      "identityGroup": "mikkel_michael",
+      "continuityRole": "younger_self",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "noah",
+      "label": "Noah",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "tannhaus",
+      "label": "H.G. Tannhaus",
+      "homeWorldRef": "w_adam"
+    },
+    {
+      "id": "origin_family",
+      "label": "Origin Tannhaus family",
+      "homeWorldRef": "w_origin"
+    },
+    {
+      "id": "helge",
+      "label": "Helge Doppler",
+      "homeWorldRef": "w_adam"
+    }
+  ],
+  "events": [
+    {
+      "id": "e_accident",
+      "type": "ordinary",
+      "label": "Origin-world bridge accident kills Tannhaus family",
+      "description": "In the world beneath all the others, a bridge collapse kills H.G. Tannhaus's son, daughter-in-law and granddaughter - a grief he cannot live with.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "origin night"
+      },
+      "agents": [
+        "origin_family",
+        "tannhaus"
+      ]
+    },
+    {
+      "id": "e_machine",
+      "type": "bootstrap_origin",
+      "label": "Tannhaus builds time machine → creates knot worlds",
+      "description": "Tannhaus builds a machine to bring his family back - and instead tears open the passages that create the two knotted worlds of Winden entirely.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "grief machine"
+      },
+      "agents": [
+        "tannhaus"
+      ],
+      "payload": {
+        "bootstrapEntity": "knot_worlds",
+        "artifactKind": "device"
+      }
+    },
+    {
+      "id": "e_cave",
+      "type": "departure",
+      "label": "Cave passages link 33-year eras",
+      "description": "Beneath Winden, the caves link three eras - 1953, 1986, 2019 - thirty-three years apart, and anything that walks in comes out in another time.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "2019 cave"
+      },
+      "agents": [
+        "jonas"
+      ],
+      "payload": {
+        "travelMode": "cave_portal",
+        "travelDelta": "±33y"
+      }
+    },
+    {
+      "id": "e_mikkel",
+      "type": "arrival",
+      "label": "Mikkel stranded 1986 → Michael",
+      "description": "A boy, Mikkel, walks into the caves in 2019 and steps out in 1986, where he is raised by strangers and grows up as Michael Kahnwald - Jonas's father.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "1986"
+      },
+      "agents": [
+        "mikkel"
+      ],
+      "payload": {
+        "travelMode": "cave_portal",
+        "bootstrapEntity": "jonas_father",
+        "note": "Jonas's father is Jonas's brother"
+      }
+    },
+    {
+      "id": "e_sic_mundus",
+      "type": "ordinary",
+      "label": "Sic Mundus / Erit Lux sustain loops",
+      "description": "A secret society, Sic Mundus, works across the centuries to keep the knot of Winden's history exactly as it is - or, some say, to undo it.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "multi-era"
+      },
+      "agents": [
+        "noah",
+        "claudia",
+        "jonas"
+      ]
+    },
+    {
+      "id": "e_book",
+      "type": "bootstrap_origin",
+      "label": "A Journey Through Time bootstrap book",
+      "description": "A book - A Journey Through Time - describes the time passages in detail, having been written by a man who learned them inside the loop it creates.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "multi-era"
+      },
+      "agents": [
+        "tannhaus",
+        "claudia"
+      ],
+      "payload": {
+        "artifactKind": "book",
+        "bootstrapEntity": "tannhaus_book"
+      }
+    },
+    {
+      "id": "e_chair",
+      "type": "intervention",
+      "label": "Chair experiments / God particle apparatus",
+      "description": "In the nuclear plant's depths, the chair-shaped apparatus and later the God particle become the means of opening man-made passages through time.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "1953–1986–2019"
+      },
+      "agents": [
+        "helge",
+        "noah"
+      ],
+      "payload": {
+        "artifactKind": "device"
+      }
+    },
+    {
+      "id": "e_apocalypse",
+      "type": "collapse",
+      "label": "Apocalypse / God particle event",
+      "description": "The 2020 apocalypse - the plant's failure releasing the God particle - destroys Winden and anchors the knot: the moment everything loops through.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "2020 apocalypse"
+      },
+      "agents": [
+        "jonas",
+        "martha"
+      ]
+    },
+    {
+      "id": "e_twin_contact",
+      "type": "contact",
+      "label": "Jonas/Martha cross to mirror world",
+      "description": "Jonas from one world and Martha from its mirror cross into each other's worlds - the knot's two halves finally touching.",
+      "at": {
+        "worldRef": "w_eva",
+        "timeLabel": "mirror 2019"
+      },
+      "agents": [
+        "jonas",
+        "martha_eva_w"
+      ],
+      "payload": {
+        "travelMode": "other"
+      }
+    },
+    {
+      "id": "e_unknown_born",
+      "type": "birth",
+      "label": "The Unknown born of Jonas×Martha (cross-world)",
+      "description": "Jonas and Martha have a child, the Unknown - an origin that could only happen between the two knotted worlds, and which belongs to neither.",
+      "at": {
+        "worldRef": "w_eva",
+        "timeLabel": "cross conception"
+      },
+      "agents": [
+        "jonas",
+        "martha_eva_w",
+        "unknown"
+      ],
+      "payload": {
+        "bootstrapEntity": "unknown"
+      }
+    },
+    {
+      "id": "e_knot",
+      "type": "intervention",
+      "label": "Adam/Eva sustain apocalypse knot",
+      "description": "Adam in one world and Eva in the other each keep their half of the knot burning - apocalypse, war, repetition - each believing they are saving their world.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "cycle"
+      },
+      "agents": [
+        "jonas",
+        "martha"
+      ]
+    },
+    {
+      "id": "e_claudia_truth",
+      "type": "reveal",
+      "label": "Claudia finds origin-world path",
+      "description": "Claudia, who has played every side, finds the truth neither Adam nor Eva ever saw: both worlds are the flaw, and there is an origin world beneath them.",
+      "at": {
+        "worldRef": "w_adam",
+        "timeLabel": "final loop"
+      },
+      "agents": [
+        "claudia",
+        "jonas",
+        "martha"
+      ]
+    },
+    {
+      "id": "e_origin_trip",
+      "type": "departure",
+      "label": "Jonas & Martha reach origin world",
+      "description": "Jonas and Martha follow Claudia's path to the origin world - the real one, where none of Winden's knots were ever tied.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "pre-accident"
+      },
+      "agents": [
+        "jonas",
+        "martha"
+      ],
+      "payload": {
+        "travelMode": "other"
+      }
+    },
+    {
+      "id": "e_save",
+      "type": "intervention",
+      "label": "Prevent family deaths; knot never forms",
+      "description": "There they stop Tannhaus's family from dying in the bridge collapse, so the grieving machine is never built and the two knotted worlds are never created.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "bridge night"
+      },
+      "agents": [
+        "jonas",
+        "martha",
+        "origin_family"
+      ]
+    },
+    {
+      "id": "e_dissolve",
+      "type": "collapse",
+      "label": "Adam/Eva worlds dissolve; origin persists",
+      "description": "With their cause removed, Adam's world and Eva's world unravel - everyone in them fading like mist, including Jonas and Martha themselves.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "resolution"
+      },
+      "agents": [
+        "jonas",
+        "martha",
+        "claudia"
+      ]
+    },
+    {
+      "id": "e_dinner",
+      "type": "ordinary",
+      "label": "Origin-world dinner; vanished faces missing",
+      "description": "In the origin world's quiet evening, the Tannhaus family sits down to dinner - the granddaughter who died in every other telling safe at the table.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "epilogue"
+      },
+      "agents": [
+        "origin_family"
+      ]
+    },
+    {
+      "id": "ev_mikkel",
+      "type": "ordinary",
+      "label": "Mikkel becomes Michael Kahnwald",
+      "description": "The boy who walked into 2019 and out into 1986 - the father-shaped hole at the centre of the story.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "1986"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_apocalypse",
+      "type": "ordinary",
+      "label": "2020 apocalypse",
+      "description": "The day Winden ends - and the knot's central point, the moment every loop must pass through.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "2020"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_eva_world",
+      "type": "ordinary",
+      "label": "Eva world war with Adam world",
+      "description": "The mirror world's long war against Adam's world, each fighting to preserve its own version of history.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "S3"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_origin_fix",
+      "type": "ordinary",
+      "label": "Jonas/Martha prevent Tannhaus crash",
+      "description": "Jonas and Martha, in the true world, preventing the accident that started everything.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "1971 origin"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_unknot",
+      "type": "ordinary",
+      "label": "Knot worlds uncreated; origin toast",
+      "description": "The knotted worlds come undone - not destroyed, but never having been.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "origin dinner"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "e_pad_adam",
+      "type": "reveal",
+      "label": "Adam is future Jonas",
+      "description": "The scarred old man ruling Adam's world is Jonas himself, decades older and convinced only destruction can end the cycle.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "mythology"
+      }
+    },
+    {
+      "id": "e_pad_martha",
+      "type": "ordinary",
+      "label": "Martha / Eva world mirror",
+      "description": "The Martha of Eva's world - the same woman Jonas loved, living her life mirrored and leading her world's secret order.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "S3"
+      }
+    },
+    {
+      "id": "e_pad_origin_world",
+      "type": "collapse",
+      "label": "Origin world without knot",
+      "description": "The world under all of it: no knot, no passages, no Winden time-trap - just the town, and the family that was never saved.",
+      "at": {
+        "worldRef": "w_origin",
+        "timeLabel": "finale"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "wr1",
+      "kind": "world_relation",
+      "from": "w_adam",
+      "to": "w_eva",
+      "relation": "correspondsTo",
+      "label": "mirror Winden"
+    },
+    {
+      "id": "wr2",
+      "kind": "world_relation",
+      "from": "w_eva",
+      "to": "w_adam",
+      "relation": "mirrors"
+    },
+    {
+      "id": "wr3",
+      "kind": "world_relation",
+      "from": "w_adam",
+      "to": "w_origin",
+      "relation": "originatesFrom"
+    },
+    {
+      "id": "wr4",
+      "kind": "world_relation",
+      "from": "w_eva",
+      "to": "w_origin",
+      "relation": "originatesFrom"
+    },
+    {
+      "id": "wr5",
+      "kind": "world_relation",
+      "from": "w_adam",
+      "to": "w_origin",
+      "relation": "nestsWithin",
+      "label": "knot derived from origin trauma"
+    },
+    {
+      "id": "c1",
+      "kind": "causal",
+      "from": "e_accident",
+      "to": "e_machine"
+    },
+    {
+      "id": "c2",
+      "kind": "causal",
+      "from": "e_machine",
+      "to": "e_cave"
+    },
+    {
+      "id": "c3",
+      "kind": "causal",
+      "from": "e_cave",
+      "to": "e_mikkel"
+    },
+    {
+      "id": "c4",
+      "kind": "causal",
+      "from": "e_mikkel",
+      "to": "e_sic_mundus"
+    },
+    {
+      "id": "c5",
+      "kind": "causal",
+      "from": "e_sic_mundus",
+      "to": "e_book"
+    },
+    {
+      "id": "c6",
+      "kind": "causal",
+      "from": "e_book",
+      "to": "e_chair"
+    },
+    {
+      "id": "c7",
+      "kind": "causal",
+      "from": "e_chair",
+      "to": "e_apocalypse"
+    },
+    {
+      "id": "c8",
+      "kind": "causal",
+      "from": "e_apocalypse",
+      "to": "e_twin_contact"
+    },
+    {
+      "id": "c9",
+      "kind": "causal",
+      "from": "e_twin_contact",
+      "to": "e_unknown_born"
+    },
+    {
+      "id": "c10",
+      "kind": "causal",
+      "from": "e_unknown_born",
+      "to": "e_knot"
+    },
+    {
+      "id": "c11",
+      "kind": "causal",
+      "from": "e_knot",
+      "to": "e_claudia_truth"
+    },
+    {
+      "id": "c12",
+      "kind": "causal",
+      "from": "e_claudia_truth",
+      "to": "e_origin_trip"
+    },
+    {
+      "id": "c13",
+      "kind": "causal",
+      "from": "e_origin_trip",
+      "to": "e_save"
+    },
+    {
+      "id": "c14",
+      "kind": "causal",
+      "from": "e_save",
+      "to": "e_dissolve"
+    },
+    {
+      "id": "c15",
+      "kind": "causal",
+      "from": "e_dissolve",
+      "to": "e_dinner"
+    },
+    {
+      "id": "id1",
+      "kind": "family",
+      "from": "jonas",
+      "to": "martha",
+      "label": "parents of Unknown"
+    },
+    {
+      "id": "id2",
+      "kind": "identity",
+      "from": "martha",
+      "to": "martha_eva_w",
+      "label": "counterpart",
+      "identityRelation": "counterpart"
+    },
+    {
+      "id": "id3",
+      "kind": "identity",
+      "from": "claudia",
+      "to": "claudia_alt",
+      "identityRelation": "counterpart"
+    },
+    {
+      "id": "boot1",
+      "kind": "causal",
+      "from": "e_mikkel",
+      "to": "e_knot",
+      "label": "family bootstrap"
+    },
+    {
+      "id": "iv1",
+      "kind": "intervention",
+      "from": "e_save",
+      "to": "e_dissolve"
+    },
+    {
+      "id": "rep_1",
+      "kind": "temporal",
+      "from": "ev_mikkel",
+      "to": "ev_apocalypse",
+      "label": "precedes"
+    },
+    {
+      "id": "rep_2",
+      "kind": "causal",
+      "from": "ev_apocalypse",
+      "to": "ev_eva_world",
+      "label": "leads_to"
+    },
+    {
+      "id": "rep_3",
+      "kind": "causal",
+      "from": "ev_eva_world",
+      "to": "ev_origin_fix",
+      "label": "enables"
+    },
+    {
+      "id": "rep_4",
+      "kind": "causal",
+      "from": "ev_origin_fix",
+      "to": "ev_unknot",
+      "label": "causes"
+    },
+    {
+      "id": "ndar1",
+      "kind": "causal",
+      "from": "e_pad_adam",
+      "to": "e_pad_martha"
+    },
+    {
+      "id": "ndar2",
+      "kind": "causal",
+      "from": "e_pad_martha",
+      "to": "e_pad_origin_world"
+    },
+    {
+      "id": "bridge_dark",
+      "kind": "causal",
+      "from": "ev_unknot",
+      "to": "e_pad_adam"
+    },
+    {
+      "id": "dkx1",
+      "kind": "identity",
+      "from": "e_pad_adam",
+      "to": "e_pad_martha"
+    },
+    {
+      "id": "dkx2",
+      "kind": "causal",
+      "from": "e_pad_martha",
+      "to": "e_pad_origin_world"
+    }
+  ],
+  "interventions": [
+    {
+      "id": "iv_knot",
+      "eventId": "e_knot",
+      "ruleEffects": [
+        {
+          "ruleSetId": "predestination_closed_loop",
+          "effect": "Attempts to break knot perpetuate it"
+        },
+        {
+          "ruleSetId": "bootstrap_ontological",
+          "effect": "Family tree is a closed causal knot"
+        }
+      ]
+    },
+    {
+      "id": "iv_origin",
+      "eventId": "e_save",
+      "ruleEffects": [
+        {
+          "ruleSetId": "fixed_novikov",
+          "effect": "Outside the knot, preventing the accident removes both derived worlds",
+          "scope": "outside_the_knot"
+        }
+      ],
+      "notes": "Finale: origin remains"
+    }
+  ],
+  "outcome": {
+    "summary": "Bootstrap knot of Adam/Eva worlds undone by origin-world intervention; only origin timeline remains.",
+    "endWorldRefs": [
+      "w_origin"
+    ]
+  },
+  "semanticReview": [
+    {
+      "target": {
+        "kind": "story"
+      },
+      "dimension": "edge_identity",
+      "status": "INCOMPLETE",
+      "note": "Duplicate causal edge signature(s): ndar2/dkx2; semantic duplication UNKNOWN"
+    },
+    {
+      "target": {
+        "kind": "story"
+      },
+      "dimension": "event_identity",
+      "status": "INCOMPLETE",
+      "note": "Summary/padding event-id candidates present; granularity UNKNOWN"
+    }
+  ]
+}

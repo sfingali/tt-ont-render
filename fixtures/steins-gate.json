@@ -1,0 +1,710 @@
+{
+  "meta": {
+    "id": "steins-gate",
+    "title": "Steins;Gate",
+    "year": 2011,
+    "medium": "tv",
+    "sources": [
+      "5pb./Nitroplus; Steins;Gate anime (2011)",
+      "time-travel-archive",
+      "time-travel-archive true-deep wave 2026-09-06",
+      "tenet-class deepen 2026-09-06"
+    ]
+  },
+  "ruleSetIds": [
+    "bootstrap_ontological",
+    "worldline_attractor",
+    "branch_on_intervention"
+  ],
+  "primaryRuleSetId": "worldline_attractor",
+  "mixinRuleSetIds": [
+    "branch_on_intervention",
+    "bootstrap_ontological"
+  ],
+  "topologyPatternId": "worldline_bundle",
+  "worlds": [
+    {
+      "kind": "timeline",
+      "id": "w_alpha_root",
+      "label": "Alpha attractor field root",
+      "attractorFieldId": "alpha"
+    },
+    {
+      "kind": "branch",
+      "id": "w_alpha",
+      "label": "Alpha worldline (Mayuri death)",
+      "parentRef": "w_alpha_root",
+      "forkLabel": "D-mail era",
+      "worldlineId": "alpha",
+      "attractorFieldId": "alpha"
+    },
+    {
+      "kind": "branch",
+      "id": "w_beta",
+      "label": "Beta worldline (WWIII / Kurisu death)",
+      "parentRef": "w_alpha_root",
+      "forkLabel": "SERN avoidance",
+      "worldlineId": "beta",
+      "attractorFieldId": "beta"
+    },
+    {
+      "kind": "branch",
+      "id": "w_steins",
+      "label": "Steins Gate worldline",
+      "parentRef": "w_alpha_root",
+      "forkLabel": "fake video + divergence",
+      "worldlineId": "steins_gate",
+      "attractorFieldId": "steins_gate"
+    }
+  ],
+  "agents": [
+    {
+      "id": "okabe",
+      "label": "Rintaro Okabe",
+      "identityGroup": "okabe",
+      "continuityRole": "observer_persistent",
+      "homeWorldRef": "w_alpha"
+    },
+    {
+      "id": "kurisu",
+      "label": "Kurisu Makise",
+      "identityGroup": "kurisu",
+      "continuityRole": "primary",
+      "homeWorldRef": "w_alpha"
+    },
+    {
+      "id": "mayuri",
+      "label": "Mayuri Shiina",
+      "identityGroup": "mayuri",
+      "homeWorldRef": "w_alpha"
+    },
+    {
+      "id": "suzuha",
+      "label": "Suzuha Amane",
+      "identityGroup": "suzuha",
+      "continuityRole": "younger_self",
+      "homeWorldRef": "w_beta"
+    },
+    {
+      "id": "daru",
+      "label": "Itaru Hashida",
+      "homeWorldRef": "w_alpha"
+    },
+    {
+      "id": "faris",
+      "label": "Faris NyanNyan",
+      "homeWorldRef": "w_alpha"
+    },
+    {
+      "id": "luka",
+      "label": "Luka Urushibara",
+      "homeWorldRef": "w_alpha"
+    }
+  ],
+  "events": [
+    {
+      "id": "e_radio",
+      "type": "ordinary",
+      "label": "Radio Hall / Kurisu stab vision",
+      "description": "Okabe and friends attend a time-machine lecture; when he later returns to the hall he finds a pool of blood and Kurisu seemingly stabbed - and sends a frantic text about it.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "July 28"
+      },
+      "agents": [
+        "okabe",
+        "kurisu"
+      ]
+    },
+    {
+      "id": "e_dmail0",
+      "type": "departure",
+      "label": "First D-mail to past phone",
+      "description": "The 'phone microwave' they built as a joke sent that text into the past - the first D-mail - and when Okabe returns to the hall, the blood is gone and Kurisu is alive.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "lab"
+      },
+      "agents": [
+        "okabe",
+        "daru"
+      ],
+      "payload": {
+        "travelMode": "other",
+        "worldlineId": "alpha",
+        "divergenceMagnitude": 0
+      }
+    },
+    {
+      "id": "e_shift_alpha",
+      "type": "branch_fork",
+      "label": "Worldline shifts into Alpha attractor",
+      "description": "The message changed more than the scene: the world has quietly slipped onto a different track of history, its grain now running a different way.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "post D-mail"
+      },
+      "agents": [
+        "okabe"
+      ],
+      "payload": {
+        "worldlineId": "alpha",
+        "attractorFieldId": "alpha",
+        "readingSteiner": true,
+        "divergenceMagnitude": 0.5
+      }
+    },
+    {
+      "id": "e_mayuri_deaths",
+      "type": "death",
+      "label": "Mayuri dies repeatedly under Alpha attractor",
+      "description": "On this track of history, Okabe's childhood friend Mayuri keeps dying - no matter what he fixes, the world finds a way, and each death rewinds him to find out it will happen again.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "many iterations"
+      },
+      "agents": [
+        "mayuri",
+        "okabe"
+      ],
+      "payload": {
+        "attractorFieldId": "alpha",
+        "iteration": 1
+      }
+    },
+    {
+      "id": "e_undo_dmails",
+      "type": "intervention",
+      "label": "Undo D-mails (Faris, Luka, etc.)",
+      "description": "Okabe works out the chain: each message moved the world onto a different track, so he must undo them one by one - Faris's, Luka's, Suzuha's - to get back.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "undo arc"
+      },
+      "agents": [
+        "okabe",
+        "faris",
+        "luka",
+        "kurisu"
+      ],
+      "payload": {
+        "readingSteiner": true
+      }
+    },
+    {
+      "id": "e_sern",
+      "type": "observation",
+      "label": "SERN / dystopia future revealed",
+      "description": "Beneath it all lies the reason the path must change: this history ends in SERN's dystopia - a future where the company that cracked time rules a broken world.",
+      "at": {
+        "worldRef": "w_alpha",
+        "timeLabel": "Alpha future"
+      },
+      "agents": [
+        "suzuha",
+        "okabe"
+      ]
+    },
+    {
+      "id": "e_to_beta",
+      "type": "branch_fork",
+      "label": "Cross to Beta: Mayuri lives, Kurisu dies",
+      "description": "Undoing the last message takes Okabe to the Beta track: Mayuri lives - but on Beta, Kurisu's death is the fixed point.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "divergence ~1%"
+      },
+      "agents": [
+        "okabe"
+      ],
+      "payload": {
+        "worldlineId": "beta",
+        "attractorFieldId": "beta",
+        "readingSteiner": true,
+        "divergenceMagnitude": 1
+      }
+    },
+    {
+      "id": "e_kurisu_dead",
+      "type": "death",
+      "label": "Kurisu death fixed on Beta",
+      "description": "The cruel bargain of Beta: to save Mayuri, Okabe must leave the woman he loves dead in the pool of blood where he first found her.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "Radio Hall Beta"
+      },
+      "agents": [
+        "kurisu"
+      ],
+      "payload": {
+        "attractorFieldId": "beta"
+      }
+    },
+    {
+      "id": "e_time_leap",
+      "type": "departure",
+      "label": "Time leap machine iterations",
+      "description": "Suzuha brings the time-leap machine - a way to send memory upstream - and Okabe uses it to test, again and again, whether Kurisu's death can ever be avoided.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "lab leaps"
+      },
+      "agents": [
+        "okabe",
+        "kurisu"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "memoryRetained": true
+      }
+    },
+    {
+      "id": "e_suzuha_cg",
+      "type": "arrival",
+      "label": "Suzuha from CG future / WWIII warning",
+      "description": "Suzuha Amane travelled from 2036: her future is the third world war, triggered by the time-travel arms race that grew out of Beta.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "Beta future link"
+      },
+      "agents": [
+        "suzuha"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "worldlineId": "beta"
+      }
+    },
+    {
+      "id": "e_video",
+      "type": "bootstrap_origin",
+      "label": "Okabe's video d-mail plan (Reading Steiner cue)",
+      "description": "The plan that resolves it: a video message sent to Okabe's own past self, convincing him he saw Kurisu die - a lie to make the past hold its shape.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "video message"
+      },
+      "agents": [
+        "okabe"
+      ],
+      "payload": {
+        "bootstrapEntity": "deceive_worldline",
+        "readingSteiner": true,
+        "observerContinuity": true
+      }
+    },
+    {
+      "id": "e_fake_stab",
+      "type": "intervention",
+      "label": "Fake Kurisu death; deceive Okabe past",
+      "description": "The deception staged in blood and acting: past Okabe must believe Kurisu is dead, while the real one lives on hidden from both him and SERN.",
+      "at": {
+        "worldRef": "w_beta",
+        "timeLabel": "Radio Hall op"
+      },
+      "agents": [
+        "okabe",
+        "kurisu",
+        "suzuha"
+      ],
+      "payload": {
+        "attractorFieldId": "steins_gate"
+      }
+    },
+    {
+      "id": "e_steins",
+      "type": "branch_fork",
+      "label": "Reach Steins Gate worldline",
+      "description": "Past the fixed points of both histories lies a third grain - the Steins Gate line - where neither Mayuri nor Kurisu is fated to die, and SERN never rises.",
+      "at": {
+        "worldRef": "w_steins",
+        "timeLabel": "divergence 1.048596%"
+      },
+      "agents": [
+        "okabe",
+        "kurisu",
+        "mayuri"
+      ],
+      "payload": {
+        "worldlineId": "steins_gate",
+        "attractorFieldId": "steins_gate",
+        "divergenceMagnitude": 1.048596,
+        "readingSteiner": true
+      }
+    },
+    {
+      "id": "e_peace",
+      "type": "ordinary",
+      "label": "Mayuri and Kurisu both alive; no SERN dystopia",
+      "description": "On Steins Gate: both women alive, no dystopia coming, and Okabe the only person who remembers the price of getting there.",
+      "at": {
+        "worldRef": "w_steins",
+        "timeLabel": "epilogue"
+      },
+      "agents": [
+        "okabe",
+        "kurisu",
+        "mayuri",
+        "daru"
+      ]
+    },
+    {
+      "id": "ev_dmail",
+      "type": "ordinary",
+      "label": "D-Mail world-line shifts begin",
+      "description": "The first D-mail, the harmless-seeming text that shifted the world under their feet.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "lab"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_mayuri",
+      "type": "ordinary",
+      "label": "Mayuri attractor deaths on alpha",
+      "description": "Mayuri's deaths on the Alpha line - the pocket watch that stops, again and again, in Okabe's arms.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "alpha"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_steins",
+      "type": "ordinary",
+      "label": "Reach Steins Gate world line",
+      "description": "The arrival on the Steins Gate line - the one road where the future is merely unwritten.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "true end"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "e_pad_phone",
+      "type": "ordinary",
+      "label": "Phone microwave D-mails",
+      "description": "The phone microwave - a joke appliance that turned out to send messages to the past.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "early"
+      },
+      "payload": {
+        "travelMode": "other"
+      }
+    },
+    {
+      "id": "e_pad_mayuri",
+      "type": "death",
+      "label": "Mayuri deaths across worldlines",
+      "description": "Mayuri across the shifting histories - the friend whose deaths taught Okabe what the shifts cost.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "mid"
+      }
+    },
+    {
+      "id": "e_pad_steiner",
+      "type": "observation",
+      "label": "Okabe Reading Steiner retains memory",
+      "description": "Reading Steiner - Okabe's alone: the ability to remember histories that the rest of the world has forgotten.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "rules"
+      },
+      "payload": {
+        "readingSteiner": true
+      }
+    },
+    {
+      "id": "e_pad_sern",
+      "type": "ordinary",
+      "label": "SERN dystopia worldline",
+      "description": "SERN, the research giant whose machine will one day own every history that lets it.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "alpha"
+      }
+    },
+    {
+      "id": "e_pad_beta",
+      "type": "ordinary",
+      "label": "World War III beta attractor",
+      "description": "Beta's war: the third world war that the time race ignites if Kurisu's research survives unguarded.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "beta"
+      }
+    },
+    {
+      "id": "e_pad_sg",
+      "type": "checkpoint",
+      "label": "Steins Gate worldline reached",
+      "description": "The Steins Gate line itself - the world that only exists because Okabe chose to deceive himself to save everyone.",
+      "at": {
+        "worldRef": "w_alpha_root",
+        "timeLabel": "end"
+      },
+      "payload": {
+        "worldlineId": "steins_gate"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "wr1",
+      "kind": "world_relation",
+      "from": "w_alpha",
+      "to": "w_alpha_root",
+      "relation": "forksFrom"
+    },
+    {
+      "id": "wr2",
+      "kind": "world_relation",
+      "from": "w_beta",
+      "to": "w_alpha_root",
+      "relation": "forksFrom"
+    },
+    {
+      "id": "wr3",
+      "kind": "world_relation",
+      "from": "w_steins",
+      "to": "w_alpha_root",
+      "relation": "forksFrom"
+    },
+    {
+      "id": "wr4",
+      "kind": "world_relation",
+      "from": "w_alpha",
+      "to": "w_alpha_root",
+      "relation": "attractsToward",
+      "label": "Alpha attractor"
+    },
+    {
+      "id": "wr5",
+      "kind": "world_relation",
+      "from": "w_beta",
+      "to": "w_alpha_root",
+      "relation": "attractsToward",
+      "label": "Beta attractor"
+    },
+    {
+      "id": "wr6",
+      "kind": "world_relation",
+      "from": "w_steins",
+      "to": "w_beta",
+      "relation": "supersedes"
+    },
+    {
+      "id": "c1",
+      "kind": "causal",
+      "from": "e_radio",
+      "to": "e_dmail0"
+    },
+    {
+      "id": "c2",
+      "kind": "causal",
+      "from": "e_dmail0",
+      "to": "e_shift_alpha"
+    },
+    {
+      "id": "c3",
+      "kind": "causal",
+      "from": "e_shift_alpha",
+      "to": "e_mayuri_deaths"
+    },
+    {
+      "id": "c4",
+      "kind": "causal",
+      "from": "e_mayuri_deaths",
+      "to": "e_undo_dmails"
+    },
+    {
+      "id": "c5",
+      "kind": "causal",
+      "from": "e_undo_dmails",
+      "to": "e_sern"
+    },
+    {
+      "id": "c6",
+      "kind": "causal",
+      "from": "e_sern",
+      "to": "e_to_beta"
+    },
+    {
+      "id": "c7",
+      "kind": "causal",
+      "from": "e_to_beta",
+      "to": "e_kurisu_dead"
+    },
+    {
+      "id": "c8",
+      "kind": "causal",
+      "from": "e_kurisu_dead",
+      "to": "e_time_leap"
+    },
+    {
+      "id": "c9",
+      "kind": "causal",
+      "from": "e_time_leap",
+      "to": "e_suzuha_cg"
+    },
+    {
+      "id": "c10",
+      "kind": "causal",
+      "from": "e_suzuha_cg",
+      "to": "e_video"
+    },
+    {
+      "id": "c11",
+      "kind": "causal",
+      "from": "e_video",
+      "to": "e_fake_stab"
+    },
+    {
+      "id": "c12",
+      "kind": "causal",
+      "from": "e_fake_stab",
+      "to": "e_steins"
+    },
+    {
+      "id": "c13",
+      "kind": "causal",
+      "from": "e_steins",
+      "to": "e_peace"
+    },
+    {
+      "id": "id1",
+      "kind": "identity",
+      "from": "okabe",
+      "to": "e_video",
+      "label": "Reading Steiner continuity"
+    },
+    {
+      "id": "iv1",
+      "kind": "intervention",
+      "from": "e_fake_stab",
+      "to": "e_steins"
+    },
+    {
+      "id": "rep_1",
+      "kind": "causal",
+      "from": "ev_dmail",
+      "to": "ev_mayuri",
+      "label": "leads_to"
+    },
+    {
+      "id": "rep_2",
+      "kind": "causal",
+      "from": "ev_mayuri",
+      "to": "ev_steins",
+      "label": "escaped_by"
+    },
+    {
+      "id": "nste1",
+      "kind": "causal",
+      "from": "e_pad_phone",
+      "to": "e_pad_mayuri"
+    },
+    {
+      "id": "nste2",
+      "kind": "causal",
+      "from": "e_pad_mayuri",
+      "to": "e_pad_steiner"
+    },
+    {
+      "id": "nste3",
+      "kind": "causal",
+      "from": "e_pad_steiner",
+      "to": "e_pad_sern"
+    },
+    {
+      "id": "nste4",
+      "kind": "causal",
+      "from": "e_pad_sern",
+      "to": "e_pad_beta"
+    },
+    {
+      "id": "nste5",
+      "kind": "causal",
+      "from": "e_pad_beta",
+      "to": "e_pad_sg"
+    },
+    {
+      "id": "bridge_steins-g",
+      "kind": "causal",
+      "from": "ev_steins",
+      "to": "e_pad_phone"
+    },
+    {
+      "id": "sgx1",
+      "kind": "causal",
+      "from": "e_pad_steiner",
+      "to": "e_pad_sg"
+    },
+    {
+      "id": "sgx2",
+      "kind": "temporal",
+      "from": "e_pad_mayuri",
+      "to": "e_pad_phone"
+    }
+  ],
+  "interventions": [
+    {
+      "id": "iv_alpha",
+      "eventId": "e_mayuri_deaths",
+      "ruleEffects": [
+        {
+          "ruleSetId": "worldline_attractor",
+          "effect": "Alpha field forces Mayuri death despite local saves"
+        }
+      ]
+    },
+    {
+      "id": "iv_sg",
+      "eventId": "e_fake_stab",
+      "ruleEffects": [
+        {
+          "ruleSetId": "worldline_attractor",
+          "effect": "Deception shifts divergence into Steins Gate attractor"
+        },
+        {
+          "ruleSetId": "bootstrap_ontological",
+          "effect": "Future Okabe's video enables the plan"
+        }
+      ]
+    }
+  ],
+  "outcome": {
+    "summary": "Okabe navigates Alpha/Beta attractors via D-mails and leaps; reaches Steins Gate where Mayuri and Kurisu both live.",
+    "endWorldRefs": [
+      "w_steins"
+    ]
+  },
+  "semanticReview": [
+    {
+      "target": {
+        "kind": "story"
+      },
+      "dimension": "event_identity",
+      "status": "INCOMPLETE",
+      "note": "Summary/padding event-id candidates present; granularity UNKNOWN"
+    }
+  ]
+}

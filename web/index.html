@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timelines — ontology renderer</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="bar">
+    <div class="mark">
+      <span class="wordmark">Timelines</span>
+      <span class="tag">ontology renderer</span>
+    </div>
+    <div class="headright">
+      <a class="quietlink" href="https://github.com/sfingali/time-travel-ontology" target="_blank" rel="noopener">ontology</a>
+      <a class="quietlink" href="https://github.com/sfingali/tt-ont-render" target="_blank" rel="noopener">renderer</a>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <aside class="rail">
+      <section class="block">
+        <h2 class="micro">Scheme file</h2>
+        <div id="drop" class="drop">
+          <p>Drop a <code>.json</code> scheme here</p>
+          <label class="btn" for="file">Choose file</label>
+          <input id="file" type="file" accept=".json,application/json">
+          <button id="pasteToggle" class="btn ghost" type="button">Paste JSON</button>
+        </div>
+        <div id="pasteWrap" class="hidden">
+          <textarea id="paste" placeholder='{"topologyPatternId": "single_fixed_timeline", ...}' spellcheck="false"></textarea>
+          <button id="pasteLoad" class="btn" type="button">Load pasted scheme</button>
+        </div>
+        <p id="sourceNote" class="note">Nothing loaded.</p>
+      </section>
+
+      <section class="block grow">
+        <h2 class="micro">Corpus <span id="corpusCount" class="count"></span></h2>
+        <input id="search" class="search" type="search" placeholder="Filter works…" spellcheck="false">
+        <ul id="stories" class="stories"></ul>
+      </section>
+    </aside>
+
+    <main class="stage">
+      <div class="toolbar">
+        <div id="profiles" class="profiles" role="tablist" aria-label="Render profile"></div>
+        <div class="tools">
+          <label class="zoomwrap"><span class="micro">Zoom</span>
+            <input id="zoom" type="range" min="10" max="200" step="5" value="100">
+            <span id="zoomVal" class="zoomval">100%</span>
+          </label>
+          <button id="fit" class="btn ghost" type="button">Fit</button>
+          <button id="download" class="btn ghost" type="button" disabled>Download</button>
+          <button id="open" class="btn ghost" type="button" disabled>Open</button>
+        </div>
+      </div>
+
+      <div id="viewport" class="viewport">
+        <div id="empty" class="empty">
+          <p class="big">Load a scheme file, pick a rendering, and look at it.</p>
+          <p class="quiet">Everything runs in this page — the same compiler as the CLI. Nothing is uploaded anywhere.</p>
+        </div>
+        <div id="canvas" class="canvas hidden"></div>
+        <iframe id="frame" class="frame hidden" title="3D render" sandbox="allow-scripts"></iframe>
+      </div>
+
+      <div class="strip">
+        <div id="facts" class="facts"></div>
+        <div id="audit" class="audit"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

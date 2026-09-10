@@ -18,6 +18,9 @@ registerProfile(reveal);
 registerProfile(temporal);
 registerProfile(worldline);
 
+/** The design profile registry, so a caller (CLI help, GUI) can enumerate profiles. */
+export { listProfiles, getProfile } from './design/registry.ts';
+
 export interface RenderRequest {
   story: RawStory;
   storyId?: string;

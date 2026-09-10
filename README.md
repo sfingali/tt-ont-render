@@ -108,6 +108,39 @@ No LLM participates in runtime semantic interpretation. The four design grammars
 
 ---
 
+## The GUI
+
+**https://timelines.stephenfingleton.com** — load a scheme file, pick a rendering, look at it.
+The page runs *this compiler*, bundled for the browser: the same engine and the same four profiles
+the CLI uses, so what you see on the site is what `npm run render` produces, with no server involved
+and nothing uploaded anywhere.
+
+```bash
+npm run build:web     # bundle → web/dist/ (renderer.js + the shell + a copy of the corpus)
+```
+
+`web/dist/` is a build product and is git-ignored; the sources are `web/index.html`, `web/app.js`,
+`web/style.css`, `web/build.mjs`. The build copies every hand-crafted scheme from `../tt-ont/instances`
+(or `fixtures/` when the sibling repo is not checked out) into `web/dist/corpus/` with a `manifest.json`,
+which is what the corpus list on the left of the page reads. **Re-run the build after the corpus changes**,
+or the site serves stale schemes.
+
+`build.mjs` fails the build if the browser bundle ever pulls in a Node builtin, which is the one
+constraint that keeps the engine portable: nothing in `src/engine/` or `src/design/` may use `node:*`
+(only `src/cli.ts` may).
+
+The site is served from `web/dist` by the Caddy block for `timelines.stephenfingleton.com`; a deploy is
+therefore `npm run build:web` — no copy step, no restart.
+
+`web/smoke.mjs` drives the built page in a real browser (corpus list, all four profiles, a dropped local
+file, and the audit column's width) and reports console errors:
+
+```bash
+PLAYWRIGHT=/path/to/playwright-core/index.js CHROME=/path/to/chrome node web/smoke.mjs https://timelines.stephenfingleton.com
+```
+
+---
+
 ## Layout
 
 ```
@@ -118,6 +151,7 @@ src/cli.ts      command line
 tests/run.ts    correctness suite (71 checks)
 fixtures/       vendored corpus subset for standalone tests
 examples/       committed renders (SVG + HTML; PNGs are build products)
+web/            the browser GUI (shell + build script + smoke test); web/dist/ is built
 ```
 
 ## Examples

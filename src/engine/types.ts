@@ -65,6 +65,12 @@ export interface FactEvent {
   worldRef: string;
   type: string;
   label?: string;
+  /**
+   * Plain-English description of what happens, written for a reader who has not
+   * seen the work and knows no ontology vocabulary. This is the node's PRIMARY
+   * text in every design; `label` is the short name that sits beneath it.
+   */
+  description?: string;
   timeLabel?: string;
   agents: string[];
   payload?: Record<string, unknown>;
@@ -133,5 +139,7 @@ export interface SemanticScene {
     topologyLine: string;
     physicsLine: string;
     evidenceLine: string;
+    /** honest one-line statement of the causal-depth derivation, cycles included */
+    causalNote: string;
   };
 }

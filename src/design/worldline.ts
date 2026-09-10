@@ -23,6 +23,11 @@ export const worldline: DesignProfile = {
     const yLane = new Map<string, number>();
     worlds.forEach((w, i) => yLane.set(w.id, i));
 
+    const causalLayer = new Map(
+      scene.nodes.filter(n => n.kind === 'eventNode' && n.sourceId)
+        .map(n => [n.sourceId as string, typeof n.data['causalLayer'] === 'number' ? n.data['causalLayer'] as number : 0]),
+    );
+
     const payload = {
       worlds: worlds.map(w => ({ id: w.id, kind: w.kind, spanLabel: w.spanLabel, depth: w.nestingDepth })),
       series: worlds.map((w, wi) => {
@@ -30,15 +35,20 @@ export const worldline: DesignProfile = {
         const ordered = evs.filter(e => e.order).sort((a, b) => a.order!.ordinal - b.order!.ordinal);
         return {
           world: w.id, color: wi % 2 === 0 ? '#88ada4' : '#c0a17a',
-          pts: ordered.map((e, i) => ({
-            x: i, z: e.order!.ordinal, label: e.label ?? e.id, timeLabel: e.timeLabel ?? '',
+          pts: ordered.map((e) => ({
+            // x = derived causal depth (labeled as derived), z = encoded ordinal
+            x: causalLayer.get(e.id) ?? 0,
+            z: e.order!.ordinal,
+            label: e.label ?? e.id,
+            description: e.description ?? '',
+            timeLabel: e.timeLabel ?? '',
             agents: e.agents, id: e.id, y: wi,
           })),
           unresolvedCount: evs.filter(e => !e.order).length,
         };
       }),
       header: scene.header,
-      axisNote: 'X = derived causal layer (not coordinate time) · Y = world lane · Z = encoded ordinal (lived order where asserted) · hollow worlds = all events time-unresolved (rail drawn, no invented positions)',
+      axisNote: 'X = derived causal depth (not coordinate time) · Y = world lane · Z = encoded ordinal (asserted order) · node text: description leads, short label beneath · hollow worlds = all events time-unresolved (rail drawn, no invented positions)',
     };
 
     const html = `<!DOCTYPE html>
@@ -81,9 +91,56 @@ const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(6, 10, 4
 const grid = new THREE.GridHelper(20, 20, 0x2a3434, 0x1c2426);
 grid.position.y = -0.02; scene3.add(grid);
 const axes = new THREE.AxesHelper(3.2); axes.position.set(-9, 0, -8); scene3.add(axes);
+// ---- node text: description primary, short label beneath, encoded time last ----
+const DESC_CHARS = 40, PX_PER_UNIT = 200, LINE_H = 34, PAD = 18;
+function wrapText(text, n) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  const lines = []; let line = '';
+  const push = (t) => { if (t) lines.push(t); };
+  for (const raw of words) {
+    const parts = raw.length > n ? raw.match(new RegExp('.{1,' + n + '}', 'g')) : [raw];
+    for (const w of parts) {
+      if (!line) { line = w; continue; }
+      if (line.length + 1 + w.length <= n) line += ' ' + w;
+      else { push(line); line = w; }
+    }
+  }
+  push(line);
+  return lines;
+}
+function nodeSprite(d) {
+  const desc = (d.description || '').trim();
+  const primary = desc || (d.label || d.id);
+  const lines = wrapText(primary, DESC_CHARS);
+  const caps = [];
+  if (desc && d.label) caps.push({ t: d.label, size: 21, fill: '#88958f', mono: false });
+  if (d.timeLabel) caps.push({ t: d.timeLabel, size: 20, fill: '#c0a17a', mono: true });
+  const H = PAD * 2 + lines.length * LINE_H + caps.reduce((a, c) => a + c.size + 8, 0);
+  const W = 820;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = 'rgba(20,26,28,0.86)'; cx.fillRect(0, 0, W, H);
+  cx.strokeStyle = '#2a3434'; cx.strokeRect(0.5, 0.5, W - 1, H - 1);
+  let y = PAD + 26;
+  cx.font = '400 26px system-ui';
+  cx.fillStyle = '#dee2dc';
+  for (const l of lines) { cx.fillText(l, PAD, y); y += LINE_H; }
+  for (const c of caps) {
+    y += c.size + 8 - 12;
+    cx.font = c.mono ? '400 20px ui-monospace, Menlo, monospace' : '400 21px system-ui';
+    cx.fillStyle = c.fill;
+    cx.fillText(c.t, PAD, y);
+    y += 12;
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.anisotropy = 4;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false }));
+  spr.scale.set(W / PX_PER_UNIT, H / PX_PER_UNIT, 1);
+  return spr;
+}
 // ribbons: one per world series; unresolved worlds get a hollow rail at Z=0 (visible gap)
 for (const s of DATA.series) {
-  const laneY = DATA.series.indexOf(s) * 2;
+  const laneY = DATA.series.indexOf(s) * 3.2;
   if (s.pts.length === 0) {
     const railMat = new THREE.LineBasicMaterial({ color: 0x44514d });
     const rg = new THREE.BufferGeometry().setFromPoints([
@@ -103,17 +160,21 @@ for (const s of DATA.series) {
     scene3.add(spr);
     continue;
   }
-  const pts = s.pts.map((p)=>new THREE.Vector3(p.x - (s.pts.length-1)/2, p.y*2, p.z - (s.pts.length-1)/2));
+  const pts = s.pts.map((p)=>new THREE.Vector3(p.x - (s.pts.length-1)/2, p.y*3.2, p.z - (s.pts.length-1)/2));
   const curve = new THREE.CatmullRomCurve3(pts);
   const geo = new THREE.TubeGeometry(curve, Math.max(32, pts.length*8), 0.055, 8, false);
   const mat = new THREE.MeshStandardMaterial({color:new THREE.Color(s.color), roughness:0.85, metalness:0.05});
   const ribbon = new THREE.Mesh(geo, mat); scene3.add(ribbon);
-  // event beads
-  for (const p of pts) {
+  // event beads + one node-text sprite each: description primary, short label beneath
+  s.pts.forEach((d, i) => {
     const bead = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12),
       new THREE.MeshStandardMaterial({color:0xdee2dc, roughness:0.6}));
-    bead.position.copy(p); scene3.add(bead);
-  }
+    bead.position.copy(pts[i]); scene3.add(bead);
+    const spr = nodeSprite(d);
+    // alternate above/below the bead: callouts in a 3D stack collide far less
+    spr.position.copy(pts[i]).setY(pts[i].y + (i % 2 === 0 ? 0.5 : -0.5));
+    scene3.add(spr);
+  });
   // world label sprite
   const cv = document.createElement('canvas'); cv.width=512; cv.height=96;
   const cx = cv.getContext('2d');
@@ -123,7 +184,7 @@ for (const s of DATA.series) {
   const tex = new THREE.CanvasTexture(cv);
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex}));
   spr.scale.set(3.2, 0.6, 1);
-  spr.position.set(pts[0].x - 1.8, pts[0].y + 0.9, pts[0].z);
+  spr.position.set(pts[0].x - 3.6, pts[0].y + 1.0, pts[0].z);
   scene3.add(spr);
 }
 (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene3, camera); })();

@@ -23,7 +23,7 @@ export interface RawStory {
   worlds: Array<{ id: string; kind: string; spanLabel?: string }>;
   agents: Array<{ id: string; label?: string; identityGroup?: string; continuityRole?: string }>;
   events: Array<{
-    id: string; type: string; label?: string; agents?: string[];
+    id: string; type: string; label?: string; description?: string; agents?: string[];
     at?: { worldRef?: string; timeLabel?: string };
     payload?: Record<string, unknown>;
   }>;
@@ -32,21 +32,67 @@ export interface RawStory {
   meta?: { title?: string; [k: string]: unknown };
 }
 
-/** causal-path layer (documented derivation; NOT chronology). */
-export function causalLayers(story: RawStory): Map<string, number> {
-  const layer = new Map<string, number>();
+/**
+ * causal-path layer (documented derivation; NOT chronology).
+ *
+ * Causal graphs here are often CYCLIC — a bootstrap knot is a cycle by
+ * definition — so a naive relaxation never converges and inflates depths until
+ * an iteration cap is hit (Tenet reached 17,116 and the number was meaningless).
+ * Instead: longest acyclic causal path. Back edges (edges that close a cycle)
+ * are not expanded; the count of suppressed edges is reported so a design can
+ * say so on the chart rather than implying a depth that does not exist.
+ *
+ * Deterministic: roots and adjacency are walked in lexicographic id order.
+ */
+export interface CausalDepth {
+  /** event id -> depth (0 = causal root). Bounded by the event count. */
+  depth: Map<string, number>;
+  /** edges that close a cycle and were therefore not expanded */
+  backEdges: string[];
+}
+
+export function causalDepth(story: RawStory): CausalDepth {
+  const adj = new Map<string, string[]>();
   const causal = story.edges.filter(e => e.kind === 'causal');
-  const limit = story.events.length * Math.max(1, causal.length) + 10;
-  let changed = true, iter = 0;
-  while (changed && iter < limit) {
-    changed = false; iter++;
-    for (const e of causal) {
-      const fromL = layer.get(e.from) ?? 0;
-      const toL = layer.get(e.to);
-      if (toL === undefined || fromL + 1 > toL) { layer.set(e.to, fromL + 1); changed = true; }
-    }
+  for (const e of causal) {
+    const a = adj.get(e.from) ?? [];
+    a.push(e.to);
+    adj.set(e.from, a);
   }
-  return layer;
+  for (const a of adj.values()) a.sort();
+
+  const depth = new Map<string, number>();
+  const state = new Map<string, 0 | 1 | 2>(); // 1 = on the current stack, 2 = settled
+  const backEdges: string[] = [];
+
+  const visit = (id: string): number => {
+    const st = state.get(id) ?? 0;
+    if (st === 1) return -1;          // on stack: this edge closes a cycle
+    if (st === 2) return depth.get(id) ?? 0;
+    state.set(id, 1);
+    let d = 0;
+    for (const nxt of adj.get(id) ?? []) {
+      const nd = visit(nxt);
+      if (nd < 0) {
+        const e = causal.find(x => x.from === id && x.to === nxt);
+        if (e && !backEdges.includes(e.id)) backEdges.push(e.id);
+        continue;
+      }
+      if (nd + 1 > d) d = nd + 1;
+    }
+    state.set(id, 2);
+    depth.set(id, d);
+    return d;
+  };
+
+  const ids = [...new Set([...story.events.map(e => e.id), ...adj.keys()])].sort();
+  for (const id of ids) if (state.get(id) !== 2) visit(id);
+  return { depth, backEdges: backEdges.sort() };
+}
+
+/** Compatibility shim: the map only. */
+export function causalLayers(story: RawStory): Map<string, number> {
+  return causalDepth(story).depth;
 }
 
 export function indexAndResolve(story: RawStory): Facts {
@@ -125,6 +171,7 @@ export function indexAndResolve(story: RawStory): Facts {
     }
     events.push({
       id: ev.id, worldRef: worldRef ?? '', type: ev.type, label: ev.label,
+      description: ev.description,
       timeLabel: ev.at?.timeLabel, agents: ev.agents ?? [], payload: ev.payload,
       order: null, prov: enc(ev.id),
     });

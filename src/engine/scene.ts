@@ -5,7 +5,7 @@
  */
 import type { Facts, SemanticScene, SceneNode, SceneEdge } from './types.ts';
 import type { RawStory } from './index.ts';
-import { causalLayers } from './index.ts';
+import { causalDepth } from './index.ts';
 
 function node(
   kind: SceneNode['kind'], id: string, label: string,
@@ -17,26 +17,33 @@ function node(
 export function compileScene(facts: Facts, story: RawStory): SemanticScene {
   const nodes: SceneNode[] = [];
   const edges: SceneEdge[] = [];
-  const layers = causalLayers(story);
+  const causal = causalDepth(story);
+  const layers = causal.depth;
+  if (causal.backEdges.length) {
+    facts.issues.push({
+      severity: 'info', code: 'CAUSAL_CYCLE',
+      message: `${causal.backEdges.length} causal edge(s) close a cycle (${causal.backEdges.slice(0, 6).join(', ')}${causal.backEdges.length > 6 ? ', …' : ''}) — causal depth reports the longest acyclic path, cycles are not expanded`,
+    });
+  }
 
   // world bands (form per design; semantics fixed here)
   for (const w of facts.worlds) {
-    nodes.push(node('worldBand', `world:${w.id}`, w.id, w.prov, { worldRef: w.id }, {
+    nodes.push(node('worldBand', `world:${w.id}`, w.id, w.prov, { sourceId: w.id, worldRef: w.id }, {
       kind: w.kind, spanLabel: w.spanLabel, nestingDepth: w.nestingDepth, forkParent: w.forkParent,
     }));
   }
 
   // agent lanes — one per agent, with identity-group token data
   for (const a of facts.agents) {
-    nodes.push(node('lane', `agent:${a.id}`, a.label ?? a.id, a.prov, {}, {
+    nodes.push(node('lane', `agent:${a.id}`, a.label ?? a.id, a.prov, { sourceId: a.id }, {
       identityGroup: a.identityGroup, continuityRole: a.continuityRole,
     }));
   }
 
   // event nodes
   for (const ev of facts.events) {
-    nodes.push(node('eventNode', `event:${ev.id}`, ev.label ?? ev.id, ev.prov, { worldRef: ev.worldRef }, {
-      type: ev.type, timeLabel: ev.timeLabel, agents: ev.agents, order: ev.order,
+    nodes.push(node('eventNode', `event:${ev.id}`, ev.label ?? ev.id, ev.prov, { sourceId: ev.id, worldRef: ev.worldRef }, {
+      type: ev.type, description: ev.description, timeLabel: ev.timeLabel, agents: ev.agents, order: ev.order,
       payload: ev.payload,
       causalLayer: layers.get(ev.id) ?? null,
     }));
@@ -78,6 +85,9 @@ export function compileScene(facts: Facts, story: RawStory): SemanticScene {
   }
 
   const header = {
+    causalNote: causal.backEdges.length
+      ? `causal depth: longest acyclic causal path (derived) · ${causal.backEdges.length} edge(s) closing cycles not expanded`
+      : 'causal depth: longest acyclic causal path (derived)',
     topologyLine: `Topology: ${facts.topologyPatternId}`,
     physicsLine: `Primary physics: ${facts.primaryRuleSetId}` +
       (facts.mixinRuleSetIds.length ? ` · Mixins: ${facts.mixinRuleSetIds.join(', ')}` : ''),

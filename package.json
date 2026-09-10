@@ -1,6 +1,6 @@
 {
   "name": "tt-ont-render",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Deterministic visual compiler for the time-travel ontology. The engine (semantic, design-agnostic) is strictly separated from design profiles (aesthetic grammars).",

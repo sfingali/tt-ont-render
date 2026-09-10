@@ -228,5 +228,63 @@ console.log('— engine: scene nodes carry the ontology id they render —');
      === dark.events.filter((e: any) => e.description).length, 'descriptions pass through to the scene graph');
 }
 
+console.log('— coverage: profiles declare what they actually drew —');
+{
+  const { buildCoverageReport, formatCoverageReport } = await import('../src/coverage.ts');
+
+  // Every declaration must name a resolved source id, and every declared source
+  // must appear exactly once in the report as drawn or not drawn with a reason.
+  for (const p of PROFILES) {
+    for (const s of STORIES) {
+      const r = render({ story: load(s), storyId: s, profile: p });
+      let good = true;
+      let detail = '';
+      try {
+        const cov = buildCoverageReport(r.scene, r.doc);
+        if (cov.totals.drawn + cov.totals.notDrawn !== cov.totals.declared) {
+          good = false; detail = 'drawn + not drawn does not equal declared';
+        }
+        const unreasoned = cov.groups.flatMap(g => g.items).filter(i => !i.reason).length;
+        if (unreasoned) { good = false; detail = `${unreasoned} item(s) lack a reason`; }
+      } catch (e) {
+        good = false; detail = (e as Error).message;
+      }
+      ok(good, `${p}/${s}: coverage reconciles every declared source with a reason`, detail);
+    }
+  }
+
+  // dark has 24 events in 3 worlds. counterpoint draws only worlds[0] (14), so
+  // exactly 10 events must be reported not drawn; temporal draws every world, so
+  // no event may be reported not drawn.
+  const dark: any = load('dark');
+  const cp = render({ story: dark, storyId: 'dark', profile: 'counterpoint' });
+  const cpCov = buildCoverageReport(cp.scene, cp.doc);
+  const cpEvents = cpCov.groups.find(g => g.kind === 'event')!;
+  ok(cpEvents.items.length === 24, `dark/counterpoint accounts for all 24 events (got ${cpEvents.items.length})`);
+  ok(cpEvents.notDrawn === 10, `dark/counterpoint reports exactly 10 events not drawn (got ${cpEvents.notDrawn})`);
+  // ... and they are precisely the events outside worlds[0], not an arbitrary 10.
+  const w0 = dark.worlds[0].id;
+  const outsideW0 = dark.events.filter((e: any) => e.at?.worldRef !== w0).map((e: any) => e.id).sort();
+  const cpMissing = cpEvents.items.filter(i => !i.drawn).map(i => i.id).sort();
+  ok(JSON.stringify(cpMissing) === JSON.stringify(outsideW0), `dark/counterpoint omissions are exactly the ${outsideW0.length} events outside worlds[0] ('${w0}')`);
+  ok(formatCoverageReport(cpCov).includes('10 events not drawn'), 'dark/counterpoint printed report states "10 events not drawn"');
+  ok(cpEvents.items.filter(i => !i.drawn).every(i => i.reason.startsWith('not drawn:')), 'counterpoint omissions carry honest reasons');
+  ok(cpCov.groups.find(g => g.kind === 'intervention')!.items.length === 2, 'dark resolves both declared interventions for coverage');
+  ok(cpCov.groups.some(g => g.kind === 'outcome'), 'dark outcome is accounted for');
+
+  const tp = render({ story: dark, storyId: 'dark', profile: 'temporal' });
+  const tpCov = buildCoverageReport(tp.scene, tp.doc);
+  const tpEvents = tpCov.groups.find(g => g.kind === 'event')!;
+  ok(tpEvents.notDrawn === 0, `dark/temporal reports no events not drawn (got ${tpEvents.notDrawn})`);
+  ok(formatCoverageReport(tpCov).includes('0 events not drawn'), 'dark/temporal printed report states "0 events not drawn"');
+  ok(tpEvents.items.every(i => i.drawn), 'dark/temporal accounts for every event as drawn');
+
+  // The guard is real: a declaration for an id the story does not declare is rejected.
+  const forged: any = { ...cp.doc, drawn: [...cp.doc.drawn, { kind: 'event', id: 'e_not_real', reason: 'forged' }] };
+  let rejected = false;
+  try { buildCoverageReport(cp.scene, forged); } catch { rejected = true; }
+  ok(rejected, 'coverage rejects a declaration for an undeclared source id');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -5,8 +5,8 @@
  * Z = lived order (encoded ordinal where present, else declared reference).
  * Deterministic geometry; interactions defined inline; no external assets.
  */
-import type { DesignProfile, ThemeSpec } from './registry.ts';
-import { esc } from './registry.ts';
+import type { DesignProfile, DrawnSource, ThemeSpec } from './registry.ts';
+import { declareDrawn, esc } from './registry.ts';
 import type { SemanticScene } from '../engine/types.ts';
 
 export const worldline: DesignProfile = {
@@ -16,10 +16,12 @@ export const worldline: DesignProfile = {
   topoAffinity: ['worldline_bundle', 'single_fixed_timeline'],
   render(scene: SemanticScene, theme: ThemeSpec) {
     const facts = scene.facts;
+    const drawn: DrawnSource[] = [];
     const W = 1500, H = 940;
 
     // per-world Y lanes; events X by causal layer, Z by encoded ordinal (lived proxy)
     const worlds = facts.worlds;
+    for (const w of worlds) declareDrawn(drawn, 'world', w.id, 'world series/rail with a world label');
     const yLane = new Map<string, number>();
     worlds.forEach((w, i) => yLane.set(w.id, i));
 
@@ -33,6 +35,7 @@ export const worldline: DesignProfile = {
       series: worlds.map((w, wi) => {
         const evs = facts.events.filter(e => e.worldRef === w.id);
         const ordered = evs.filter(e => e.order).sort((a, b) => a.order!.ordinal - b.order!.ordinal);
+        for (const e of ordered) declareDrawn(drawn, 'event', e.id, 'bead + screen-facing text panel on its world series');
         return {
           world: w.id, color: wi % 2 === 0 ? '#88ada4' : '#c0a17a',
           pts: ordered.map((e) => ({
@@ -194,6 +197,6 @@ window.addEventListener('resize', ()=>{
 });
 </script></body></html>`;
 
-    return { doc: html, medium: '3d-html' as const, width: W, height: H, profileId: this.id };
+    return { doc: html, medium: '3d-html' as const, width: W, height: H, profileId: this.id, drawn };
   },
 };

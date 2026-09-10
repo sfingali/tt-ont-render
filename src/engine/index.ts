@@ -11,7 +11,7 @@
  *    causal-path layering is available to designs as an ADDITIONAL signal but is
  *    never substituted for unresolved time.
  */
-import type { FactAgent, FactEdge, FactEvent, FactWorld, Facts, Provenance } from './types.ts';
+import type { FactAgent, FactEdge, FactEvent, FactIntervention, FactWorld, Facts, Provenance } from './types.ts';
 
 export interface RawStory {
   topologyPatternId: string;
@@ -223,6 +223,15 @@ export function indexAndResolve(story: RawStory): Facts {
     });
   }
 
+  // ---- interventions ------------------------------------------------------------
+  // Interventions are encoded primitives, but they are NOT part of the visual
+  // primitive grammar (DESIGN-ATLAS §2). Resolve them into Facts so coverage can
+  // report honestly whether a profile drew one.
+  const interventions: FactIntervention[] = (story.interventions ?? []).map((iv) => ({
+    ...iv,
+    prov: enc(iv.id),
+  }));
+
   return {
     storyId: '',
     topologyPatternId: story.topologyPatternId,
@@ -233,6 +242,7 @@ export function indexAndResolve(story: RawStory): Facts {
     outcome: story.outcome,
     worlds, agents, events, edges,
     worldRelations: edges.filter(e => e.kind === 'world_relation'),
+    interventions,
     issues,
   };
 }

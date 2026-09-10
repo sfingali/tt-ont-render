@@ -12,6 +12,7 @@
     "test": "tsx tests/run.ts",
     "typecheck": "tsc --noEmit",
     "render": "tsx src/cli.ts",
+    "coverage": "tsx src/coverage-cli.ts",
     "build:web": "node web/build.mjs",
     "serve:web": "node web/build.mjs && npx --yes http-server web/dist -p 8099 -c-1"
   },

@@ -13,8 +13,8 @@
  * its writing needs. Layout is two-pass: geometry is built in a local frame as
  * typed data, then serialised once into canvas coordinates — no string surgery.
  */
-import type { DesignProfile, ThemeSpec } from './registry.ts';
-import { esc, textWidth, nodeTextBlock, emitNodeText } from './registry.ts';
+import type { DesignProfile, DrawnSource, ThemeSpec } from './registry.ts';
+import { declareDrawn, esc, textWidth, nodeTextBlock, emitNodeText } from './registry.ts';
 import type { NodeTextBlock } from './registry.ts';
 import type { SemanticScene } from '../engine/types.ts';
 
@@ -55,6 +55,7 @@ export const temporal: DesignProfile = {
   topoAffinity: ['origin_plus_twins', 'parallel_world_network', 'dual_parallel_pair', 'worldline_bundle'],
   render(scene: SemanticScene, theme: ThemeSpec) {
     const facts = scene.facts;
+    const drawn: DrawnSource[] = [];
     const parts: string[] = [];
     /** plan (u,v) relative to a plane centre -> local pixel frame */
     const proj = (u: number, v: number, py = 0): [number, number] => [u - v * 0.5, py + (u + v) * 0.26];
@@ -106,6 +107,7 @@ export const temporal: DesignProfile = {
       const pieces: Piece[] = [];
       const [hx, hy] = proj(-s.pw / 2 + 8, -s.ph / 2 + 4, py);
       pieces.push({ k: 'text', x: hx, y: hy, s: headerOf(s.w), size: 13, fill: theme.ink });
+      declareDrawn(drawn, 'world', s.w.id, 'stacked plane with a world header');
 
       s.lanes.forEach((label, li) => {
         const v = -s.ph / 2 + (s.blockH + 12) + li * s.lanePitch;
@@ -113,6 +115,7 @@ export const temporal: DesignProfile = {
         const [x2, y2] = proj(s.pw / 2 - 30, v, py);
         pieces.push({ k: 'line', x1, y1, x2, y2, stroke: theme.lane, w: 0.7, op: 0.5 });
         pieces.push({ k: 'text', x: x1 - 6, y: y1 + 3, s: label, size: 9.5, fill: theme.ink, anchor: 'end' });
+        if (li < s.laneAgents.length) declareDrawn(drawn, 'agent', s.laneAgents[li].id, 'named lane on its world plane');
         track(x1 - 6 - textWidth(label, 9.5), y1 - 8);
       });
 
@@ -128,6 +131,9 @@ export const temporal: DesignProfile = {
         pieces.push({ k: 'lead', x1: dxp, y1: dyp, x2: bx, y2: byp + 2, stroke: theme.lane });
         pieces.push({ k: 'dot', x: dxp, y: dyp, r: 5.5, fill: open ? 'none' : theme.secondary, stroke: theme.ink });
         pieces.push({ k: 'block', x: bx, y: byp, block: blk });
+        declareDrawn(drawn, 'event', ev.id, open
+          ? 'open dot + callout text on its world plane (no encoded order)'
+          : 'filled dot + callout text on its world plane');
         track(dxp - 8, dyp - 8); track(bx + blk.width, byp + blk.height);
       };
       s.positioned.forEach(ev => place(ev, ev.order!.ordinal));
@@ -184,6 +190,6 @@ export const temporal: DesignProfile = {
     parts.push(`<text x="70" y="${H - 34}" font-family="${theme.fontSans}" font-size="11" fill="${theme.muted}">T/B/P = timeline/branch/parallel world primitive · filled dot = positioned event · open dot = unresolved · description leads, short label beneath · dashed accent = label-match synchrony (not asserted simultaneity)</text>`);
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${parts.join('')}</svg>`;
-    return { doc: svg, medium: '2.5d-svg' as const, width: W, height: H, profileId: this.id };
+    return { doc: svg, medium: '2.5d-svg' as const, width: W, height: H, profileId: this.id, drawn };
   },
 };

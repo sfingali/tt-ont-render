@@ -88,6 +88,22 @@ export interface FactEdge {
   prov: Provenance;
 }
 
+/**
+ * Intervention primitive from the story encoding.  Interventions are not part
+ * of the visual primitive grammar (DESIGN-ATLAS §2), but the renderer must be
+ * able to report honestly whether or not a profile drew one.
+ */
+export interface FactIntervention {
+  id: string;
+  /** target event, when the encoding declares one */
+  eventId?: string;
+  /** raw rule-effect payload; shape is owned by the ontology validator */
+  ruleEffects?: unknown;
+  notes?: string;
+  [key: string]: unknown;
+  prov: Provenance;
+}
+
 export interface Facts {
   storyId: string;                    // file stem
   topologyPatternId: string;          // declared, authoritative (never inferred)
@@ -102,6 +118,8 @@ export interface Facts {
   edges: FactEdge[];
   /** world_relation edges (from/to are world ids) */
   worldRelations: FactEdge[];
+  /** declared intervention primitives, if the story encodes any */
+  interventions: FactIntervention[];
   issues: AuditIssue[];
 }
 

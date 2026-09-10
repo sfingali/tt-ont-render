@@ -10,8 +10,8 @@
  * description's wrap budget, so a dense story makes a wider score, never
  * smaller type.
  */
-import type { DesignProfile, RenderDoc, ThemeSpec } from './registry.ts';
-import { esc, textWidth, nodeTextBlock, emitNodeText } from './registry.ts';
+import type { DesignProfile, DrawnSource, RenderDoc, ThemeSpec } from './registry.ts';
+import { declareDrawn, esc, textWidth, nodeTextBlock, emitNodeText } from './registry.ts';
 import type { SemanticScene } from '../engine/types.ts';
 
 const DESC_CHARS = 34;
@@ -24,7 +24,9 @@ export const counterpoint: DesignProfile = {
   topoAffinity: ['inverted_single_timeline', 'single_fixed_timeline'],
   render(scene: SemanticScene, theme: ThemeSpec): RenderDoc {
     const facts = scene.facts;
+    const drawn: DrawnSource[] = [];
     const world = facts.worlds[0];
+    if (world) declareDrawn(drawn, 'world', world.id, 'single score band: its staves and event marks are the chart');
     const lanes = facts.agents.filter(a => world && facts.events.some(e => e.worldRef === world.id && e.agents.includes(a.id)));
     // left margin fits the longest lane label (agent name + continuity role) whole
     const laneLabelW = Math.max(0, ...lanes.map(a => textWidth(`${a.label ?? a.id}${a.continuityRole ? ` · ${a.continuityRole}` : ''}`, 12.5)));
@@ -74,6 +76,7 @@ export const counterpoint: DesignProfile = {
 
     // staves (lane rails) + labels + identity tokens
     for (const a of lanes) {
+      declareDrawn(drawn, 'agent', a.id, 'stave/lane rail with label and identity token');
       const y = laneY.get(a.id)!;
       parts.push(`<line x1="${M.l - 14}" y1="${y}" x2="${W - M.r - shelfW - 40}" y2="${y}" stroke="${theme.lane}" stroke-width="1" opacity="0.55"/>`);
       const role = a.continuityRole ? ` · ${a.continuityRole}` : '';
@@ -122,6 +125,9 @@ export const counterpoint: DesignProfile = {
       const row = Math.floor(i / 2) % 2;
       const top = above ? aboveTop + row * bandH : H - M_b + 24 + row * bandH;
       parts.push(emitNodeText(b, x, top, 'middle'));
+      declareDrawn(drawn, 'event', ev.id, ev.agents.length
+        ? 'event mark on its agent stave + staggered text band'
+        : 'staggered text band (no agent recorded, so no mark is drawn)');
     });
 
     // compressed-break marks between non-adjacent resolved ordinals
@@ -141,6 +147,7 @@ export const counterpoint: DesignProfile = {
         const b = shelfBlocks.get(ev.id)!;
         parts.push(`<circle cx="${shelfX - 6}" cy="${y + 5}" r="4" fill="none" stroke="${theme.muted}" stroke-width="1.2"/>`);
         parts.push(emitNodeText(b, shelfX + 6, y, 'start'));
+        declareDrawn(drawn, 'event', ev.id, 'shelf marker + text on the "time not positioned" shelf');
         y += b.height + 16;
       }
     }
@@ -151,6 +158,6 @@ export const counterpoint: DesignProfile = {
     parts.push(`<text x="${M.l}" y="${ly}" font-family="${theme.fontSans}" font-size="11" fill="${theme.muted}">hollow ring = encounter · circle = single-agent event · &lt; chevrons = inverted traversal (reads leftward) · // = compressed time · dashed rail = unresolved</text>`);
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${parts.join('')}</svg>`;
-    return { doc: svg, medium: '2d-svg', width: W, height: H, profileId: this.id };
+    return { doc: svg, medium: '2d-svg', width: W, height: H, profileId: this.id, drawn };
   },
 };

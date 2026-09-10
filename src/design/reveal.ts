@@ -10,8 +10,8 @@
  * beneath. Terrace height follows the text, so causal bands are spaced by the
  * longest node, never by an assumed one-line label.
  */
-import type { DesignProfile, ThemeSpec } from './registry.ts';
-import { esc, textWidth, wrapText, nodeTextBlock, emitNodeText } from './registry.ts';
+import type { DesignProfile, DrawnSource, ThemeSpec } from './registry.ts';
+import { declareDrawn, esc, textWidth, wrapText, nodeTextBlock, emitNodeText } from './registry.ts';
 import type { SemanticScene } from '../engine/types.ts';
 
 const DESC_CHARS = 30;
@@ -27,7 +27,9 @@ export const reveal: DesignProfile = {
   topoAffinity: ['single_fixed_timeline'],
   render(scene: SemanticScene, theme: ThemeSpec) {
     const facts = scene.facts;
+    const drawn: DrawnSource[] = [];
     const world = facts.worlds[0];
+    if (world) declareDrawn(drawn, 'world', world.id, 'single-world atlas: this world\'s events are the terraces');
     const parts: string[] = [];
 
     const worldEvents = facts.events.filter(e => e.worldRef === world?.id);
@@ -115,6 +117,7 @@ export const reveal: DesignProfile = {
         const p = centers.get(ordered[i - 1].id)!;
         parts.push(`<line x1="${p.x}" y1="${p.y}" x2="${x0 + w / 2}" y2="${y + rectH / 2}" stroke="${theme.lane}" stroke-width="1" opacity="0.55"/>`);
       }
+      declareDrawn(drawn, 'event', ev.id, 'terrace text + caption placed at its derived causal depth');
     });
 
     // causal-depth labels at the left of each occupied band
@@ -147,6 +150,7 @@ export const reveal: DesignProfile = {
         const b = nodeTextBlock(ev, theme, { wrapChars: DESC_CHARS, descSize: DESC_SIZE, labelSize: LABEL_SIZE, timeSize: TIME_SIZE });
         parts.push(`<circle cx="${sx - 6}" cy="${y + 5}" r="4" fill="none" stroke="${theme.muted}" stroke-width="1.2"/>`);
         parts.push(emitNodeText(b, sx + 6, y, 'start'));
+        declareDrawn(drawn, 'event', ev.id, 'text on the "time not positioned" shelf');
         y += b.height + 10;
       }
     }
@@ -155,6 +159,6 @@ export const reveal: DesignProfile = {
     parts.push(`<text x="${M.l}" y="${H - 40}" font-family="${theme.fontSans}" font-size="11" fill="${theme.muted}">blue = first encounter · apricot = re-encountered event (identical encoded timeLabel) · terrace height = its own text · lines = derived ordering, not travel</text>`);
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${parts.join('')}</svg>`;
-    return { doc: svg, medium: '2d-svg' as const, width: W, height: H, profileId: this.id };
+    return { doc: svg, medium: '2d-svg' as const, width: W, height: H, profileId: this.id, drawn };
   },
 };

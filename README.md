@@ -20,6 +20,13 @@ Pure functions, no clocks, no randomness, no I/O: the same input always produces
 Because `counterpoint` and `reveal` are single-world grids, a multi-world story raises
 `TOPO_AFFINITY_MISMATCH` and only its first world is drawn — use `temporal` or `worldline` for those.
 
+Every profile returns a `drawn` declaration alongside its document: the concrete ontology source
+ids it actually marked. `npm run coverage -- --story <name>` reconciles that declaration against the
+resolved `Facts` and prints every declared world, agent, event, edge (grouped by kind), intervention
+and outcome as drawn or not drawn with a reason. A declaration naming an id the story does not
+declare is a hard error, and not-drawn status is derived from `Facts` itself, so a profile cannot
+hide an omission.
+
 ---
 
 ## Quick start
@@ -29,13 +36,15 @@ Node **20+**.
 ```bash
 npm install
 
-npm test                 # 71 checks: determinism, invariants, seam, provenance, node text
+npm test                 # determinism, invariants, seam, provenance, node text, coverage
 npm run typecheck
 
 npx tsx src/cli.ts --story tenet       --profile counterpoint --out out/tenet.svg
 npx tsx src/cli.ts --story arrival     --profile reveal       --out out/arrival.svg
 npx tsx src/cli.ts --story dark        --profile temporal     --out out/dark.svg
 npx tsx src/cli.ts --story steins-gate --profile worldline    --out out/steins-gate.html
+
+npm run coverage -- --story dark         # drawn/not-drawn report for every profile
 ```
 
 The CLI exits `2` on invariant violations — it never silently renders a broken scene.
@@ -147,8 +156,10 @@ PLAYWRIGHT=/path/to/playwright-core/index.js CHROME=/path/to/chrome node web/smo
 src/engine/     facts resolution, scene graph, audits, invariants (design-agnostic)
 src/design/     profile registry, text layer, four aesthetic grammars
 src/render.ts   render(request) — the only engine↔design meeting point
+src/coverage.ts draw-declaration reconciliation + report formatter
 src/cli.ts      command line
-tests/run.ts    correctness suite (71 checks)
+src/coverage-cli.ts  coverage report command line
+tests/run.ts    correctness suite
 fixtures/       vendored corpus subset for standalone tests
 examples/       committed renders (SVG + HTML; PNGs are build products)
 web/            the browser GUI (shell + build script + smoke test); web/dist/ is built

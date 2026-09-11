@@ -418,6 +418,43 @@ console.log('— atlas: no two estimated text boxes overlap, and nothing clips �
   }
 }
 
+console.log('— chronicle: the landscape convention, and the physics rule —');
+{
+  for (const s of STORIES) {
+    const story: any = load(s);
+    const r = render({ story, storyId: s, profile: 'chronicle' });
+    const doc = r.doc.doc;
+    ok(r.doc.medium === '2d-svg' && r.doc.width > r.doc.height, `chronicle/${s}: landscape composition`);
+    ok(doc.includes('Calendar order; spacing not to scale') || doc.includes('Encoded order along this axis'),
+      `chronicle/${s}: the axis states its own convention`);
+    ok(doc.includes('blue path') && doc.includes('amber dashed') && doc.includes('grey rail'),
+      `chronicle/${s}: the key names what each mark means`);
+    ok(!/source:\s/.test(doc), `chronicle/${s}: no source identifiers on the chart`);
+    ok(doc.includes('see the Topology Atlas'), `chronicle/${s}: the technical view is named, not duplicated`);
+
+    // THE RULE: the form of a world is computed from the DECLARED physics, never from its kind
+    const physics = [story.primaryRuleSetId, ...(story.mixinRuleSetIds ?? [])].join(' ').toLowerCase();
+    const branching = /branch|multiverse|tangent|fork|prune/.test(physics);
+    const fixed = !branching && /fixed|predestination|novikov|closed_loop/.test(physics);
+    const expected = branching ? 'branching' : fixed ? 'fixed' : 'revision';
+    const mode = doc.match(/data-mode="([a-z]+)"/);
+    ok(mode !== null && mode[1] === expected,
+      `chronicle/${s}: mode computed from declared physics (${physics.trim().slice(0, 40)}) -> ${expected}`);
+
+    // declared kind vs declared physics is REPORTED, never silently resolved
+    const kindBranchy = (story.worlds ?? []).filter((w: any) => w.kind === 'branch' || w.kind === 'parallel_world').length;
+    const mismatches = parseInt(doc.match(/data-mismatches="(\d+)"/)?.[1] ?? '0', 10);
+    if (expected === 'fixed' && kindBranchy > 0) {
+      ok(mismatches > 0, `chronicle/${s}: a declared branch under fixed physics is reported as a conflict`);
+      ok(doc.includes('declaration conflict —'), `chronicle/${s}: the conflict is stated in words on the chart`);
+    }
+    // noise discipline: a handful of consequence chains, not the full relationship register
+    const ripples = parseInt(doc.match(/data-ripples="(\d+)"/)?.[1] ?? '0', 10);
+    const chains = (doc.match(/stroke="#C45514" stroke-width="0.55"/g) ?? []).length;
+    ok(chains <= 6, `chronicle/${s}: at most a handful of full consequence chains (${chains} drawn of ${ripples} encoded)`);
+  }
+}
+
 console.log('— storyline: a reading chart, not a technical one —');
 {
   for (const s of STORIES) {

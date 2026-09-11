@@ -418,6 +418,29 @@ console.log('— atlas: no two estimated text boxes overlap, and nothing clips �
   }
 }
 
+console.log('— storyline: a reading chart, not a technical one —');
+{
+  for (const s of STORIES) {
+    const r = render({ story: load(s), storyId: s, profile: 'storyline' });
+    const doc = r.doc.doc;
+    ok(r.doc.medium === '2d-svg', `storyline/${s}: renders as a 2d SVG`);
+    // the redesign's core instruction: the machinery is not on this page
+    ok(!/source:\s/.test(doc), `storyline/${s}: no source identifiers on the reading page`);
+    ok(!doc.includes('data-source-id'), `storyline/${s}: no provenance ids rendered as text`);
+    ok(doc.includes('thin line') && doc.includes('a jump through time'), `storyline/${s}: the three connector conventions are stated`);
+    ok(doc.includes('see the Topology Atlas'), `storyline/${s}: the technical view is named, not duplicated`);
+    ok(/Following .+ read from top to bottom/.test(doc), `storyline/${s}: the reading instruction is stated`);
+    ok(doc.includes('the story ends in') || doc.includes('takes place entirely'), `storyline/${s}: a one-sentence takeaway closes the page`);
+    // the spine is numbered in reading order
+    // Where the encoding has no order, the spine is honestly UNNUMBERED and says so; where it
+    // does, the numbers must run in reading order.
+    const nums = [...doc.matchAll(/font-size="3\.175"[^>]*>(0\d)<\/text>/g)].map(m => m[1]);
+    ok(nums.join(',') === nums.slice().sort().join(','), `storyline/${s}: spine nodes are numbered in reading order`);
+    ok(nums.length > 0 || /position in time not encoded/.test(doc),
+      `storyline/${s}: an unnumbered spine is stated, not left ambiguous`);
+  }
+}
+
 console.log('— atlas §9: derived-world pair bracket + bootstrap-entity tokens —');
 {
   const dark: any = load('dark');

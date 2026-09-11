@@ -43,6 +43,13 @@ const svg = await page.locator('#canvas svg').first();
 const dims = { w: await svg.getAttribute('width'), h: await svg.getAttribute('height') };
 await page.screenshot({ path: `${outDir}/gui-counterpoint.png` });
 
+// atlas (the fifth profile)
+await page.getByRole('tab', { name: 'Topology Atlas 2d', exact: true }).click();
+await page.waitForTimeout(700);
+const atlasDims = { w: await page.locator('#canvas svg').first().getAttribute('width'), h: await page.locator('#canvas svg').first().getAttribute('height') };
+const atlasHasTitle = (await page.locator('#canvas').innerHTML()).includes('data-source-id');
+await page.screenshot({ path: `${outDir}/gui-atlas.png` });
+
 // 2.5D
 await page.locator('.prof', { hasText: 'Temporal Section' }).click();
 await page.waitForTimeout(600);
@@ -63,6 +70,6 @@ const localFacts = await page.locator('#facts').innerText();
 const localHasText = (await page.locator('#canvas').innerText().catch(() => '')) || (await page.content()).includes('local file renders like any other scheme');
 await page.screenshot({ path: `${outDir}/gui-local-file.png` });
 
-console.log(JSON.stringify({ corpusItems: count, auditWidth: auditBox?.width, factsWidth: factsBox?.width, tenetDims: dims, dark2dDims: dims2, frameVisible, facts, audit: audit.split('\n').slice(0, 4), localFacts: localFacts.split('\n').slice(0, 6), localHasText, problems }, null, 1));
+console.log(JSON.stringify({ corpusItems: count, profileCount: await page.locator(".prof").count(), atlasDims, atlasHasTitle, auditWidth: auditBox?.width, factsWidth: factsBox?.width, tenetDims: dims, dark2dDims: dims2, frameVisible, facts, audit: audit.split('\n').slice(0, 4), localFacts: localFacts.split('\n').slice(0, 6), localHasText, problems }, null, 1));
 await browser.close();
 process.exit(problems.length ? 1 : 0);

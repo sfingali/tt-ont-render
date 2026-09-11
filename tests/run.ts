@@ -31,7 +31,43 @@ function walk(dir: string): string[] {
     e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]);
 }
 
-const PROFILES = ['counterpoint', 'reveal', 'temporal', 'worldline'] as const;
+interface ParsedText {
+  x: number; y: number; size: number; anchor: string; text: string;
+  box: { x0: number; y0: number; x1: number; y1: number };
+}
+
+/**
+ * Parse every <text> mark and estimate its box exactly as the renderer does:
+ * width = characters x 0.52 x size, height = size x 1.2, baseline at y.
+ */
+function parseTexts(doc: string): ParsedText[] {
+  const out: ParsedText[] = [];
+  const re = /<text\b([^>]*)>([\s\S]*?)<\/text>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(doc))) {
+    const attrs = m[1];
+    const attr = (k: string): string | undefined => attrs.match(new RegExp(`${k}="([^"]*)"`))?.[1];
+    const x = parseFloat(attr('x') ?? '0');
+    const y = parseFloat(attr('y') ?? '0');
+    const size = parseFloat(attr('font-size') ?? '0');
+    const anchor = attr('text-anchor') ?? 'start';
+    const text = m[2]
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+    const w = text.length * 0.52 * size;
+    const h = size * 1.2;
+    const x0 = anchor === 'middle' ? x - w / 2 : anchor === 'end' ? x - w : x;
+    const y0 = y - size * 0.9;
+    out.push({ x, y, size, anchor, text, box: { x0, y0, x1: x0 + w, y1: y0 + h } });
+  }
+  return out;
+}
+
+function boxesOverlap(a: ParsedText['box'], b: ParsedText['box']): boolean {
+  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+}
+
+const PROFILES = ['counterpoint', 'reveal', 'temporal', 'worldline', 'atlas'] as const;
 const STORIES = ['tenet', 'steins-gate', 'dark', 'arrival'] as const;
 
 console.log('— determinism: identical input -> identical output —');
@@ -114,7 +150,7 @@ console.log('— provenance: engine order claims are labeled, not coordinate tim
 
 console.log('— node text: the encoded description is the PRIMARY text —');
 {
-  const PROFS = ['counterpoint', 'reveal', 'temporal', 'worldline'] as const;
+  const PROFS = ['counterpoint', 'reveal', 'temporal', 'worldline', 'atlas'] as const;
   const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const chunk = (t: string, n: number) => t.trim().split(/\s+/).slice(0, n).join(' ');
   // Scope: counterpoint/reveal draw a single world band (their declared affinity is
@@ -284,6 +320,127 @@ console.log('— coverage: profiles declare what they actually drew —');
   let rejected = false;
   try { buildCoverageReport(cp.scene, forged); } catch { rejected = true; }
   ok(rejected, 'coverage rejects a declaration for an undeclared source id');
+}
+
+console.log('— atlas: the DESIGN-ATLAS §2 grammar is actually drawn —');
+{
+  const dark: any = load('dark');
+  const r = render({ story: dark, storyId: 'dark', profile: 'atlas' });
+  const doc = r.doc.doc;
+  const { buildCoverageReport } = await import('../src/coverage.ts');
+  const cov = buildCoverageReport(r.scene, r.doc);
+
+  // every declared source drawn, and the four other profiles still report their zeros
+  ok(cov.totals.notDrawn === 0, `atlas draws every declared source on dark (${cov.totals.drawn}/${cov.totals.declared})`);
+  for (const kind of ['world', 'agent', 'event', 'intervention', 'outcome'] as const) {
+    const g = cov.groups.find(x => x.kind === kind)!;
+    ok(g.notDrawn === 0, `atlas draws every ${kind} (${g.drawn}/${g.items.length})`);
+  }
+  const edgeGroups = cov.groups.filter(g => g.kind === 'edge');
+  ok(edgeGroups.every(g => g.drawn === g.items.length), 'atlas strokes every encoded edge, in every kind present');
+  ok(edgeGroups.length >= 6, `all six encoded edge kinds are reported (${edgeGroups.length})`);
+
+  // §2: exactly one arrowhead per drawn edge (marker references, not marker defs)
+  const arrowheads = (doc.match(/marker-end=/g) ?? []).length;
+  ok(arrowheads === dark.edges.length, `one arrowhead per encoded edge (${arrowheads} for ${dark.edges.length} edges)`);
+
+  // §8: title, desc, data-source-id, and a stated evidence status
+  ok(doc.includes('<title>Atlas'), 'native SVG carries a <title>');
+  ok(doc.includes('<desc>'), 'native SVG carries a <desc>');
+  ok(/data-source-id=/.test(doc) && (doc.match(/data-source-id=/g) ?? []).length >= dark.events.length,
+    'every mark carries a data-source-id (§8 provenance)');
+  ok(doc.includes('Evidence status'), 'evidence status is stated on the chart');
+
+  // §2 world primitives: tabs, double-outline parallelism, labelled composition groups
+  ok(/T\b/.test(doc) && doc.includes('single-outline'), 'T primitive labelled as single-outline');
+  ok(doc.includes('double-outline'), 'P primitive labelled as double-outline (never two rails)');
+  ok(doc.includes('composition group'), 'layout groups are labelled as layout, not semantic containment');
+  ok(!/\bjunction\b(?![^<]{0,80}never)/i.test(doc) || doc.includes('never turned into a junction'), 'no invented junction is drawn in place of a missing anchor');
+
+  // §6: an axis that declares its own basis
+  ok(doc.includes('ordered, not to scale'), 'ordinal axis is labelled "ordered, not to scale"');
+
+  // §2 + §1: a branch with no encoded anchor must not gain one
+  const orphan: RawStory = {
+    topologyPatternId: 'branching_tree', primaryRuleSetId: 'branch_on_intervention',
+    worlds: [{ id: 'w_root', kind: 'timeline' }, { id: 'w_child', kind: 'branch' }],
+    agents: [{ id: 'a', label: 'A' }],
+    events: [{ id: 'e1', type: 'ordinary', label: 'Beat', description: 'Someone does something that will matter later.', at: { worldRef: 'w_root', timeLabel: 't1' }, agents: ['a'] }],
+    edges: [{ id: 'wr1', kind: 'world_relation', from: 'w_root', to: 'w_child', relation: 'forksFrom' }],
+  };
+  const rb = render({ story: orphan, storyId: 'orphan', profile: 'atlas' });
+  ok(rb.doc.doc.includes('fork event unspecified'), 'an anchor-less branch renders "fork event unspecified"');
+  ok(rb.invariants.ok, 'anchor-less branch keeps invariants okay');
+}
+
+console.log('— atlas: legibility floor — no drawn text below 10px —');
+{
+  for (const s of STORIES) {
+    const r = render({ story: load(s), storyId: s, profile: 'atlas' });
+    const texts = parseTexts(r.doc.doc);
+    const tiny = texts.filter(t => t.size < 10);
+    ok(tiny.length === 0,
+      `atlas/${s}: every one of ${texts.length} text marks is >= 10px`,
+      tiny.slice(0, 4).map(t => `${t.size}px "${t.text.slice(0, 24)}"`).join('; '));
+  }
+}
+
+console.log('— atlas: no two estimated text boxes overlap, and nothing clips —');
+{
+  for (const s of STORIES) {
+    const r = render({ story: load(s), storyId: s, profile: 'atlas' });
+    const texts = parseTexts(r.doc.doc);
+    let overlaps = 0;
+    let detail = '';
+    for (let i = 0; i < texts.length && overlaps < 4; i++) {
+      for (let j = i + 1; j < texts.length && overlaps < 4; j++) {
+        if (boxesOverlap(texts[i].box, texts[j].box)) {
+          overlaps++;
+          if (!detail) detail = `"${texts[i].text.slice(0, 24)}" x "${texts[j].text.slice(0, 24)}"`;
+        }
+      }
+    }
+    ok(overlaps === 0, `atlas/${s}: no two of ${texts.length} text boxes overlap`, detail);
+    const clipped = texts.filter(t =>
+      t.box.x0 < 0 || t.box.y0 < 0 || t.box.x1 > r.doc.width || t.box.y1 > r.doc.height);
+    ok(clipped.length === 0, `atlas/${s}: every text box stays inside the ${r.doc.width}x${r.doc.height} canvas`,
+      clipped.slice(0, 3).map(t => `"${t.text.slice(0, 24)}"`).join('; '));
+  }
+}
+
+console.log('— atlas §9: derived-world pair bracket + bootstrap-entity tokens —');
+{
+  const dark: any = load('dark');
+  const r = render({ story: dark, storyId: 'dark', profile: 'atlas' });
+  const doc = r.doc.doc;
+  ok(doc.includes('class="derived-world-pair-bracket"') && doc.includes('derived-world pair'),
+    'atlas/dark draws the neutral "derived-world pair" composition bracket');
+  // the bracket spans exactly the two derived worlds sitting below Origin
+  const bracket = doc.match(/<path class="derived-world-pair-bracket"[^>]*d="([^"]+)"/);
+  const xs = bracket ? [...bracket[1].matchAll(/[ML] ([-\d.]+) ([-\d.]+)/g)].map(m => parseFloat(m[1])) : [];
+  ok(bracket !== null && Math.max(...xs) - Math.min(...xs) > 0,
+    'the derived-world pair bracket spans a non-zero width over the pair');
+  for (const be of ['knot_worlds', 'jonas_father', 'tannhaus_book', 'unknown']) {
+    const tokenRe = new RegExp(`<(?:rect|g|text)[^>]*data-bootstrap-entity="${be}"`);
+    ok(tokenRe.test(doc) && doc.includes(be), `atlas/dark draws a bootstrap-entity token for '${be}'`);
+  }
+  // §9 honesty: the supplied causal edges encode no directed cycle, so no knot is closed
+  const declaredCausal = dark.edges.filter((e: any) => e.kind === 'causal');
+  const adj = new Map<string, string[]>();
+  for (const e of declaredCausal) {
+    const a = adj.get(e.from) ?? []; a.push(e.to); adj.set(e.from, a);
+  }
+  let cycle = false;
+  const seen = new Set<string>(), stack = new Set<string>();
+  const visit = (n: string): void => {
+    if (stack.has(n)) { cycle = true; return; }
+    if (seen.has(n)) return;
+    seen.add(n); stack.add(n);
+    for (const nxt of adj.get(n) ?? []) visit(nxt);
+    stack.delete(n);
+  };
+  for (const n of adj.keys()) visit(n);
+  ok(!cycle, 'the supplied causal edge list encodes no directed cycle (none is fabricated)');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

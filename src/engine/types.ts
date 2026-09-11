@@ -32,14 +32,36 @@ export interface AuditIssue {
 
 export type WorldKind = 'timeline' | 'branch' | 'parallel_world';
 
+export interface CorrespondenceFactEntry {
+  localKey: string;
+  remoteWorldRef: string;
+  remoteKey: string;
+  notes?: string;
+}
+
 export interface FactWorld {
   id: string;
   kind: WorldKind;
+  label?: string;
+  description?: string;
   spanLabel?: string;
   /** nesting depth derived ONLY from encoded nestsWithin world_relations (DESIGN-ATLAS §3/§9). */
   nestingDepth: number | null;
   /** parent from encoded forksFrom, if any. */
   forkParent: string | null;
+  /** encoded branch parentRef, preserved for the atlas primitive grammar. */
+  parentRef?: string;
+  /** encoded event at which a branch forked, if supplied. */
+  forkEventRef?: string;
+  forkLabel?: string;
+  draft?: boolean;
+  isOriginWorld?: boolean;
+  originWorldRef?: string;
+  mirrorOf?: string;
+  correspondenceKey?: string;
+  correspondenceMap?: CorrespondenceFactEntry[];
+  attractorFieldId?: string;
+  worldlineId?: string;
   prov: Provenance;
 }
 
@@ -48,6 +70,7 @@ export interface FactAgent {
   label?: string;
   identityGroup?: string;
   continuityRole?: string;
+  homeWorldRef?: string;
   prov: Provenance;
 }
 

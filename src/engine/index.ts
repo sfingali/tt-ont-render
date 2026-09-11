@@ -20,8 +20,16 @@ export interface RawStory {
   ruleSetIds?: string[];
   semanticReview?: unknown;
   outcome?: { summary?: string; endWorldRefs?: string[] };
-  worlds: Array<{ id: string; kind: string; spanLabel?: string }>;
-  agents: Array<{ id: string; label?: string; identityGroup?: string; continuityRole?: string }>;
+  worlds: Array<{
+    id: string; kind: string; label?: string; description?: string; spanLabel?: string;
+    originWorldRef?: string; isOriginWorld?: boolean;
+    parentRef?: string; forkEventRef?: string; forkLabel?: string; draft?: boolean;
+    mirrorOf?: string; correspondenceKey?: string;
+    correspondenceMap?: Array<{ localKey: string; remoteWorldRef: string; remoteKey: string; notes?: string }>;
+    attractorFieldId?: string; worldlineId?: string;
+    [k: string]: unknown;
+  }>;
+  agents: Array<{ id: string; label?: string; identityGroup?: string; continuityRole?: string; homeWorldRef?: string; [k: string]: unknown }>;
   events: Array<{
     id: string; type: string; label?: string; description?: string; agents?: string[];
     at?: { worldRef?: string; timeLabel?: string };
@@ -122,9 +130,15 @@ export function indexAndResolve(story: RawStory): Facts {
   for (const w of story.worlds) {
     const nested = nestEdges.some(e => e.from === w.id);
     worlds.push({
-      id: w.id, kind: w.kind as FactWorld['kind'], spanLabel: w.spanLabel,
+      id: w.id, kind: w.kind as FactWorld['kind'], label: w.label, description: w.description,
+      spanLabel: w.spanLabel,
       nestingDepth: nested ? (nestDepth.get(w.id) ?? 0) : null,
-      forkParent: forkParent.get(w.id) ?? null, prov: enc(w.id),
+      forkParent: forkParent.get(w.id) ?? null,
+      parentRef: w.parentRef, forkEventRef: w.forkEventRef, forkLabel: w.forkLabel, draft: w.draft,
+      isOriginWorld: w.isOriginWorld, originWorldRef: w.originWorldRef, mirrorOf: w.mirrorOf,
+      correspondenceKey: w.correspondenceKey, correspondenceMap: w.correspondenceMap,
+      attractorFieldId: w.attractorFieldId, worldlineId: w.worldlineId,
+      prov: enc(w.id),
     });
     if (!['timeline', 'branch', 'parallel_world'].includes(w.kind)) {
       issues.push({ severity: 'error', code: 'WORLD_KIND_UNKNOWN', message: `world ${w.id} has unknown kind ${w.kind}`, sourceId: w.id });

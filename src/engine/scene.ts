@@ -29,7 +29,12 @@ export function compileScene(facts: Facts, story: RawStory): SemanticScene {
   // world bands (form per design; semantics fixed here)
   for (const w of facts.worlds) {
     nodes.push(node('worldBand', `world:${w.id}`, w.id, w.prov, { sourceId: w.id, worldRef: w.id }, {
-      kind: w.kind, spanLabel: w.spanLabel, nestingDepth: w.nestingDepth, forkParent: w.forkParent,
+      kind: w.kind, label: w.label, description: w.description, spanLabel: w.spanLabel,
+      nestingDepth: w.nestingDepth, forkParent: w.forkParent,
+      parentRef: w.parentRef, forkEventRef: w.forkEventRef, forkLabel: w.forkLabel,
+      isOriginWorld: w.isOriginWorld, originWorldRef: w.originWorldRef, mirrorOf: w.mirrorOf,
+      correspondenceKey: w.correspondenceKey, correspondenceMap: w.correspondenceMap,
+      attractorFieldId: w.attractorFieldId, worldlineId: w.worldlineId,
     }));
   }
 

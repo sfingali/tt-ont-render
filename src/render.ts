@@ -8,6 +8,7 @@ import { indexAndResolve } from './engine/index.ts';
 import { compileScene, auditReferencesAndTopology } from './engine/scene.ts';
 import { assertInvariants } from './engine/invariants.ts';
 import { getProfile, themeFor, registerProfile } from './design/registry.ts';
+import { atlas } from './design/atlas.ts';
 import { counterpoint } from './design/counterpoint.ts';
 import { reveal } from './design/reveal.ts';
 import { temporal } from './design/temporal.ts';
@@ -17,6 +18,7 @@ registerProfile(counterpoint);
 registerProfile(reveal);
 registerProfile(temporal);
 registerProfile(worldline);
+registerProfile(atlas);
 
 /** The design profile registry, so a caller (CLI help, GUI) can enumerate profiles. */
 export { listProfiles, getProfile } from './design/registry.ts';

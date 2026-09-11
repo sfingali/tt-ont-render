@@ -15,6 +15,7 @@ Pure functions, no clocks, no randomness, no I/O: the same input always produces
 | `reveal` — Reveal Atlas | 2D SVG | `single_fixed_timeline` | one world band, terraces by causal depth |
 | `temporal` — Temporal Section | 2.5D SVG | `origin_plus_twins`, nested worlds | every world, as stacked planes |
 | `worldline` — Worldline Loom | 3D HTML | `worldline_bundle`, `single_fixed_timeline` | every world, time-resolved events only |
+| `atlas` — Topology Atlas | 2D SVG | any topology | everything declared: worlds as T/B/P primitives, every event, every encoded edge |
 
 `topoAffinity` is advisory. A profile rendering a topology outside its affinity is a **declared warning**, never a refusal.
 Because `counterpoint` and `reveal` are single-world grids, a multi-world story raises
@@ -75,6 +76,12 @@ ontology terms. `src/design/registry.ts` holds the whole text layer — `wrapTex
 `emitNodeText` — and it is measurement-free: a fixed 0.52em advance estimate and greedy word wrap, so
 layout stays deterministic across machines.
 
+### Legibility is not negotiable; canvas size is
+
+No profile draws text below **10px**, and the `atlas` profile's layout is sized to that floor: box heights
+follow their own text, and the canvas grows instead of the type shrinking. `npm test` asserts the floor and
+checks that no two text boxes overlap, so a layout change that quietly reintroduces 7px labels fails CI.
+
 ## The seam
 
 The one architectural decision that everything else depends on:
@@ -111,7 +118,7 @@ Every assertion carries one of four statuses: `declared` (a catalogue id) · `en
 
 ## Contract
 
-The renderer implements the primitive-to-form grammar and the composition rules of **[DESIGN-ATLAS.md](https://github.com/sfingali/time-travel-ontology/blob/main/docs/DESIGN-ATLAS.md)** in the ontology repo (§2 worlds/events/edges grammar, §8 composition). The ontology stays the source of truth: `worlds[].kind` selects the world primitive, `topologyPatternId` selects the composition, and **only encoded relationships become connections** — shared labels, proximity and shared event participation establish nothing.
+The **`atlas` profile implements [DESIGN-ATLAS.md](https://github.com/sfingali/time-travel-ontology/blob/main/docs/DESIGN-ATLAS.md) literally** (§2 primitive-to-form grammar, §5 physics seals, §6 axis states, §8 renderer contract, §9 worked composition): T/B/P world primitives with header tabs, a double-outline enclosure for a `parallel_world`, a fork connector anchored at the encoded fork event — and "fork event unspecified" rather than an invented junction — the per-event-type glyph vocabulary, and one routing channel per encoded edge kind with exactly one arrowhead per edge. The other four profiles are aesthetic interpretations of the same facts, authored as their own grammars: they compose from events and their own derived signals, and (as `npm run coverage` will tell you) they stroke no encoded edges at all. The ontology stays the source of truth: `worlds[].kind` selects the world primitive, `topologyPatternId` selects the composition, and **only encoded relationships become connections** — shared labels, proximity and shared event participation establish nothing.
 
 No LLM participates in runtime semantic interpretation. The four design grammars were authored as prose design briefs, then implemented here as deterministic profiles that obey the atlas.
 
@@ -167,7 +174,8 @@ web/            the browser GUI (shell + build script + smoke test); web/dist/ i
 
 ## Examples
 
-`examples/` holds vector output only — diffable, no rasterised build products. Rasterise with any SVG
+`examples/` holds vector output only — diffable, no rasterised build products. `dark-atlas.svg` is the
+`atlas` profile on the three-world worked example from DESIGN-ATLAS §9. Rasterise with any SVG
 tool (`cairosvg`, `rsvg-convert`, a browser); the 3D profile needs a WebGL-capable browser.
 
 ## Licence

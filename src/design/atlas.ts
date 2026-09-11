@@ -81,17 +81,21 @@ interface Seg { a: Pt; b: Pt }
 interface TextMark {
   x: number; y: number; s: string; size: number; fill: string; family: string;
   anchor: 'start' | 'middle' | 'end'; data?: string; weight?: string;
+  /** background colour: the mark is drawn with a halo, so a route label stays readable over its line */
+  halo?: string;
 }
 
 interface Card { ev: FactEvent; rect: Rect; block: NodeTextBlock; ordered: boolean; fx: number; fy: number; rowKey: string }
 interface Glyph { id: string; x: number; y: number; type: string; apron: number; rowKey: string }
 interface RouteRec {
   edgeId: string; kind: FactEdge['kind']; pts: Pt[]; segs: Seg[];
-  gaps: Pt[]; label: string | null; key: string | null;
+  gaps: { p: Pt; w: number }[]; label: string | null; key: string | null;
   arrow: Pt; arrowDir: 'l' | 'r' | 'u' | 'd';
 }
 
 const rectOf = (x: number, y: number, w: number, h: number): Rect => ({ x, y, w, h });
+/** An empty world is stated, not decorated: neutral ink, never the accent. */
+const NEVER = (theme: ThemeSpec): string => theme.ink;
 const boxOverlap = (a: Rect, b: Rect, pad = 0): boolean =>
   a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
 
@@ -199,7 +203,8 @@ function emitMark(m: TextMark): string {
   const a = m.anchor !== 'start' ? ` text-anchor="${m.anchor}"` : '';
   const w = m.weight ? ` font-weight="${m.weight}"` : '';
   const d = m.data ? ` ${m.data}` : '';
-  return `<text x="${m.x.toFixed(2)}" y="${m.y.toFixed(2)}"${a}${w} font-family="${m.family}" font-size="${m.size.toFixed(3)}" fill="${m.fill}"${d}>${esc(m.s)}</text>`;
+  const halo = m.halo ? ` paint-order="stroke" stroke="${m.halo}" stroke-width="0.9" stroke-linejoin="round"` : '';
+  return `<text x="${m.x.toFixed(2)}" y="${m.y.toFixed(2)}"${a}${w} font-family="${m.family}" font-size="${m.size.toFixed(3)}" fill="${m.fill}"${halo}${d}>${esc(m.s)}</text>`;
 }
 
 function markBox(m: TextMark): Rect {
@@ -280,7 +285,10 @@ export const atlas: DesignProfile = {
       const texts: TextMark[] = [];
       const cards: Card[] = [];
       const glyphs = new Map<string, Glyph>();
-      const obstacles: Rect[] = [];          // hard obstacles: card and panel surfaces only
+      const obstacles: Rect[] = [];          // hard obstacles: card, panel and PROTECTED TEXT surfaces
+      const protectedRects: Rect[] = [];     // reserved annotations: never crossed, never overlapped
+      /** A protected annotation is drawn AND reserved: labels must avoid it, and it is recorded. */
+      const addAnnotation = (m: TextMark): void => { texts.push(m); const b = markBox(m); obstacles.push(b); protectedRects.push(b); };
       const aprons: Rect[] = [];             // glyph connection zones (ports, not obstacles)
       const corridorsH: Corridor[] = [];
       const corridorsV: Corridor[] = [];
@@ -314,14 +322,14 @@ export const atlas: DesignProfile = {
 
       // ---- header (compact) ----
       const headerH = 30;
-      texts.push({ x: MARGIN, y: MARGIN + T.film * 0.92, s: filmTitle, size: T.film, fill: theme.ink, family: theme.fontSerif, anchor: 'start' });
-      texts.push({ x: MARGIN, y: MARGIN + T.film + T.sub * 1.5, s: `Topology Atlas — ${facts.topologyPatternId}`, size: T.sub, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
-      texts.push({ x: MARGIN, y: MARGIN + T.film + T.sub * 1.5 + T.meta * 1.7, s: `${scene.header.physicsLine} · ${scene.header.evidenceLine}`, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+      texts.push({ x: gridX, y: MARGIN + T.film * 0.92, s: filmTitle, size: T.film, fill: theme.ink, family: theme.fontSerif, anchor: 'start' });
+      texts.push({ x: gridX, y: MARGIN + T.film + T.sub * 1.5, s: `Topology Atlas — ${facts.topologyPatternId}`, size: T.sub, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+      texts.push({ x: gridX, y: MARGIN + T.film + T.sub * 1.5 + T.meta * 1.7, s: `${scene.header.physicsLine} · ${scene.header.evidenceLine}`, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
       const physY = MARGIN + T.meta * 1.1;
-      texts.push({ x: MARGIN + contentW, y: physY, s: 'PRIMARY PHYSICS', size: T.meta, fill: theme.accent, family: theme.fontSans, anchor: 'end' });
-      texts.push({ x: MARGIN + contentW, y: physY + T.sub * 1.4, s: facts.primaryRuleSetId, size: T.sub, fill: theme.ink, family: theme.fontMono, anchor: 'end' });
+      texts.push({ x: gridRight, y: physY, s: 'PRIMARY PHYSICS', size: T.meta, fill: theme.accent, family: theme.fontSans, anchor: 'end' });
+      texts.push({ x: gridRight, y: physY + T.sub * 1.4, s: facts.primaryRuleSetId, size: T.sub, fill: theme.ink, family: theme.fontMono, anchor: 'end' });
       const mixins = facts.mixinRuleSetIds.length ? `mixins: ${facts.mixinRuleSetIds.join(', ')}` : 'no mixins declared';
-      texts.push({ x: MARGIN + contentW, y: physY + T.sub * 1.4 + T.meta * 1.5, s: mixins, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'end' });
+      texts.push({ x: gridRight, y: physY + T.sub * 1.4 + T.meta * 1.5, s: mixins, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'end' });
 
       let y = MARGIN + headerH;
 
@@ -344,9 +352,10 @@ export const atlas: DesignProfile = {
         shapes.push(`<g class="world-tab" data-source-id="${esc(w.id)}" data-primitive="${esc(w.kind)}"><rect x="${tabX}" y="${headY - tabH + 1.2}" width="${tabW}" height="${tabH}" rx="0.6" fill="none" stroke="${tabFill}" stroke-width="0.5"/>`
           + (w.kind === 'parallel_world' ? `<rect x="${tabX + 1.2}" y="${headY - tabH + 2.4}" width="${tabW - 2.4}" height="${tabH - 2.4}" fill="none" stroke="${theme.secondary}" stroke-width="0.4"/>` : '')
           + `<text x="${tabX + tabW / 2}" y="${headY - 1}" text-anchor="middle" font-family="${theme.fontSerif}" font-size="${T.meta}" fill="${tabFill}">${w.kind === 'parallel_world' ? 'P' : w.kind === 'branch' ? 'B' : 'T'}</text></g>`);
-        texts.push({ x: tabX + tabW + 3, y: headY, s: `${w.label ?? w.id}${w.label ? ` · ${w.id}` : ''}`, size: T.world, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        addAnnotation({ x: tabX + tabW + 3, y: headY, s: `${w.label ?? w.id}`, size: T.world, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        addAnnotation({ x: tabX + tabW + 5 + textWidth(`${w.label ?? w.id}`, T.world), y: headY - T.world * 0.3, s: w.id, size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'start' });
         const subBits = [w.spanLabel ? `span: ${w.spanLabel}` : '', w.forkLabel ? `fork: ${w.forkLabel}` : ''].filter(Boolean).join(' · ');
-        if (subBits) texts.push({ x: tabX + tabW + 3, y: headY + T.meta * 1.5, s: subBits, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+        if (subBits) addAnnotation({ x: tabX + tabW + 3, y: headY + T.meta * 1.6, s: subBits, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
         if (facts.outcome?.endWorldRefs?.includes(w.id)) {
           const tagW = textWidth('end-state world', T.meta) + 4;
           shapes.push(`<rect x="${gridRight - tagW}" y="${headY - T.meta * 1.1}" width="${tagW}" height="${T.meta * 1.6}" rx="1" fill="none" stroke="${theme.accent}" stroke-width="0.4"/>`);
@@ -364,10 +373,11 @@ export const atlas: DesignProfile = {
           const lx = gridX + 2, ly = headY + (subBits ? T.meta * 1.5 : 0) + 6.4;
           const mlx = lx + textWidth(text, T.meta) + 3;
           shapes.push(`<path class="branch-fork-note" data-fork-market="${esc(w.id)}" d="M ${mlx.toFixed(2)} ${(ly - 1.1).toFixed(2)} L ${(mlx + 7).toFixed(2)} ${(ly - 1.1).toFixed(2)}" fill="none" stroke="${forkEv ? theme.accent : theme.muted}" stroke-width="0.5"${forkEv ? '' : ' stroke-dasharray="1.6 1.6"'}/>`);
-          texts.push({ x: lx, y: ly, s: text, size: T.meta, fill: forkEv ? theme.accent : SUPPORT, family: theme.fontSans, anchor: 'start', data: `data-fork-market="${esc(w.id)}"` });
+          addAnnotation({ x: lx, y: ly, s: text, size: T.meta, fill: forkEv ? theme.accent : SUPPORT, family: theme.fontSans, anchor: 'start', data: `data-fork-market="${esc(w.id)}"` });
           forkNoteH = 6.4;
         }
 
+        const bandNotes: string[] = [];
         let rowY = headY + forkNoteH + 5;
         const rows: FactEvent[][] = [];
         for (let i = 0; i < ordered.length; i += GRID_COLS) rows.push(ordered.slice(i, i + GRID_COLS));
@@ -390,10 +400,10 @@ export const atlas: DesignProfile = {
             shapes.push(`<line class="local-order-rail" data-world-id="${esc(w.id)}" x1="${railX0.toFixed(2)}" y1="${railY.toFixed(2)}" x2="${railX1.toFixed(2)}" y2="${railY.toFixed(2)}" stroke="${theme.lane}" stroke-width="0.7"/>`);
             // non-arrow continuation convention: a chevron with a gap, explained once
             if (!firstRail) {
+              bandNotes.push('local order continues (non-arrow chevrons on the rail)');
               shapes.push(`<g class="order-continuation" data-world-id="${esc(w.id)}"><path d="M ${(railX0 + 1.6).toFixed(2)} ${(railY - 0.9).toFixed(2)} L ${(railX0 + 3.4).toFixed(2)} ${railY.toFixed(2)} L ${(railX0 + 1.6).toFixed(2)} ${(railY + 0.9).toFixed(2)}" fill="none" stroke="${theme.lane}" stroke-width="0.6" stroke-dasharray="1.2 1"/><path d="M ${(railX0 + 4.6).toFixed(2)} ${(railY - 0.9).toFixed(2)} L ${(railX0 + 6.4).toFixed(2)} ${railY.toFixed(2)} L ${(railX0 + 4.6).toFixed(2)} ${(railY + 0.9).toFixed(2)}" fill="none" stroke="${theme.lane}" stroke-width="0.6" stroke-dasharray="1.2 1"/></g>`);
-              texts.push({ x: railX0 + 8, y: railY - 1.6, s: 'local order continues (non-arrow)', size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
             }
-            if (firstRail) texts.push({ x: railX0, y: railY + 2.8, s: `${list[0].order?.axisLabel ?? 'local order'} — ordered, not to scale`, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+            if (firstRail) bandNotes.push(`local order: ${list[0].order?.axisLabel ?? 'encoded order'} — ordered, not to scale`);
           }
           let maxH = 0;
           list.forEach((ev, col) => {
@@ -419,9 +429,10 @@ export const atlas: DesignProfile = {
         };
 
         rows.forEach((r, i) => placeRow(r, true, i === 0, i));
+        bandNotes.forEach((note, i) => addAnnotation({ x: tabX + tabW + 3, y: headY + T.meta * (subBits ? 3.05 : 1.6) + i * T.meta * 1.45, s: note, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' }));
         if (urows.length) {
           const headY2 = rowY + 4;
-          texts.push({ x: gridX + 2, y: headY2, s: `time not positioned (${unresolved.length}) — no encoded temporal position; shown as an unordered set`, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+          addAnnotation({ x: gridX + 2, y: headY2, s: `time not positioned (${unresolved.length}) — no encoded temporal position; shown as an unordered set`, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
           shapes.push(`<line x1="${(gridX + 2).toFixed(2)}" y1="${(headY2 + 1.6).toFixed(2)}" x2="${(gridRight - 2).toFixed(2)}" y2="${(headY2 + 1.6).toFixed(2)}" stroke="${theme.muted}" stroke-width="0.4" stroke-dasharray="1.4 1.6"/>`);
           rowY = headY2 + 4;
           // an unresolved set gets its own routing channel above it: its cards must
@@ -433,6 +444,12 @@ export const atlas: DesignProfile = {
         }
 
         // band frame AFTER content so the geometry exists for the obstacles list
+        // A world with no encoded events still needs an enclosure of its own: it must not read
+        // as an annotation attached to the neighbouring band.
+        if (!rows.length && !urows.length) {
+          addAnnotation({ x: gridX + 2, y: rowY + 6, s: 'no events encoded in this world', size: T.meta, fill: NEVER(theme), family: theme.fontSans, anchor: 'start' });
+          rowY += 12;
+        }
         const bandH = rowY - ROW_GAP - bandTop;
         const inner = w.kind === 'parallel_world';
         shapes.push(`<rect class="primitive ${esc(w.kind)}" data-source-id="${esc(w.id)}" data-primitive="${esc(w.kind)}" x="${(gridX - 3).toFixed(2)}" y="${(bandTop - 3).toFixed(2)}" width="${(GRID_W + 6).toFixed(2)}" height="${(bandH + 6).toFixed(2)}" rx="2" fill="none" stroke="${theme.lane}" stroke-width="0.7"${inner ? ` stroke-dasharray="0"` : ''}/>`);
@@ -521,7 +538,7 @@ export const atlas: DesignProfile = {
       let ly = L.y + 8;
       if (bootstrapEntities.length) {
         const tokTop = ly;
-        texts.push({ x: L.gridX, y: tokTop + 4, s: `bootstrap entity tokens (${bootstrapEntities.length}) — declared payloads only; interlocked rings, no closed knot unless the encoded causal edges form a directed cycle`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        texts.push({ x: L.gridX, y: tokTop + 4, s: `bootstrap entity tokens (${bootstrapEntities.length})`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
         bootstrapEntities.forEach((be, i) => {
           const perRow = Math.max(1, Math.floor(GRID_W / 62));
           const col = i % perRow, row = Math.floor(i / perRow);
@@ -693,7 +710,9 @@ export const atlas: DesignProfile = {
         return { oy, ty, x1, x2, hy };
       };
 
-      for (let iter = 0; iter < 8; iter++) {
+      let converged = false;
+      let lastSig = '';
+      for (let iter = 0; iter < 14; iter++) {
         for (const pl of plans) {
           pl.v1 = pl.vC[Math.min(pl.i1, pl.vC.length - 1)];
           pl.v2 = pl.vC[Math.min(pl.i2, pl.vC.length - 1)];
@@ -743,6 +762,11 @@ export const atlas: DesignProfile = {
             if (key % 2 === 0) plans[i].kO = k; else plans[i].kT = k;
           }
         }
+        // Convergence is a stronger condition than "no capacity failure": a full pass that
+        // reproduces the same assignment means geometry and assignment now agree.
+        const sig = plans.map(pl => `${pl.i1}.${pl.i2}.${pl.ih}.${pl.k1}.${pl.k2}.${pl.kH}.${pl.kO}.${pl.kT}`).join('|');
+        if (sig === lastSig) { converged = true; break; }
+        lastSig = sig;
         if (!dead) break;
         for (const i of spillV) { plans[i].i1 += 1; plans[i].i2 += 1; plans[i].failed = false; }
         for (const i of spillH) { plans[i].ih += 1; plans[i].failed = false; }
@@ -827,7 +851,8 @@ export const atlas: DesignProfile = {
         const rec: RouteRec = { edgeId: e.id, kind: e.kind, pts, segs, gaps: [], label: label || null, key: null, arrow: pl.t, arrowDir };
         for (const prev of routes) for (const s1 of rec.segs) for (const s2 of prev.segs) {
           const q = segIntersect(s1, s2);
-          if (q) rec.gaps.push(q);
+          // the interruption is sized against the CROSSING stroke's envelope, not a fixed half-gap
+          if (q) rec.gaps.push({ p: q, w: styleOf(prev.kind, theme).width });
         }
         routes.push(rec);
         const st = styleOf(e.kind, theme);
@@ -882,7 +907,7 @@ export const atlas: DesignProfile = {
             if (len < 10) continue;
             const mx = (s.a.x + s.b.x) / 2, my = (s.a.y + s.b.y) / 2;
             const vertical = Math.abs(s.b.x - s.a.x) < 0.01;
-            for (const d of [1.6, -1.6]) {
+            for (const d of [2.4, -2.4]) {
               const x = vertical ? mx + d : mx;
               const y = vertical ? my : my + d;
               cands.push({ x, y: vertical ? y + 0.9 : y - 1.4, anchor: vertical ? (d > 0 ? 'start' : 'end') : 'middle', seg: s });
@@ -897,7 +922,7 @@ export const atlas: DesignProfile = {
               : labelRect;
             if (!fits(combined, r.edgeId, r)) continue;
             if (r.label) {
-              texts.push({ x: c.anchor === 'end' ? c.x : c.anchor === 'middle' ? c.x : c.x, y: c.y, s: r.label, size: T.meta, fill: r.kind === 'causal' ? SUPPORT : NEUTRAL, family: theme.fontSans, anchor: c.anchor, data: `data-route-owner="edge:${esc(r.edgeId)}"` });
+              texts.push({ x: c.x, y: c.y, s: r.label, size: T.meta, fill: r.kind === 'causal' ? SUPPORT : NEUTRAL, family: theme.fontSans, anchor: c.anchor, halo: theme.bg, data: `data-route-owner="edge:${esc(r.edgeId)}"` });
               placed.push({ rect: labelRect, kind: 'label', owner: r.edgeId });
             }
             if (badge !== 'none') {
@@ -964,41 +989,45 @@ export const atlas: DesignProfile = {
         return `<g class="event-glyph" data-source-id="${esc(g.id)}" data-event-type="${esc(t)}">${body}</g>`;
       };
 
-      const pathFor = (r: RouteRec): string => {
+      /**
+       * A route's path. Where it crosses an earlier route the line is genuinely INTERRUPTED:
+       * the gap opens a new subpath (M) sized against the crossing stroke's envelope, so the
+       * underpassing stroke really stops. Returns the bridges actually rendered.
+       */
+      const pathFor = (r: RouteRec): { d: string; bridges: number } => {
         const parts: string[] = [];
+        let bridges = 0;
         for (const s of r.segs) {
           const len = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
           if (len < 0.5) continue;
-          const cuts = r.gaps
-            .map(p => {
-              const t = ((p.x - s.a.x) * (s.b.x - s.a.x) + (p.y - s.a.y) * (s.b.y - s.a.y)) / (len * len);
-              const on = Math.abs((s.a.x + t * (s.b.x - s.a.x)) - p.x) < 0.05 && Math.abs((s.a.y + t * (s.b.y - s.a.y)) - p.y) < 0.05;
-              return on ? t : null;
-            })
-            .filter((t): t is number => t !== null && t > 0.12 && t < 0.88)
-            .sort((a, b) => a - b);
-          const half = 0.7 / len;
-          let cursor = 0;
-          for (const t of cuts) {
-            const t0 = Math.max(cursor, t - half);
-            const p0 = { x: s.a.x + (s.b.x - s.a.x) * cursor, y: s.a.y + (s.b.y - s.a.y) * cursor };
-            const p1 = { x: s.a.x + (s.b.x - s.a.x) * t0, y: s.a.y + (s.b.y - s.a.y) * t0 };
-            parts.push(`${parts.length ? 'L' : 'M'} ${p0.x.toFixed(2)} ${p0.y.toFixed(2)}`);
-            if (t0 > cursor + 0.001) parts.push(`L ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`);
-            cursor = Math.min(1, t + half);
+          const pt = (t: number): Pt => ({ x: s.a.x + (s.b.x - s.a.x) * t, y: s.a.y + (s.b.y - s.a.y) * t });
+          const cuts = r.gaps.map((g) => {
+            const t = ((g.p.x - s.a.x) * (s.b.x - s.a.x) + (g.p.y - s.a.y) * (s.b.y - s.a.y)) / (len * len);
+            const on = Math.abs((s.a.x + t * (s.b.x - s.a.x)) - g.p.x) < 0.05 && Math.abs((s.a.y + t * (s.b.y - s.a.y)) - g.p.y) < 0.05;
+            return on ? { t, half: Math.min((g.w / 2 + 0.6) / len, 0.45) } : null;
+          }).filter((c): c is { t: number; half: number } => c !== null).sort((x, y) => x.t - y.t);
+          let open = false, cursor = 0;
+          const move = (t: number): void => { const q = pt(t); parts.push(`M ${q.x.toFixed(2)} ${q.y.toFixed(2)}`); open = true; };
+          const line = (t: number): void => { const q = pt(t); parts.push(`${open ? 'L' : 'M'} ${q.x.toFixed(2)} ${q.y.toFixed(2)}`); open = true; };
+          move(0);
+          for (const c of cuts) {
+            const t0 = Math.max(cursor, c.t - c.half), t1 = Math.min(1, c.t + c.half);
+            if (t0 - cursor < 0.004 || t1 >= 0.999) continue;
+            line(t0); bridges += 1; move(t1); cursor = t1;
           }
-          const pEnd = { x: s.a.x + (s.b.x - s.a.x) * cursor, y: s.a.y + (s.b.y - s.a.y) * cursor };
-          parts.push(`${parts.length ? 'L' : 'M'} ${pEnd.x.toFixed(2)} ${pEnd.y.toFixed(2)}`);
-          parts.push(`L ${s.b.x.toFixed(2)} ${s.b.y.toFixed(2)}`);
+          if (cursor < 0.999) line(1);
         }
-        return parts.join(' ');
+        return { d: parts.join(' '), bridges };
       };
 
       // routes
+      let bridgesRendered = 0;
       for (const r of routes) {
         const st = styleOf(r.kind, theme);
         const dash = st.dash ? ` stroke-dasharray="${st.dash}"` : '';
-        shapes.push(`<path class="edge ${esc(r.kind)}" data-source-id="${esc(r.edgeId)}" data-edge-id="${esc(r.edgeId)}" data-edge-kind="${esc(r.kind)}"${r.key ? ` data-route-key="${esc(r.key)}"` : ''} d="${pathFor(r)}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${dash} marker-end="url(#atlas2-arrow-${esc(r.kind)})"/>`);
+        const { d: dstr, bridges } = pathFor(r);
+        bridgesRendered += bridges;
+        shapes.push(`<path class="edge ${esc(r.kind)}" data-source-id="${esc(r.edgeId)}" data-edge-id="${esc(r.edgeId)}" data-edge-kind="${esc(r.kind)}"${r.key ? ` data-route-key="${esc(r.key)}"` : ''} data-bridges="${bridges}" d="${dstr}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${dash} marker-end="url(#atlas2-arrow-${esc(r.kind)})"/>`);
       }
 
       // cards: protected reading surfaces
@@ -1006,9 +1035,14 @@ export const atlas: DesignProfile = {
         const r = c.rect;
         const border = c.ordered ? theme.lane : theme.muted;
         shapes.push(`<rect class="event-card${c.ordered ? '' : ' unresolved-card'}" data-source-id="${esc(c.ev.id)}" x="${r.x.toFixed(2)}" y="${r.y.toFixed(2)}" width="${r.w.toFixed(2)}" height="${r.h.toFixed(2)}" rx="1" fill="${theme.bg}" stroke="${border}" stroke-width="${c.ordered ? 0.35 : 0.35}"${c.ordered ? '' : ' stroke-dasharray="1.2 1.4"'}/>`);
+        if (!c.ordered) {
+          // unresolved events KEEP their type glyph - inside the card, never on a sequencing rail
+          shapes.push(glyphSvg({ id: c.ev.id, x: r.x + r.w - CARD_PAD - 2.6, y: r.y + 4.6, type: c.ev.type, apron: 0, rowKey: c.rowKey }));
+        }
         shapes.push(emitBlock(c.block, r.x + CARD_PAD, r.y + 2.4));
         const chips = c.ev.agents.map(aid => facts.agents.find(a => a.id === aid)?.label ?? aid);
-        let cx = r.x + CARD_PAD, cy = r.y + 2.4 + c.block.height + 2.2;
+        let cx = r.x + CARD_PAD;
+        let cy = r.y + 2.4 + c.block.height + 2.2;
         for (const label of chips) {
           const w = textWidth(label, T.meta) + 3.2;
           if (cx + w > r.x + r.w - CARD_PAD) { cx = r.x + CARD_PAD; cy += T.meta + 2.2; }
@@ -1037,7 +1071,7 @@ export const atlas: DesignProfile = {
       // Lower section: registry, keyed intervention details, outcome, audit,
       // legend with drawn samples, edge register, semantic notes (P5).
       // -----------------------------------------------------------------------
-      texts.push({ x: L.gridX, y: agentPanelTop + 4, s: `agent registry (${facts.agents.length}) — one card per declared agent`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+      texts.push({ x: L.gridX, y: agentPanelTop + 4, s: `agent registry (${facts.agents.length})`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
       for (const a of facts.agents) {
         const r = agentRects.get(a.id)!;
         if (declareOn) declareDrawn(drawn, 'agent', a.id, 'agent registry card: label, identityGroup token, continuityRole marker, homeWorldRef');
@@ -1049,7 +1083,7 @@ export const atlas: DesignProfile = {
       }
 
       if (facts.interventions.length) {
-        texts.push({ x: L.gridX, y: ivPanelTop + 4, s: `intervention rule effects (${facts.interventions.length}) — keyed detail boxes, no page-spanning leaders`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        texts.push({ x: L.gridX, y: ivPanelTop + 4, s: `intervention rule effects (${facts.interventions.length})`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
         facts.interventions.forEach((iv, i) => {
           const r = ivRows[i].rect;
           const effects = iv.ruleEffects;
@@ -1083,11 +1117,15 @@ export const atlas: DesignProfile = {
 
       // visual checks (P1/§4) — measured on the emitted geometry, not on intent
       const routeCardEvidence: string[] = [];
+      const proofMarks: { x: number; y: number; n: number; kind: string }[] = [];
       const ownTargetCard = (r: RouteRec): Rect | null => {
         const c = L.cards.find(cc => cc.ev.id === r.edgeId) ?? null;
         return c ? c.rect : null;
       };
-      const checkRouteCard = routes.filter(r => L.obstacles.some(o => r.segs.some(s => {
+      // Only real reading surfaces count as cards here: the protected annotation rectangles are
+      // thin labels, and a route passing beside a caption is not a route crossing a card.
+      const cardSurfaces = L.obstacles.filter(o => o.h >= 8);
+      const checkRouteCard = routes.filter(r => cardSurfaces.some(o => r.segs.some(s => {
         const steps = Math.max(2, Math.ceil(Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) / 1.5));
         for (let i = 0; i <= steps; i++) {
           const p = { x: s.a.x + (s.b.x - s.a.x) * (i / steps), y: s.a.y + (s.b.y - s.a.y) * (i / steps) };
@@ -1096,6 +1134,7 @@ export const atlas: DesignProfile = {
           if (isTerminal) return false;
           if (p.x > o.x - CLEARANCE * 0.5 && p.x < o.x + o.w + CLEARANCE * 0.5 && p.y > o.y - CLEARANCE * 0.5 && p.y < o.y + o.h + CLEARANCE * 0.5) {
             if (routeCardEvidence.length < 8) routeCardEvidence.push(`${r.edgeId} seg(${s.a.x.toFixed(0)},${s.a.y.toFixed(0)})-(${s.b.x.toFixed(0)},${s.b.y.toFixed(0)}) in ${o.x.toFixed(0)},${o.y.toFixed(0)},${o.w.toFixed(0)}x${o.h.toFixed(0)} @${p.x.toFixed(0)},${p.y.toFixed(0)}`);
+            if (proofMarks.length < 24) proofMarks.push({ x: p.x, y: p.y, n: proofMarks.length + 1, kind: 'route/card' });
             return true;
           }
         }
@@ -1118,6 +1157,7 @@ export const atlas: DesignProfile = {
             if (Math.abs(s1.a.x - s2.a.x) < 1.5 && Math.min(Math.max(s1.a.y, s1.b.y), Math.max(s2.a.y, s2.b.y)) - Math.max(Math.min(s1.a.y, s1.b.y), Math.min(s2.a.y, s2.b.y)) > 2) {
               checkOverlap++;
               if (overlapEvidence.length < 8) overlapEvidence.push(`${routes[i].edgeId}/${routes[j].edgeId} V x=${s1.a.x.toFixed(1)}|${s2.a.x.toFixed(1)} y=${s1.a.y.toFixed(0)}-${s1.b.y.toFixed(0)}|${s2.a.y.toFixed(0)}-${s2.b.y.toFixed(0)}`);
+              if (proofMarks.length < 24) proofMarks.push({ x: s1.a.x, y: (s1.a.y + s1.b.y) / 2, n: proofMarks.length + 1, kind: 'overlap' });
             }
           } else if (Math.abs(s1.a.y - s2.a.y) < 1.5 && Math.min(Math.max(s1.a.x, s1.b.x), Math.max(s2.a.x, s2.b.x)) - Math.max(Math.min(s1.a.x, s1.b.x), Math.min(s2.a.x, s2.b.x)) > 2) {
             checkOverlap++;
@@ -1131,18 +1171,27 @@ export const atlas: DesignProfile = {
       }
       const allTexts = [...texts];
       const checkTrunc = allTexts.filter(m => m.s.includes('…') || (m.x < 0 || m.x > L.pageW)).length;
+      // A route whose identity survives only in the register is NOT equivalent to a route-bound
+      // key, and checkLabelOwner cannot see the loss (it only inspects labels that were placed).
+      const missingIdent = routes.filter(r => !r.key && (r.label || styleOf(r.kind, theme).badge !== 'none')
+        && !texts.some(m => (m.data ?? '').includes(`data-route-owner="edge:${r.edgeId}"`))).length;
       const routed = routes.length;
       const corridorsUsed = L.corridorsH.length + L.corridorsV.length;
 
       // audit block (P5): coverage AND the visual checks, together
       const auditTop = outcomeTop + (facts.outcome ? 30 : 8);
-      const auditBudget = Math.max(30, Math.floor((GRID_W - 2) / textWidth('n', T.meta)));
+      // Lower section, two measured columns: evidence down the left, the reader's key,
+      // register and notes down the right. Declared here because the audit wraps to column 1.
+      const colW = (GRID_W - 12) / 2;
+      const col2X = L.gridX + colW + 12;
+      const auditBudget = Math.max(20, Math.floor((colW - 2) / textWidth('n', T.meta)));
       const auditLinesFor = (failed: boolean): string[] => [
         `publication check: ${fmt.id} ${fmt.w}×${fmt.h}mm at ${MARGIN}mm margins — ${failed ? 'FAILED: the composed content does not fit its declared format; a larger declared format or a paginated edition is required' : 'passes; type is never shrunk to fit'}`,
         escalate ?? `format: ${fmt.id}, declared for this edition`,
         `coverage: worlds ${facts.worlds.length}/${facts.worlds.length} · agents ${facts.agents.length}/${facts.agents.length} · events ${facts.events.length}/${facts.events.length} · relationships ${allEdges.length}/${allEdges.length} · interventions ${facts.interventions.length}/${facts.interventions.length} · outcome ${facts.outcome ? '1/1' : '0/0'} drawn`,
         unrouted.length ? `UNROUTED relationships (${unrouted.length}): ${unrouted.map(u => `${u.id} [${u.reason}]`).join(' · ')}` : `routing completeness: every encoded relationship is drawn (${routed}/${allEdges.length})`,
         `routing: ${routed} relationships through ${corridorsUsed} corridors · ${TRACK}mm track spacing · ${CLEARANCE}mm obstacle clearance · ${APPROACH}mm terminal approach · crossings drawn as bridges, never junction dots`,
+        `route identity: ${missingIdent} relationship(s) identified only in the register · crossings rendered as interruptions: ${bridgesRendered} · track assignment ${converged ? 'converged' : 'stopped at the iteration limit'}`,
         `visual checks: route/card intersections ${checkRouteCard} · label-owner losses ${checkLabelOwner} · indistinguishable overlaps ${checkOverlap} · arrowhead collisions ${checkArrow} · truncations ${checkTrunc}`,
       ];
       const auditHeight = (failed: boolean): number =>
@@ -1163,10 +1212,9 @@ export const atlas: DesignProfile = {
         return y2;
       };
       const auditY = auditTop + auditHeight(false);
-      // legend with DRAWN samples of all six styles (P4)
-      const legendTop = auditY + 6;
-      texts.push({ x: L.gridX, y: legendTop + 4, s: 'legend — drawn samples, not prose, for every relationship style and both honesty conventions', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
-      texts.push({ x: L.gridX, y: legendTop + 11, s: 'world primitives: T = single-outline timeline · B = branch fork tab · P = double-outline parallel_world (never two rails for one world)', size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+      const legendTop = auditTop - 5;
+      texts.push({ x: col2X, y: legendTop + 4, s: 'Relationship key', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+      texts.push({ x: col2X, y: legendTop + 11, s: 'world primitives: T = single-outline timeline · B = branch fork tab · P = double-outline parallel_world (never two rails for one world)', size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
       const legendKinds: { kind: FactEdge['kind']; note: string }[] = [
         { kind: 'causal', note: 'causal — solid, filled arrowhead' },
         { kind: 'temporal', note: 'temporal — dashed, open arrowhead' },
@@ -1178,7 +1226,7 @@ export const atlas: DesignProfile = {
       legendKinds.forEach((lk, i) => {
         const st = styleOf(lk.kind, theme);
         const y = legendTop + 19 + i * 7;
-        const x0 = L.gridX, x1 = L.gridX + 16;
+        const x0 = col2X, x1 = col2X + 16;
         shapes.push(`<path class="legend-sample" data-edge-kind="${esc(lk.kind)}" d="M ${x0} ${y} L ${x1} ${y}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${st.dash ? ` stroke-dasharray="${st.dash}"` : ''} marker-end="url(#atlas2-arrow-${esc(lk.kind)})"/>`);
         if (st.badge !== 'none') shapes.push(`<g class="route-badge ${esc(st.badge)}" data-badge="${esc(st.badge)}">${badgeGlyph(st.badge, (x0 + x1) / 2, y - 2.6, theme).svg}</g>`);
         texts.push({ x: x1 + 4, y: y + 1.2, s: lk.note, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
@@ -1189,49 +1237,85 @@ export const atlas: DesignProfile = {
         'continuation: where a world needs more than one rail row, the rows join under a dashed non-arrow convention, explained once per band',
         'derived-world pair: a neutral composition bracket over two declared twin worlds — layout only; the derivation is declared upstream, never invented here',
       ];
-      conv.forEach((line, i) => texts.push({ x: L.gridX, y: legendTop + 19 + legendKinds.length * 7 + 4 + i * 4.4, s: line, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' }));
+      conv.forEach((line, i) => texts.push({ x: col2X, y: legendTop + 19 + legendKinds.length * 7 + 4 + i * 4.4, s: line, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' }));
       let tailY = legendTop + 19 + legendKinds.length * 7 + 4 + conv.length * 4.4;
 
       // edge register — every displaced relation label keeps its owner
       if (register.length) {
         tailY += 4;
-        texts.push({ x: L.gridX, y: tailY, s: 'edge register — relation labels displaced from their route so that no two marks collide; each key stays beside its own route', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        texts.push({ x: col2X, y: tailY, s: 'Relationship register', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
         tailY += T.sub * 1.5;
         for (const reg of register) {
           const e = allEdges.find((x: FactEdge) => x.id === reg.from);
           const line = `${reg.key} · ${reg.kind} · ${e ? `${e.from} → ${e.to}` : ''} · ${reg.label || '(no encoded relation text)'}`;
           for (const l of wrapText(line, auditBudget)) {
-            texts.push({ x: L.gridX, y: tailY, s: l, size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'start' });
+            texts.push({ x: col2X, y: tailY, s: l, size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'start' });
             tailY += T.meta * 1.45;
           }
         }
       }
 
       // semantic review as readable notes, never raw JSON (P5)
+      const semProse: string[] = [];
+      {
+        // Findings as prose: statuses, messages and uncertainty - never serialization syntax.
+        const strip = (v: unknown): string => String(v).replace(/[{}\[\]"]/g, '').replace(/,\s*/g, '; ').trim();
+        const walk = (node: unknown, path: string, depth: number): void => {
+          if (node === null || node === undefined) return;
+          if (typeof node !== 'object') { semProse.push(`${path || 'note'}: ${String(node)}`); return; }
+          if (Array.isArray(node)) {
+            node.forEach((item, i) => {
+              if (item && typeof item === 'object') {
+                const o = item as Record<string, unknown>;
+                const head = [o['code'], o['severity']].filter(Boolean).join(' · ');
+                const body = o['message'] ?? o['summary'] ?? o['note'] ?? o['finding']
+                  ?? Object.entries(o).filter(([k]) => !['code', 'severity'].includes(k)).map(([k, v]) => `${k.replace(/[_-]/g, ' ')}: ${strip(v)}`).join(' · ');
+                semProse.push(`${head ? `${head}: ` : ''}${String(body)}`);
+              } else if (String(item).trim()) {
+                semProse.push(`${path}${node.length > 1 ? ` ${i + 1}` : ''}: ${strip(item)}`);
+              }
+            });
+            return;
+          }
+          const o = node as Record<string, unknown>;
+          const scalars = Object.entries(o).filter(([, v]) => v === null || typeof v !== 'object');
+          const objects = Object.entries(o).filter(([, v]) => v !== null && typeof v === 'object');
+          for (const [k, v] of scalars) semProse.push(`${(depth ? `${path}.` : '') + k.replace(/[_-]/g, ' ')}: ${strip(v)}`);
+          objects.forEach(([k, v]) => walk(v, (depth ? `${path}.` : '') + k.replace(/[_-]/g, ' '), depth + 1));
+        };
+        if (facts.semanticReview !== undefined && facts.semanticReview !== null) walk(facts.semanticReview, '', 0);
+      }
       const semRaw = facts.semanticReview !== undefined
         ? (typeof facts.semanticReview === 'string' ? facts.semanticReview : JSON.stringify(facts.semanticReview)) : '';
       if (semRaw) {
         tailY += 4;
-        texts.push({ x: L.gridX, y: tailY, s: 'semantic review — readable notes', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        texts.push({ x: col2X, y: tailY, s: 'Review notes', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
         tailY += T.sub * 1.5;
-        for (const l of wrapText(semRaw, auditBudget)) {
-          texts.push({ x: L.gridX, y: tailY, s: l, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
-          tailY += T.meta * 1.45;
+        for (const l of semProse) {
+          for (const w of wrapText(l, Math.floor(colW / textWidth('n', T.meta)))) {
+            texts.push({ x: col2X, y: tailY, s: w, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+            tailY += T.meta * 1.45;
+          }
         }
       }
 
-      const contentBottom0 = tailY + MARGIN * 0.6;
+      const auditEnd = emitAudit(pubFail);
+      const contentBottom0 = Math.max(tailY, auditEnd) + MARGIN * 0.6;
       // The publication check is measured on the REAL content bottom: if the composed page
       // does not fit its declared format, the page grows and the audit says so. Type is
       // never shrunk to make it fit.
       const exceeds = contentBottom0 > fmt.h;
       pubFail = pubFail || exceeds;
-      emitAudit(pubFail);
       const contentBottom = contentBottom0;
       const docH = Math.max(fmt.h, contentBottom);
 
+      // Numbered proof overlay (review §1): the evidence the checks already hold, rendered as
+      // numbered marks. Hidden by default so it never ships as chart furniture; a proof render
+      // turns it on, and each mark carries the pair it proves.
+      const proofOn = typeof process !== 'undefined' && !!process.env && process.env['TT_ONT_PROOF'] === '1';
+      if (proofOn) shapes.push(`<g id="atlas-proof">${proofMarks.map(m => `<g class="proof-mark" data-proof="${esc(m.kind)}" data-proof-n="${m.n}"><circle cx="${m.x.toFixed(2)}" cy="${m.y.toFixed(2)}" r="2.2" fill="none" stroke="${theme.accent}" stroke-width="0.7"/><text x="${(m.x + 3).toFixed(2)}" y="${(m.y - 2).toFixed(2)}" font-family="${theme.fontMono}" font-size="${T.meta}" fill="${theme.accent}">${m.n}</text></g>`).join('')}</g>`);
       shapes.unshift(`<rect width="${fmt.w}" height="${docH.toFixed(2)}" fill="${theme.bg}"/>`);
-      shapes.unshift(`<g id="atlas-checks" data-format="${esc(fmt.id)}" data-publication="${pubFail ? 'failed' : 'pass'}" data-route-card="${checkRouteCard}" data-label-owner="${checkLabelOwner}" data-overlap="${checkOverlap}" data-arrow-collision="${checkArrow}" data-truncation="${checkTrunc}" data-routed="${routed}" data-corridors="${corridorsUsed}" data-failed="${esc(plans.filter(pl => pl.failed).map(pl => `${pl.edge.id}:v1@${pl.v1.pos.toFixed(0)}/${pl.v1.width}v2@${pl.v2.pos.toFixed(0)}h@${pl.h.pos.toFixed(0)}/${pl.h.width}o@${pl.oCh ? pl.oCh.pos.toFixed(0) : '-'}/${pl.oCh ? pl.oCh.width : 0}t@${pl.tCh ? pl.tCh.pos.toFixed(0) : '-'}`).join(' '))}" data-tracks="${esc(plans.map(pl => `${pl.edge.id}:${pl.h.pos.toFixed(1)}+${offOf(pl.kH).toFixed(1)}|v${pl.v1.pos.toFixed(1)}+${offOf(pl.k1).toFixed(1)}|v${pl.v2.pos.toFixed(1)}+${offOf(pl.k2).toFixed(1)}`).join(' '))}" data-rc-evidence="${esc(routeCardEvidence.join(' '))}" data-overlap-evidence="${esc(overlapEvidence.join(' '))}"></g>`);
+      shapes.unshift(`<g id="atlas-checks" data-format="${esc(fmt.id)}" data-publication="${pubFail ? 'failed' : 'pass'}" data-route-card="${checkRouteCard}" data-label-owner="${checkLabelOwner}" data-overlap="${checkOverlap}" data-arrow-collision="${checkArrow}" data-truncation="${checkTrunc}" data-missing-ident="${missingIdent}" data-bridges="${bridgesRendered}" data-converged="${converged ? 1 : 0}" data-routed="${routed}" data-corridors="${corridorsUsed}" data-failed="${esc(plans.filter(pl => pl.failed).map(pl => `${pl.edge.id}:v1@${pl.v1.pos.toFixed(0)}/${pl.v1.width}v2@${pl.v2.pos.toFixed(0)}h@${pl.h.pos.toFixed(0)}/${pl.h.width}o@${pl.oCh ? pl.oCh.pos.toFixed(0) : '-'}/${pl.oCh ? pl.oCh.width : 0}t@${pl.tCh ? pl.tCh.pos.toFixed(0) : '-'}`).join(' '))}" data-tracks="${esc(plans.map(pl => `${pl.edge.id}:${pl.h.pos.toFixed(1)}+${offOf(pl.kH).toFixed(1)}|v${pl.v1.pos.toFixed(1)}+${offOf(pl.k1).toFixed(1)}|v${pl.v2.pos.toFixed(1)}+${offOf(pl.k2).toFixed(1)}`).join(' '))}" data-rc-evidence="${esc(routeCardEvidence.join(' '))}" data-overlap-evidence="${esc(overlapEvidence.join(' '))}"></g>`);
       shapes.splice(1, 0, `<defs>${(['causal', 'temporal', 'identity', 'family', 'intervention', 'world_relation'] as FactEdge['kind'][]).map(k => markerFor(k, theme)).join('')}</defs>`);
 
       const title = `Topology Atlas — ${filmTitle} (${facts.topologyPatternId})`;

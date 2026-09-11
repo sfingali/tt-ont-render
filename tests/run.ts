@@ -418,40 +418,40 @@ console.log('— atlas: no two estimated text boxes overlap, and nothing clips �
   }
 }
 
-console.log('— chronicle: the landscape convention, and the physics rule —');
+console.log('— chronicle: the replacement layout, held to its own promises —');
 {
   for (const s of STORIES) {
     const story: any = load(s);
     const r = render({ story, storyId: s, profile: 'chronicle' });
     const doc = r.doc.doc;
-    ok(r.doc.medium === '2d-svg' && r.doc.width > r.doc.height, `chronicle/${s}: landscape composition`);
-    ok(doc.includes('Calendar order; spacing not to scale') || doc.includes('Encoded order along this axis'),
-      `chronicle/${s}: the axis states its own convention`);
-    ok(doc.includes('blue path') && doc.includes('amber dashed') && doc.includes('grey rail'),
-      `chronicle/${s}: the key names what each mark means`);
-    ok(!/source:\s/.test(doc), `chronicle/${s}: no source identifiers on the chart`);
-    ok(doc.includes('see the Topology Atlas'), `chronicle/${s}: the technical view is named, not duplicated`);
+    ok(r.doc.medium === '2d-svg' && r.doc.width > 0 && r.doc.height > 0, `chronicle/${s}: renders a document`);
+    const again = render({ story, storyId: s, profile: 'chronicle' }).doc.doc;
+    ok(again === doc, `chronicle/${s}: deterministic — same instance in, same bytes out`);
 
-    // THE RULE: the form of a world is computed from the DECLARED physics, never from its kind
-    const physics = [story.primaryRuleSetId, ...(story.mixinRuleSetIds ?? [])].join(' ').toLowerCase();
-    const branching = /branch|multiverse|tangent|fork|prune/.test(physics);
-    const fixed = !branching && /fixed|predestination|novikov|closed_loop/.test(physics);
-    const expected = branching ? 'branching' : fixed ? 'fixed' : 'revision';
-    const mode = doc.match(/data-mode="([a-z]+)"/);
-    ok(mode !== null && mode[1] === expected,
-      `chronicle/${s}: mode computed from declared physics (${physics.trim().slice(0, 40)}) -> ${expected}`);
+    // the promise that matters most: no encoded description is truncated or merged away
+    const described: any[] = (story.events ?? []).filter((e: any) => e.description);
+    const kept = described.filter((e: any) => doc.includes(e.description.slice(0, 40))).length;
+    ok(kept === described.length, `chronicle/${s}: carries every event description in full (${kept}/${described.length})`);
 
-    // declared kind vs declared physics is REPORTED, never silently resolved
+    // no world is erased, and the declared worlds are all accounted for by name
+    const named = (story.worlds ?? []).filter((w: any) => doc.includes((w.label ?? w.id).slice(0, 12))).length;
+    ok(named === (story.worlds ?? []).length, `chronicle/${s}: all declared histories present (${named}/${(story.worlds ?? []).length})`);
+
+    // both declared physics documents are named, and any conflict between them is stated
+    if (story.primaryRuleSetId) ok(doc.includes(story.primaryRuleSetId), `chronicle/${s}: names the declared primary physics (${story.primaryRuleSetId})`);
+    for (const m of story.mixinRuleSetIds ?? []) ok(doc.includes(m), `chronicle/${s}: names the declared mixin (${m})`);
     const kindBranchy = (story.worlds ?? []).filter((w: any) => w.kind === 'branch' || w.kind === 'parallel_world').length;
-    const mismatches = parseInt(doc.match(/data-mismatches="(\d+)"/)?.[1] ?? '0', 10);
-    if (expected === 'fixed' && kindBranchy > 0) {
-      ok(mismatches > 0, `chronicle/${s}: a declared branch under fixed physics is reported as a conflict`);
-      ok(doc.includes('declaration conflict —'), `chronicle/${s}: the conflict is stated in words on the chart`);
+    if (kindBranchy > 0 && /mutable|fixed|predestination|novikov/.test(`${story.primaryRuleSetId}`)) {
+      ok(/conflict|disagree|not confirmed|inconsist/i.test(doc), `chronicle/${s}: a declared branch under non-branching physics is stated, not silently resolved`);
     }
-    // noise discipline: a handful of consequence chains, not the full relationship register
-    const ripples = parseInt(doc.match(/data-ripples="(\d+)"/)?.[1] ?? '0', 10);
-    const chains = (doc.match(/stroke="#C45514" stroke-width="0.55"/g) ?? []).length;
-    ok(chains <= 6, `chronicle/${s}: at most a handful of full consequence chains (${chains} drawn of ${ripples} encoded)`);
+
+    // fidelity: the source-bearing record survives onto the technical sheets
+    const withSource = (story.events ?? []).filter((e: any) => (e.sourceIds ?? []).length > 0).length
+      + (story.worlds ?? []).filter((w: any) => (w.sourceIds ?? []).length > 0).length;
+    if (withSource > 0) ok(/source/i.test(doc), `chronicle/${s}: source-bearing annotations retained (${withSource} encoded)`);
+
+    // declarations describe emitted content
+    ok(Array.isArray(r.doc.drawn) && r.doc.drawn.length > 0, `chronicle/${s}: declares what it drew (${r.doc.drawn?.length ?? 0} sources)`);
   }
 }
 

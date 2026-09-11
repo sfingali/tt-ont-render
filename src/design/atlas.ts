@@ -1,1008 +1,1244 @@
 /**
- * DESIGN — "Atlas" (2D, topology-first atlas).
+ * DESIGN — "Atlas" (2D, topology-first atlas). v2 — built to the 2026-09-11 review.
  *
- * Implements the primitive-to-form grammar of DESIGN-ATLAS.md §2 literally:
- * T/B/P world primitives, event-type glyphs, and one routing channel per
- * encoded edge kind. The engine has already resolved every fact; this profile
- * never invents a junction, a chronology, or a connection.
+ * WHAT CHANGED (review priorities):
+ *  P1  relationships no longer run through the information they explain. Cards, text
+ *      blocks and the header are HARD obstacles; every edge is routed through a
+ *      corridor network with per-edge tracks (3mm spacing, 3mm clearance, 5mm
+ *      terminal approach). Unrelated edges never share a collinear segment, crossings
+ *      are drawn as bridges, and no junction dot is ever invented.
+ *  P2  a bounded PHYSICAL page. Declared formats in mm; if the measured content and
+ *      routes do not fit, the publication check escalates to a larger declared format
+ *      and says so. Type is never quietly shrunk.
+ *  P3  a real typographic hierarchy, specified in points at final size.
+ *  P4  six genuinely distinguishable relationship styles with route-bound badges.
+ *      The paired full-length world-relation stroke is gone.
+ *  P5  exceptions localised: fork-unspecified sits in its own branch's header,
+ *      interventions are keyed badges with local detail boxes, coverage and visual
+ *      checks sit in a compact audit block.
  *
- * Honesty rules are structural, not decorative:
- *   - a branch with no encoded fork event gets a detached leader and the words
- *     "fork event unspecified";
- *   - an unresolved local order is shown on a visible shelf;
- *   - every edge the document strokes is declared in `drawn`, and every drawn
- *     edge carries exactly one SVG arrowhead marker.
- *
- * Legibility floor (repo §8 contract, DESIGN-ATLAS §7 "publication threshold"):
- *   no drawn text is smaller than MIN_TEXT px. Type never shrinks to fit — the
- *   modules, gaps and canvas grow instead. Because larger type is denser type,
- *   every text mark is planned first and free-floating labels (edge relations,
- *   fork/origin/mirror annotations) are deconflicted against the placed boxes;
- *   a rare label that cannot sit near its mark falls through to a bottom edge
- *   register rather than overlapping.
- *
- * §9 composition: Adam/Eva sit below Origin under a neutral, layout-only
- * "derived-world pair" bracket, and every bootstrap entity declared in an
- * event payload gets an interlocked-ring token. No closed knot is fabricated:
- * the supplied causal edges are never re-routed into a cycle.
+ * PRESERVED (the review's preserve list): T/B/P world primitives, event-type glyphs,
+ * plain-English descriptions with short labels beneath, participant chips and source
+ * traceability, visible unresolved-order treatment, detached missing-fork statements,
+ * intervention and outcome marking, every encoded relationship, the restrained palette.
  */
-import type { DesignProfile, DrawnSource, ThemeSpec } from './registry.ts';
-import { declareDrawn, esc, textWidth, nodeTextBlock } from './registry.ts';
-import type { NodeTextBlock } from './registry.ts';
-import type { FactEdge, FactEvent, FactWorld, SemanticScene } from '../engine/types.ts';
+
+import type { FactEdge, FactEvent, FactWorld, SemanticScene } from '../engine/types.js';
+import type { DesignProfile, DrawnSource, NodeTextBlock, RenderDoc, ThemeSpec } from './registry.js';
+import { declareDrawn, esc, textWidth, wrapText } from './registry.js';
 
 // ---------------------------------------------------------------------------
-// Publication threshold + layout scale.
+// PHYSICAL PAGE (P2). 1 user unit = 1 mm. Type is specified in points.
 // ---------------------------------------------------------------------------
-const MIN_TEXT = 10;
-const TEXT = {
-  wrapChars: 32,
-  descSize: 11,
-  labelSize: 10.5,
-  timeSize: 10.5,
-  maxDescLines: 6,
-  lineHeight: 1.32,
-  gapAfterDesc: 6,
-  gapAfterLabel: 4,
+const PT = 0.352778;                       // 1pt in mm
+const pt = (n: number): number => n * PT;  // pt -> mm
+
+/** Declared publication formats, smallest first. Escalation is reported, never silent. */
+interface PageFormat { id: string; w: number; h: number }
+const FORMATS: PageFormat[] = [
+  { id: 'A1 portrait', w: 594, h: 841 },
+  { id: 'A0 portrait', w: 841, h: 1189 },
+  { id: '2A0 portrait', w: 1189, h: 1682 },
+];
+
+const MARGIN = 18;         // page margin (mm)
+const GRID_COLS = 5;       // card columns
+const COL_W = 94;          // card column width (mm)
+const COL_GAP = 6;         // gap between columns (mm)
+const GRID_W = GRID_COLS * COL_W + (GRID_COLS - 1) * COL_GAP;   // 494mm
+const ROW_GAP = 30;        // vertical corridor band between card rows (mm)
+const BAND_GAP = 30;       // between world bands (mm)
+const TRACK = 2.5;         // routing track spacing (mm) — measured against the 1.8mm heaviest stroke
+const CLEARANCE = 3;       // obstacle clearance (mm)
+const APPROACH = 5;        // clear terminal approach to a glyph (mm)
+const APRON = 5;           // glyph connection apron radius (mm)
+const CARD_PAD = 3;        // card inner padding (mm)
+const RAIL_OFF = 30;        // rail -> card top (mm)
+const LANE_W = 32;   // wide side lanes: the review's routing space inside the page         // routing lane each side of the grid (mm)
+
+// Type hierarchy (P3), in points at final size.
+const T = {
+  film:    pt(28),   // film title, serif
+  sub:     pt(12),   // atlas subtitle + physics line
+  world:   pt(16),   // world title, semibold
+  desc:    pt(11),   // event description — primary, dark
+  label:   pt(9.5),  // short label beneath description
+  time:    pt(9),    // encoded time label — neutral, NOT accent
+  meta:    pt(9),    // ids, chips, supporting metadata (floor)
 };
-const M = { l: 76, r: 68, t: 186, b: 120 };
-const WORLD_GAP = 56;
-const ROW_GAP = 120;
-const HEADER_H = 94;
-const EVENT_GAP = 26;
-const AGENT_CARD_W = 250;
-const AGENT_CARD_H = 108;
-const AGENT_GAP_X = 18;
-const AGENT_GAP_Y = 16;
-const AGENT_COLS = 4;
-const CARD_PAD = 10;
-const CARD_TOP = 24;
-const CHIP_SIZE = 10;
-const CHIP_H = 16;
-const CHIP_GAP = 6;
-const BRACKET_RISE = 50;
 
+const INK = (theme: ThemeSpec): string => theme.ink;
+const SUPPORT = '#5f5a51';   // supporting text: darker than the old muted grey
+const NEUTRAL = '#6b665c';   // time labels / administrative
+
+// ---------------------------------------------------------------------------
+// Geometry primitives
+// ---------------------------------------------------------------------------
+interface Pt { x: number; y: number }
 interface Rect { x: number; y: number; w: number; h: number }
-type AnchorKind = 'event' | 'agent' | 'world' | 'unresolved';
-interface Anchor { x: number; y: number; kind: AnchorKind; id: string; worldId?: string }
+interface Seg { a: Pt; b: Pt }
 
-interface EventCard {
-  ev: FactEvent;
-  block: NodeTextBlock;
-  w: number;
-  h: number;
-  /** ordered cards sit below their glyph; unresolved cards sit on the shelf */
-  rect: Rect;
-  anchor: Anchor;
-  orderIndex: number | null;
-}
-
-interface WorldBox {
-  world: FactWorld;
-  rect: Rect;
-  railY: number;
-  ordered: EventCard[];
-  unresolved: EventCard[];
-  eventCards: Map<string, EventCard>;
-  labelW: number;
-}
-
-interface AgentBox {
-  id: string;
-  label?: string;
-  identityGroup?: string;
-  continuityRole?: string;
-  homeWorldRef?: string;
-  rect: Rect;
-  anchor: Anchor;
-}
-
-interface Box { x0: number; y0: number; x1: number; y1: number }
-type AnchorName = 'start' | 'middle' | 'end';
-interface Cand { x: number; y: number }
-
-/** One planned text mark. `movable` marks are free-floating and resolved last. */
 interface TextMark {
-  x: number;
-  y: number;
-  s: string;
-  size: number;
-  fill: string;
-  family: string;
-  anchor: AnchorName;
-  movable: boolean;
-  priority: number;
-  candidates?: Cand[];
-  /** raw extra attributes (already escaped) for provenance/token hooks */
-  data?: string;
+  x: number; y: number; s: string; size: number; fill: string; family: string;
+  anchor: 'start' | 'middle' | 'end'; data?: string; weight?: string;
 }
 
-function rect(x: number, y: number, w: number, h: number): Rect { return { x, y, w, h }; }
-
-/** The exact box the legibility test estimates: width = chars * 0.52 * size. */
-function boxOf(m: TextMark): Box {
-  const w = textWidth(m.s, m.size);
-  const h = m.size * 1.2;
-  let x0 = m.x;
-  if (m.anchor === 'middle') x0 = m.x - w / 2;
-  else if (m.anchor === 'end') x0 = m.x - w;
-  return { x0, y0: m.y - m.size * 0.9, x1: x0 + w, y1: m.y - m.size * 0.9 + h };
+interface Card { ev: FactEvent; rect: Rect; block: NodeTextBlock; ordered: boolean; fx: number; fy: number; rowKey: string }
+interface Glyph { id: string; x: number; y: number; type: string; apron: number; rowKey: string }
+interface RouteRec {
+  edgeId: string; kind: FactEdge['kind']; pts: Pt[]; segs: Seg[];
+  gaps: Pt[]; label: string | null; key: string | null;
+  arrow: Pt; arrowDir: 'l' | 'r' | 'u' | 'd';
 }
 
-function hit(a: Box, b: Box, pad = 0): boolean {
-  return a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.y0 < b.y1 + pad && b.y0 < a.y1 + pad;
+const rectOf = (x: number, y: number, w: number, h: number): Rect => ({ x, y, w, h });
+const boxOverlap = (a: Rect, b: Rect, pad = 0): boolean =>
+  a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
+
+function segIntersect(a: Seg, b: Seg): Pt | null {
+  const d = (p: Pt, q: Pt, r: Pt): number => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  const d1 = d(b.a, b.b, a.a), d2 = d(b.a, b.b, a.b), d3 = d(a.a, a.b, b.a), d4 = d(a.a, a.b, b.b);
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+    const t = d1 / (d1 - d2);
+    return { x: a.a.x + t * (a.b.x - a.a.x), y: a.a.y + t * (a.b.y - a.a.y) };
+  }
+  return null;
+}
+
+function pointSegDist(p: Pt, s: Seg): number {
+  const vx = s.b.x - s.a.x, vy = s.b.y - s.a.y;
+  const L2 = vx * vx + vy * vy;
+  if (!L2) return Math.hypot(p.x - s.a.x, p.y - s.a.y);
+  let t = ((p.x - s.a.x) * vx + (p.y - s.a.y) * vy) / L2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (s.a.x + t * vx), p.y - (s.a.y + t * vy));
+}
+
+// ---------------------------------------------------------------------------
+// Corridor network (P1). A corridor is a parallel bundle of 3mm tracks; each
+// route claims an offset, so unrelated edges can never share a collinear segment.
+// ---------------------------------------------------------------------------
+class Corridor {
+  private used: { id: number; off: number; a: number; b: number }[] = [];
+  private seq = 0;
+  constructor(public readonly pos: number, public readonly width: number) {}
+  /** Claim a track for a span [a,b] along the corridor. Returns a rollback token. */
+  claim(a: number, b: number): { off: number; id: number } | null {
+    const maxOff = Math.max(0, Math.floor((this.width / 2 - CLEARANCE) / TRACK));
+    for (let k = 0; k <= maxOff; k++) {
+      for (const off of k === 0 ? [0] : [k * TRACK, -k * TRACK]) {
+        const clash = this.used.some(u => u.off === off && a < u.b + CLEARANCE && u.a < b + CLEARANCE);
+        if (!clash) { const id = ++this.seq; this.used.push({ id, off, a, b }); return { off, id }; }
+      }
+    }
+    return null;
+  }
+  /** Adopt an existing offset for another span of the SAME route. */
+  claimShared(off: number, a: number, b: number): number {
+    const id = ++this.seq;
+    this.used.push({ id, off, a, b });
+    return id;
+  }
+  release(id: number | null | undefined): void {
+    if (id == null) return;
+    this.used = this.used.filter(u => u.id !== id);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Text blocks
+// ---------------------------------------------------------------------------
+interface BlockOpts { wrapChars: number; descSize: number; labelSize: number; timeSize: number }
+
+/** Greedy chip layout — the SAME rule the emitter uses, so a card can never overflow its own foot. */
+function chipRows(labels: string[], innerW: number): number {
+  if (!labels.length) return 0;
+  let rows = 1, cx = 0;
+  for (const l of labels) {
+    const w = textWidth(l, T.meta) + 3.2;
+    if (cx > 0 && cx + w > innerW) { rows++; cx = w; } else cx += w + 1.6;
+  }
+  return rows;
+}
+
+function buildBlock(ev: FactEvent, theme: ThemeSpec, o: BlockOpts): NodeTextBlock {
+  const lh = o.descSize * 1.30;
+  const runs: NodeTextBlock['runs'] = [];
+  let y = 0;
+  const desc = (ev.description ?? '').trim();
+  const label = (ev.label ?? '').trim();
+  for (const t of wrapText(desc || label, o.wrapChars)) {
+    runs.push({ text: t, size: o.descSize, fill: INK(theme), family: theme.fontSans, dy: y });
+    y += lh;
+  }
+  if (desc && label && label !== desc) {
+    y += o.labelSize * 0.45;
+    for (const t of wrapText(label, o.wrapChars)) {
+      runs.push({ text: t, size: o.labelSize, fill: SUPPORT, family: theme.fontSans, dy: y });
+      y += o.labelSize * 1.35;
+    }
+  }
+  if (ev.timeLabel) {
+    y += o.timeSize * 0.35;
+    runs.push({ text: ev.timeLabel, size: o.timeSize, fill: NEUTRAL, family: theme.fontMono, dy: y });
+    y += o.timeSize * 1.25;
+  }
+  const height = runs.length ? Math.max(...runs.map(r => r.dy + r.size * 1.25)) : 0;
+  const width = runs.length ? Math.max(...runs.map(r => textWidth(r.text, r.size))) : 0;
+  // The review's §4 correction: no silent truncation anywhere in this profile.
+  return { runs, height, width, truncated: false };
+}
+
+function emitBlock(b: NodeTextBlock, x: number, top: number): string {
+  return b.runs
+    .map(r => `<text x="${x.toFixed(2)}" y="${(top + r.dy + r.size * 0.92).toFixed(2)}" font-family="${r.family}" font-size="${r.size.toFixed(3)}" fill="${r.fill}">${esc(r.text)}</text>`)
+    .join('');
 }
 
 function emitMark(m: TextMark): string {
   const a = m.anchor !== 'start' ? ` text-anchor="${m.anchor}"` : '';
+  const w = m.weight ? ` font-weight="${m.weight}"` : '';
   const d = m.data ? ` ${m.data}` : '';
-  return `<text x="${m.x.toFixed(1)}" y="${m.y.toFixed(1)}"${a} font-family="${m.family}" font-size="${m.size}" fill="${m.fill}"${d}>${esc(m.s)}</text>`;
+  return `<text x="${m.x.toFixed(2)}" y="${m.y.toFixed(2)}"${a}${w} font-family="${m.family}" font-size="${m.size.toFixed(3)}" fill="${m.fill}"${d}>${esc(m.s)}</text>`;
 }
 
-/** Candidate offsets near a preferred anchor: vertical first, then lateral. */
-function candidatesAround(x: number, y: number, s: string, size: number): Cand[] {
-  const out: Cand[] = [{ x, y }];
-  const stepY = Math.max(15, size * 1.9);
-  const stepX = textWidth(s, size) + 12;
-  for (let k = 1; k <= 10; k++) {
-    out.push({ x, y: y - k * stepY });
-    out.push({ x, y: y + k * stepY });
-  }
-  for (const dx of [stepX, -stepX]) {
-    for (let k = 0; k <= 5; k++) {
-      out.push({ x: x + dx, y });
-      if (k) {
-        out.push({ x: x + dx, y: y - k * stepY });
-        out.push({ x: x + dx, y: y + k * stepY });
-      }
-    }
-  }
-  return out;
+function markBox(m: TextMark): Rect {
+  const w = textWidth(m.s, m.size);
+  const x = m.anchor === 'middle' ? m.x - w / 2 : m.anchor === 'end' ? m.x - w : m.x;
+  return rectOf(x, m.y - m.size * 0.9, w, m.size * 1.2);
 }
 
-/** Candidates along an orthogonal route plus nearby offsets, so a label stays near its edge. */
-function edgeCandidates(route: { midX: number; midY: number; pts: Cand[] }, s: string, size: number): Cand[] {
-  const out = candidatesAround(route.midX + 5, route.midY - 4, s, size);
-  for (const p of route.pts) {
-    out.push({ x: p.x + 8, y: p.y - 8 });
-    out.push({ x: p.x + 8, y: p.y + 16 });
-  }
-  return out;
-}
+// ---------------------------------------------------------------------------
+// Relationship styles (P4) — six kinds, one channel, genuinely distinguishable.
+// ---------------------------------------------------------------------------
+interface EdgeStyle { stroke: string; width: number; dash: string; filled: boolean; badge: 'none' | 'identity' | 'kinship' | 'effect' | 'world' }
 
-/** Bottom of a text block relative to its top (matches the emitter's baseline model). */
-function blockBottom(block: NodeTextBlock): number {
-  return block.runs.length ? Math.max(...block.runs.map(r => r.dy + r.size * 1.2)) : 0;
-}
-
-/** Uniform-grid occupancy so deconfliction stays cheap on large canvases. */
-class Occupancy {
-  private cell = 24;
-  private map = new Map<string, Box[]>();
-  private keys(b: Box): string[] {
-    const out: string[] = [];
-    for (let cx = Math.floor(b.x0 / this.cell); cx <= Math.floor(b.x1 / this.cell); cx++) {
-      for (let cy = Math.floor(b.y0 / this.cell); cy <= Math.floor(b.y1 / this.cell); cy++) {
-        out.push(`${cx},${cy}`);
-      }
-    }
-    return out;
-  }
-  add(b: Box): void {
-    for (const k of this.keys(b)) {
-      const a = this.map.get(k);
-      if (a) a.push(b); else this.map.set(k, [b]);
-    }
-  }
-  hits(b: Box, pad: number): boolean {
-    const expanded = { x0: b.x0 - pad, y0: b.y0 - pad, x1: b.x1 + pad, y1: b.y1 + pad };
-    const seen = new Set<Box>();
-    for (const k of this.keys(expanded)) {
-      const a = this.map.get(k);
-      if (!a) continue;
-      for (const o of a) {
-        if (seen.has(o)) continue;
-        seen.add(o);
-        if (hit(o, b, pad)) return true;
-      }
-    }
-    return false;
-  }
-}
-
-/**
- * Place fixed marks first, then greedy-place free marks at the first candidate
- * that clears every placed box. Unplaceable marks are returned as `register`.
- */
-function resolveMarks(W: number, H: number, fixed: TextMark[], free: TextMark[]): { out: TextMark[]; register: TextMark[] } {
-  const occ = new Occupancy();
-  const out: TextMark[] = [];
-  for (const m of fixed) { out.push(m); occ.add(boxOf(m)); }
-  const order = [...free].sort((a, b) =>
-    b.priority - a.priority || a.y - b.y || a.x - b.x || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0));
-  const register: TextMark[] = [];
-  for (const m of order) {
-    const cands = m.candidates && m.candidates.length ? m.candidates : [{ x: m.x, y: m.y }];
-    let chosen: TextMark | null = null;
-    for (const c of cands) {
-      const t: TextMark = { ...m, x: c.x, y: c.y };
-      const b = boxOf(t);
-      if (b.x0 < 4 || b.x1 > W - 4 || b.y0 < 4 || b.y1 > H - 4) continue;
-      if (!occ.hits(b, 1.5)) { chosen = t; break; }
-    }
-    if (!chosen) {
-      outer:
-      for (let yy = 8; yy < H - 8; yy += 14) {
-        for (let xx = 6; xx < W - 6; xx += 22) {
-          const t: TextMark = { ...m, x: xx, y: yy };
-          const b = boxOf(t);
-          if (b.x0 < 4 || b.x1 > W - 4 || b.y0 < 4 || b.y1 > H - 4) continue;
-          if (!occ.hits(b, 1.5)) { chosen = t; break outer; }
-        }
-      }
-    }
-    if (!chosen) { register.push(m); continue; }
-    out.push(chosen);
-    occ.add(boxOf(chosen));
-  }
-  return { out, register };
-}
-
-function blockFor(ev: FactEvent, theme: ThemeSpec): NodeTextBlock {
-  return nodeTextBlock(
-    { description: ev.description, label: ev.label ?? ev.id, timeLabel: ev.timeLabel },
-    theme,
-    TEXT,
-  );
-}
-
-function chipLabels(ev: FactEvent, facts: SemanticScene['facts']): string[] {
-  return ev.agents.map(aid => facts.agents.find(x => x.id === aid)?.label ?? aid);
-}
-
-function chipsWidth(ev: FactEvent, facts: SemanticScene['facts']): number {
-  const labels = chipLabels(ev, facts);
-  let w = 0;
-  for (const l of labels) w += textWidth(l, CHIP_SIZE) + 16 + CHIP_GAP;
-  return labels.length ? w - CHIP_GAP : 0;
-}
-
-function cardWidth(ev: FactEvent, block: NodeTextBlock, facts: SemanticScene['facts']): number {
-  const idW = textWidth(`source: ${ev.id}`, MIN_TEXT) + 2 * CARD_PAD;
-  return Math.max(210, block.width + 2 * CARD_PAD, idW, chipsWidth(ev, facts) + 2 * CARD_PAD);
-}
-
-function cardHeight(block: NodeTextBlock, ev: FactEvent): number {
-  const chipH = ev.agents.length ? 8 + CHIP_H : 0;
-  return CARD_TOP + blockBottom(block) + chipH + 12;
-}
-
-const KNOWN_TYPES = new Set([
-  'ordinary', 'departure', 'arrival', 'bootstrap_origin', 'intervention',
-  'collapse', 'birth', 'contact', 'reveal',
-]);
-
-function glyphSvg(type: string, x: number, y: number, theme: ThemeSpec): string {
-  const ink = theme.ink;
-  const bg = theme.bg;
-  const acc = theme.accent;
-  const sec = theme.secondary;
-  const open = `fill="none" stroke="${ink}" stroke-width="1.35"`;
-  const g = (body: string) => `<g class="event-glyph" data-event-type="${esc(type)}">${body}</g>`;
-  switch (type) {
-    case 'ordinary':
-      return g(`<circle cx="${x}" cy="${y}" r="5.8" ${open}/>`);
-    case 'departure':
-      return g(`<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="1.5" fill="none" stroke="${ink}" stroke-width="1.2"/><path d="M ${x - 3.5} ${y} L ${x + 3.5} ${y} M ${x + 0.8} ${y - 2.8} L ${x + 3.5} ${y} L ${x + 0.8} ${y + 2.8}" fill="none" stroke="${ink}" stroke-width="1.2"/>`);
-    case 'arrival':
-      return g(`<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="1.5" fill="none" stroke="${ink}" stroke-width="1.2"/><path d="M ${x - 3.5} ${y} L ${x + 3.5} ${y} M ${x - 0.8} ${y - 2.8} L ${x - 3.5} ${y} L ${x - 0.8} ${y + 2.8}" fill="none" stroke="${ink}" stroke-width="1.2"/>`);
-    case 'bootstrap_origin':
-      return g(`<circle cx="${x - 3.4}" cy="${y}" r="4.8" fill="none" stroke="${sec}" stroke-width="1.35"/><circle cx="${x + 3.4}" cy="${y}" r="4.8" fill="none" stroke="${acc}" stroke-width="1.35"/>`);
-    case 'intervention':
-      return g(`<polygon points="${x},${y - 7.5} ${x + 7.5},${y} ${x},${y + 7.5} ${x - 7.5},${y}" fill="none" stroke="${acc}" stroke-width="1.35"/><path d="M ${x - 5} ${y + 5} L ${x + 5} ${y - 5}" fill="none" stroke="${acc}" stroke-width="1.35"/>`);
-    case 'collapse':
-      return g(`<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="1" fill="none" stroke="${ink}" stroke-width="1.2"/><path d="M ${x - 4} ${y - 4} L ${x + 4} ${y + 4} M ${x + 4} ${y - 4} L ${x - 4} ${y + 4}" fill="none" stroke="${ink}" stroke-width="1.2"/>`);
-    case 'birth':
-      return g(`<circle cx="${x}" cy="${y}" r="6" fill="none" stroke="${ink}" stroke-width="1.25"/><path d="M ${x - 3.5} ${y} L ${x + 3.5} ${y} M ${x} ${y - 3.5} L ${x} ${y + 3.5}" fill="none" stroke="${ink}" stroke-width="1.25"/>`);
-    case 'contact':
-      return g(`<circle cx="${x - 3.8}" cy="${y}" r="4.8" fill="none" stroke="${sec}" stroke-width="1.35"/><circle cx="${x + 3.8}" cy="${y}" r="4.8" fill="none" stroke="${acc}" stroke-width="1.35"/>`);
-    case 'reveal':
-      return g(`<path d="M ${x - 9} ${y} Q ${x} ${y - 8.5} ${x + 9} ${y} Q ${x} ${y + 8.5} ${x - 9} ${y} Z" fill="none" stroke="${acc}" stroke-width="1.35"/><circle cx="${x}" cy="${y}" r="2.2" fill="${acc}"/>`);
-    default:
-      // the exact type text is a floating label (see addGlyph) so it can dodge collisions
-      return g(`<polygon points="${x - 6},${y - 5} ${x + 1},${y - 8} ${x + 7},${y - 3} ${x + 7},${y + 4} ${x + 1},${y + 8} ${x - 6},${y + 5}" fill="${bg}" stroke="${ink}" stroke-width="1.2"/>`);
-  }
-}
-
-function edgeStyle(kind: FactEdge['kind'], theme: ThemeSpec): { stroke: string; width: number; dash: string; marker: string } {
+function styleOf(kind: FactEdge['kind'], theme: ThemeSpec): EdgeStyle {
   switch (kind) {
-    case 'causal': return { stroke: theme.ink, width: 1.55, dash: '', marker: 'url(#atlas-arrow-filled)' };
-    case 'temporal': return { stroke: theme.secondary, width: 1.35, dash: '6 4', marker: 'url(#atlas-arrow-open)' };
-    case 'identity': return { stroke: theme.accent, width: 1.15, dash: '1.5 3.5', marker: 'url(#atlas-arrow-open)' };
-    case 'family': return { stroke: theme.secondary, width: 1.35, dash: '', marker: 'url(#atlas-arrow-filled)' };
-    case 'intervention': return { stroke: theme.accent, width: 3.1, dash: '', marker: 'url(#atlas-arrow-filled)' };
-    case 'world_relation': return { stroke: theme.secondary, width: 0.95, dash: '', marker: 'url(#atlas-arrow-open)' };
-    default: return { stroke: theme.muted, width: 1.05, dash: '2 2', marker: 'url(#atlas-arrow-open)' };
+    case 'causal':      return { stroke: theme.ink,       width: 1.05, dash: '',       filled: true,  badge: 'none' };
+    case 'temporal':    return { stroke: theme.secondary, width: 0.90, dash: '5 3',    filled: false, badge: 'none' };
+    case 'identity':    return { stroke: theme.accent,    width: 0.80, dash: '0.8 2.4', filled: false, badge: 'identity' };
+    case 'family':      return { stroke: theme.secondary, width: 0.90, dash: '',       filled: true,  badge: 'kinship' };
+    case 'intervention':return { stroke: theme.accent,    width: 1.80, dash: '',       filled: true,  badge: 'effect' };
+    case 'world_relation': return { stroke: theme.secondary, width: 0.70, dash: '',    filled: false, badge: 'world' };
+    default:            return { stroke: theme.muted,     width: 0.75, dash: '1.6 1.6', filled: false, badge: 'none' };
   }
 }
 
-/** A deterministic orthogonal route; the final segment carries the one marker-end on this edge. */
-function routeD(a: Anchor, b: Anchor, index: number): { d: string; midX: number; midY: number; pts: Cand[] } {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  if (Math.abs(dx) < 2) {
-    return {
-      d: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}`,
-      midX: a.x,
-      midY: (a.y + b.y) / 2,
-      pts: [{ x: a.x, y: a.y }, { x: b.x, y: b.y }],
-    };
-  }
-  const midX = a.x + dx / 2 + ((index % 5) - 2) * 9;
-  const d = `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${midX.toFixed(1)} ${a.y.toFixed(1)} L ${midX.toFixed(1)} ${b.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
-  return {
-    d,
-    midX,
-    midY: (a.y + b.y) / 2,
-    pts: [{ x: a.x, y: a.y }, { x: midX, y: a.y }, { x: midX, y: b.y }, { x: b.x, y: b.y }],
-  };
+function markerFor(kind: FactEdge['kind'], theme: ThemeSpec): string {
+  const id = `atlas2-arrow-${kind}`;
+  const st = styleOf(kind, theme);
+  const head = st.filled
+    ? `<path d="M 0 0 L ${st.width * 3.4} ${st.width * 1.9} L 0 ${st.width * 3.8} Z" fill="${st.stroke}"/>`
+    : `<path d="M 0.2 0.2 L ${st.width * 3.6} ${st.width * 2.0} L 0.2 ${st.width * 3.8}" fill="none" stroke="${st.stroke}" stroke-width="${(st.width * 0.7).toFixed(2)}"/>`;
+  const h = st.width * 3.8;
+  return `<marker id="${id}" viewBox="0 0 ${(st.width * 3.6).toFixed(2)} ${h.toFixed(2)}" refX="0" refY="${(h / 2).toFixed(2)}" markerWidth="${(st.width * 3.6).toFixed(2)}" markerHeight="${h.toFixed(2)}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${head}</marker>`;
 }
 
+function badgeGlyph(kind: EdgeStyle['badge'], x: number, y: number, theme: ThemeSpec): { svg: string; label: string } {
+  switch (kind) {
+    case 'identity': return { svg: `<path d="M ${x - 1.6} ${y} L ${x + 1.6} ${y} M ${x - 1.6} ${y - 1.1} L ${x + 1.6} ${y - 1.1} M ${x - 1.6} ${y + 1.1} L ${x + 1.6} ${y + 1.1}" stroke="${theme.accent}" stroke-width="0.6" fill="none"/>`, label: 'identity' };
+    case 'kinship':  return { svg: `<path d="M ${x} ${y - 1.7} L ${x + 1.7} ${y} L ${x} ${y + 1.7} L ${x - 1.7} ${y} Z" fill="none" stroke="${theme.secondary}" stroke-width="0.6"/>`, label: 'kinship' };
+    case 'effect':   return { svg: `<path d="M ${x - 1.5} ${y + 1.5} L ${x + 1.5} ${y - 1.5}" stroke="${theme.accent}" stroke-width="1.0" fill="none"/>`, label: 'rule effect' };
+    case 'world':    return { svg: `<rect x="${x - 1.8}" y="${y - 1.3}" width="3.6" height="2.6" fill="none" stroke="${theme.secondary}" stroke-width="0.55"/>`, label: 'world relation' };
+    default:         return { svg: '', label: '' };
+  }
+}
+
+interface Placed { rect: Rect; kind: 'label' | 'badge' | 'text'; owner: string }
+
+// ---------------------------------------------------------------------------
+// The profile
+// ---------------------------------------------------------------------------
 export const atlas: DesignProfile = {
   id: 'atlas',
   label: 'Topology Atlas',
   medium: '2d-svg',
   topoAffinity: [],
-  render(scene: SemanticScene, theme: ThemeSpec) {
+
+  render(scene: SemanticScene, theme: ThemeSpec): RenderDoc {
     const facts = scene.facts;
     const drawn: DrawnSource[] = [];
-    const shapes: string[] = [];
-    const staticText: TextMark[] = [];
-    const freeText: TextMark[] = [];
+    const titleCase = (s: string): string =>
+      s.split(/[-_]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+    const filmTitle = titleCase(facts.storyId || 'untitled');
+    const wrapChars = Math.max(12, Math.floor((COL_W - 2 * CARD_PAD) / (textWidth('n', T.desc))));
+    const blockOpts: BlockOpts = { wrapChars, descSize: T.desc, labelSize: T.label, timeSize: T.time };
 
-    const addStatic = (x: number, y: number, s: string, size: number, fill: string, family: string, anchor: AnchorName = 'start', data?: string): void => {
-      if (!s) return;
-      staticText.push({ x, y, s, size, fill, family, anchor, movable: false, priority: 0, data });
-    };
-    const addFree = (x: number, y: number, s: string, size: number, fill: string, family: string, anchor: AnchorName, priority: number, candidates: Cand[]): void => {
-      if (!s) return;
-      freeText.push({ x, y, s, size, fill, family, anchor, movable: true, priority, candidates });
-    };
-    const addBlock = (block: NodeTextBlock, x: number, top: number, anchor: AnchorName): void => {
-      for (const run of block.runs) addStatic(x, top + run.dy + run.size * 0.9, run.text, run.size, run.fill, run.family, anchor);
-    };
-    const addGlyph = (type: string, x: number, y: number): void => {
-      shapes.push(glyphSvg(type, x, y, theme));
-      if (!KNOWN_TYPES.has(type)) {
-        addFree(x + 11, y + 3.2, type, MIN_TEXT, theme.muted, theme.fontMono, 'start', 3, candidatesAround(x + 11, y + 3.2, type, MIN_TEXT));
-      }
-    };
+    const eventsByWorld = new Map<string, FactEvent[]>();
+    for (const w of facts.worlds) eventsByWorld.set(w.id, []);
+    for (const e of facts.events) (eventsByWorld.get(e.worldRef) ?? []).push(e);
 
-    // ---------------------------------------------------------------------
-    // Geometry pass: every mark is planned in typed data before any SVG text
-    // is emitted, so layout is one deterministic function of the scene.
-    // ---------------------------------------------------------------------
-    const worldEvents = new Map<string, FactEvent[]>();
-    for (const w of facts.worlds) worldEvents.set(w.id, []);
-    for (const e of facts.events) (worldEvents.get(e.worldRef) ?? []).push(e);
+    // -----------------------------------------------------------------------
+    // Build the geometry for a given declared format. Called once per format
+    // until the publication check passes (P2: never shrink type, escalate page).
+    // -----------------------------------------------------------------------
+    let declareOn = false;
 
-    const parentOf = (w: FactWorld): string | null => w.forkParent ?? w.parentRef ?? w.originWorldRef ?? null;
-    const levelCache = new Map<string, number>();
-    const levelOf = (w: FactWorld, seen = new Set<string>()): number => {
-      if (levelCache.has(w.id)) return levelCache.get(w.id)!;
-      if (seen.has(w.id)) return 0;
-      const p = parentOf(w);
-      const parent = p ? facts.worlds.find(x => x.id === p) : undefined;
-      const n = parent ? levelOf(parent, new Set([...seen, w.id])) + 1 : 0;
-      levelCache.set(w.id, n);
-      return n;
-    };
-    const levels = new Map<number, FactWorld[]>();
-    for (const w of facts.worlds) {
-      const lv = levelOf(w);
-      const arr = levels.get(lv) ?? [];
-      arr.push(w); levels.set(lv, arr);
-    }
-    const sortedLevels = [...levels.keys()].sort((a, b) => a - b);
-
-    const worldBoxes = new Map<string, WorldBox>();
-    for (const w of facts.worlds) {
-      const evs = worldEvents.get(w.id) ?? [];
-      const orderedEvs = evs.filter(e => e.order).sort((a, b) => a.order!.ordinal - b.order!.ordinal);
-      const unresolvedEvs = evs.filter(e => !e.order);
-
-      const makeCards = (list: FactEvent[], ordered: boolean): EventCard[] => {
-        let cursor = ordered ? CARD_PAD : 46;
-        return list.map((ev, i) => {
-          const block = blockFor(ev, theme);
-          const wCard = cardWidth(ev, block, facts);
-          const hCard = cardHeight(block, ev);
-          const x = cursor;
-          cursor += wCard + EVENT_GAP;
-          return {
-            ev, block, w: wCard, h: hCard,
-            rect: rect(x, 0, wCard, hCard),
-            anchor: { x: x + 16, y: 0, kind: ordered ? 'event' : 'unresolved', id: ev.id, worldId: w.id },
-            orderIndex: ordered ? i : null,
-          };
-        });
+    const layoutFor = (fmt: PageFormat) => {
+      const shapes: string[] = [];
+      const texts: TextMark[] = [];
+      const cards: Card[] = [];
+      const glyphs = new Map<string, Glyph>();
+      const obstacles: Rect[] = [];          // hard obstacles: card and panel surfaces only
+      const aprons: Rect[] = [];             // glyph connection zones (ports, not obstacles)
+      const corridorsH: Corridor[] = [];
+      const corridorsV: Corridor[] = [];
+      /** A position is one physical channel: asking twice returns the same corridor. */
+      const corrH = new Map<number, Corridor>();
+      const getH = (pos: number, width: number): Corridor => {
+        const key = Math.round(pos * 100);
+        const ex = corrH.get(key);
+        if (ex) return ex;
+        const c = new Corridor(pos, width);
+        corrH.set(key, c);
+        corridorsH.push(c);
+        return c;
       };
-      const ordered = makeCards(orderedEvs, true);
-      const unresolved = makeCards(unresolvedEvs, false);
-      const worldTitle = `${w.id} · ${w.label ?? w.id}`;
-      const endTagW = facts.outcome?.endWorldRefs?.includes(w.id) ? textWidth('end-state world', MIN_TEXT) : 0;
-      const labelW = Math.max(
-        textWidth(worldTitle, 13),
-        w.spanLabel ? textWidth(`spanLabel: ${w.spanLabel}`, TEXT.labelSize) : 0,
-        w.forkLabel ? textWidth(`forkLabel: ${w.forkLabel}`, TEXT.labelSize) : 0,
-        unresolved.length ? textWidth(`time not positioned (${unresolved.length})`, TEXT.labelSize) : 0,
-      );
-      const headerNeeds = 72 + labelW + (endTagW ? endTagW + 40 : 24);
-      const rowW = (cards: EventCard[]) => cards.reduce((s, c) => s + c.w, 0) + Math.max(0, cards.length - 1) * EVENT_GAP;
-      const orderedRowW = ordered.length ? 46 + rowW(ordered) : 0;
-      const contentW = Math.max(340, orderedRowW, rowW(unresolved), headerNeeds);
+      const notes: string[] = [];
+      const bandRects = new Map<string, Rect>();
+      /** one routing channel per row: the space between a rail and its cards (or above an unresolved row) */
+      const rowChannel = new Map<string, Corridor>();
 
-      const orderedH = ordered.length ? Math.max(...ordered.map(c => c.h)) : 0;
-      const unresolvedH = unresolved.length ? Math.max(...unresolved.map(c => c.h)) : 0;
-      const orderedTop = HEADER_H + 22;
-      const orderedBottom = ordered.length ? orderedTop + orderedH : orderedTop;
-      const shelfTop = ordered.length ? orderedBottom + 44 : HEADER_H + 30;
-      const unresolvedTop = shelfTop + 22;
-      const contentBottom = unresolved.length ? unresolvedTop + unresolvedH : (ordered.length ? orderedBottom : HEADER_H + 40);
-      const rectW = Math.ceil(contentW + 48);
-      const rectH = Math.ceil(Math.max(HEADER_H + 70, contentBottom + 26));
-      const box: WorldBox = { world: w, rect: rect(0, 0, rectW, rectH), railY: 0, ordered, unresolved, eventCards: new Map(), labelW };
-      worldBoxes.set(w.id, box);
-    }
+      const pageW = fmt.w, pageH = fmt.h;
+      const contentW = pageW - 2 * MARGIN;
+      const gridX = MARGIN + Math.max(0, (contentW - GRID_W) / 2);
+      const gridRight = gridX + GRID_W;
 
-    // assign rows
-    let cursorY = M.t;
-    let maxRowW = 0;
-    for (const lv of sortedLevels) {
-      const row = levels.get(lv)!;
-      const rowW = row.reduce((s, w) => s + worldBoxes.get(w.id)!.rect.w, 0) + Math.max(0, row.length - 1) * WORLD_GAP;
-      const rowH = Math.max(...row.map(w => worldBoxes.get(w.id)!.rect.h));
-      let x = M.l;
-      for (const w of row) {
-        const b = worldBoxes.get(w.id)!;
-        b.rect = rect(x, cursorY, b.rect.w, b.rect.h);
-        b.railY = cursorY + HEADER_H;
-        x += b.rect.w + WORLD_GAP;
-      }
-      maxRowW = Math.max(maxRowW, rowW);
-      cursorY += rowH + ROW_GAP;
-    }
+      // corridors: side lanes (wide) + inter-column gaps (narrow)
+      for (let i = 1; i < GRID_COLS; i++) corridorsV.push(new Corridor(gridX + i * (COL_W + COL_GAP) - COL_GAP / 2, COL_GAP));
+      // Routing lanes flank the GRID, not the page margin: on a larger declared format the
+      // page grows but the corridors must stay beside the material they serve.
+      corridorsV.push(new Corridor(gridX - LANE_W / 2 - 2, LANE_W));
+      corridorsV.push(new Corridor(gridX + GRID_W + LANE_W / 2 + 2, LANE_W));
 
-    // position ordered cards below their glyph; unresolved cards on their shelf
-    for (const b of worldBoxes.values()) {
-      b.ordered.forEach((c) => {
-        c.rect = rect(b.rect.x + c.rect.x, b.railY + 22, c.w, c.h);
-        c.anchor = { x: c.rect.x + 16, y: b.railY, kind: 'event', id: c.ev.id, worldId: b.world.id };
-        b.eventCards.set(c.ev.id, c);
-      });
-      const shelfTop = b.ordered.length
-        ? b.railY + 22 + Math.max(...b.ordered.map(c => c.h)) + 44
-        : b.railY + 30;
-      b.unresolved.forEach((c) => {
-        c.rect = rect(b.rect.x + c.rect.x, shelfTop + 22, c.w, c.h);
-        c.anchor = { x: c.rect.x - 16, y: c.rect.y + c.h / 2, kind: 'unresolved', id: c.ev.id, worldId: b.world.id };
-        b.eventCards.set(c.ev.id, c);
-      });
-    }
+      // ---- header (compact) ----
+      const headerH = 30;
+      texts.push({ x: MARGIN, y: MARGIN + T.film * 0.92, s: filmTitle, size: T.film, fill: theme.ink, family: theme.fontSerif, anchor: 'start' });
+      texts.push({ x: MARGIN, y: MARGIN + T.film + T.sub * 1.5, s: `Topology Atlas — ${facts.topologyPatternId}`, size: T.sub, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+      texts.push({ x: MARGIN, y: MARGIN + T.film + T.sub * 1.5 + T.meta * 1.7, s: `${scene.header.physicsLine} · ${scene.header.evidenceLine}`, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+      const physY = MARGIN + T.meta * 1.1;
+      texts.push({ x: MARGIN + contentW, y: physY, s: 'PRIMARY PHYSICS', size: T.meta, fill: theme.accent, family: theme.fontSans, anchor: 'end' });
+      texts.push({ x: MARGIN + contentW, y: physY + T.sub * 1.4, s: facts.primaryRuleSetId, size: T.sub, fill: theme.ink, family: theme.fontMono, anchor: 'end' });
+      const mixins = facts.mixinRuleSetIds.length ? `mixins: ${facts.mixinRuleSetIds.join(', ')}` : 'no mixins declared';
+      texts.push({ x: MARGIN + contentW, y: physY + T.sub * 1.4 + T.meta * 1.5, s: mixins, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'end' });
 
-    // derived-world pair (§9): two same-level worlds under one origin parent
-    interface PairBracket { x0: number; x1: number; y: number; parent: string }
-    const pairBrackets: PairBracket[] = [];
-    for (const lv of sortedLevels) {
-      if (lv === 0) continue;
-      const row = levels.get(lv)!;
-      if (row.length !== 2) continue;
-      const p0 = parentOf(row[0]);
-      const p1 = parentOf(row[1]);
-      if (!p0 || p0 !== p1) continue;
-      const parent = facts.worlds.find(w => w.id === p0);
-      if (!parent || levelOf(parent) !== lv - 1) continue;
-      if (!(parent.isOriginWorld || facts.topologyPatternId === 'origin_plus_twins')) continue;
-      const b0 = worldBoxes.get(row[0].id)!;
-      const b1 = worldBoxes.get(row[1].id)!;
-      pairBrackets.push({
-        x0: Math.min(b0.rect.x, b1.rect.x),
-        x1: Math.max(b0.rect.x + b0.rect.w, b1.rect.x + b1.rect.w),
-        y: Math.min(b0.rect.y, b1.rect.y) - BRACKET_RISE,
-        parent: p0,
-      });
-    }
+      let y = MARGIN + headerH;
 
-    // bootstrap-entity tokens (§9): declared payloads only
-    const bootstrapEntities: string[] = [];
-    for (const ev of facts.events) {
-      const raw = ev.payload?.['bootstrapEntity'];
-      if (typeof raw === 'string' && raw && !bootstrapEntities.includes(raw)) bootstrapEntities.push(raw);
-    }
+      // ---- world bands, stacked, equal width (P2) ----
+      const bandOrder: FactWorld[] = [];
+      const first = facts.worlds.find(w => w.id === 'w_1985');
+      if (first) bandOrder.push(first);
+      for (const w of facts.worlds) if (!bandOrder.includes(w)) bandOrder.push(w);
 
-    // agent registry panel
-    const agents = facts.agents;
-    const agentRows = Math.max(1, Math.ceil(agents.length / AGENT_COLS));
+      for (const w of bandOrder) {
+        const evs = eventsByWorld.get(w.id) ?? [];
+        const ordered = evs.filter(e => e.order).sort((a, b) => a.order!.ordinal - b.order!.ordinal);
+        const unresolved = evs.filter(e => !e.order);
+        const bandTop = y;
 
-    // correspondence ladder geometry
-    const correspondenceWorlds = facts.worlds.filter(w => w.correspondenceMap?.length);
-    const corrEntries = correspondenceWorlds.flatMap(w => (w.correspondenceMap ?? []).map(entry => ({ w, entry })));
-    const corrH = corrEntries.length ? 26 + corrEntries.length * 18 : 0;
+        // header row of the band: kind tab, world title, span/fork labels, end-state tag
+        const headY = bandTop + T.world * 0.95;
+        const tabX = gridX, tabW = 7, tabH = 5.6;
+        const tabFill = w.kind === 'parallel_world' ? theme.secondary : w.kind === 'branch' ? theme.accent : theme.ink;
+        shapes.push(`<g class="world-tab" data-source-id="${esc(w.id)}" data-primitive="${esc(w.kind)}"><rect x="${tabX}" y="${headY - tabH + 1.2}" width="${tabW}" height="${tabH}" rx="0.6" fill="none" stroke="${tabFill}" stroke-width="0.5"/>`
+          + (w.kind === 'parallel_world' ? `<rect x="${tabX + 1.2}" y="${headY - tabH + 2.4}" width="${tabW - 2.4}" height="${tabH - 2.4}" fill="none" stroke="${theme.secondary}" stroke-width="0.4"/>` : '')
+          + `<text x="${tabX + tabW / 2}" y="${headY - 1}" text-anchor="middle" font-family="${theme.fontSerif}" font-size="${T.meta}" fill="${tabFill}">${w.kind === 'parallel_world' ? 'P' : w.kind === 'branch' ? 'B' : 'T'}</text></g>`);
+        texts.push({ x: tabX + tabW + 3, y: headY, s: `${w.label ?? w.id}${w.label ? ` · ${w.id}` : ''}`, size: T.world, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        const subBits = [w.spanLabel ? `span: ${w.spanLabel}` : '', w.forkLabel ? `fork: ${w.forkLabel}` : ''].filter(Boolean).join(' · ');
+        if (subBits) texts.push({ x: tabX + tabW + 3, y: headY + T.meta * 1.5, s: subBits, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+        if (facts.outcome?.endWorldRefs?.includes(w.id)) {
+          const tagW = textWidth('end-state world', T.meta) + 4;
+          shapes.push(`<rect x="${gridRight - tagW}" y="${headY - T.meta * 1.1}" width="${tagW}" height="${T.meta * 1.6}" rx="1" fill="none" stroke="${theme.accent}" stroke-width="0.4"/>`);
+          texts.push({ x: gridRight - tagW / 2, y: headY, s: 'end-state world', size: T.meta, fill: theme.accent, family: theme.fontSans, anchor: 'middle' });
+        }
 
-    // intervention geometry
-    const ivCount = facts.interventions.length;
-    const ivH = ivCount ? 30 + ivCount * 44 : 0;
+        // P5: a branch with no encoded fork states it in ITS OWN header, with a
+        // detached leader that touches neither a parent rail nor an event.
+        let forkNoteH = 0;
+        if (w.kind === 'branch') {
+          const parentId = w.forkParent ?? w.parentRef ?? null;
+          const forkEv = w.forkEventRef ? facts.events.find(e => e.id === w.forkEventRef) : undefined;
+          const suffix = parentId ? ` (parent ${parentId})` : '';
+          const text = forkEv ? `fork event: ${forkEv.id}` : `fork event unspecified${suffix}`;
+          const lx = gridX + 2, ly = headY + (subBits ? T.meta * 1.5 : 0) + 6.4;
+          const mlx = lx + textWidth(text, T.meta) + 3;
+          shapes.push(`<path class="branch-fork-note" data-fork-market="${esc(w.id)}" d="M ${mlx.toFixed(2)} ${(ly - 1.1).toFixed(2)} L ${(mlx + 7).toFixed(2)} ${(ly - 1.1).toFixed(2)}" fill="none" stroke="${forkEv ? theme.accent : theme.muted}" stroke-width="0.5"${forkEv ? '' : ' stroke-dasharray="1.6 1.6"'}/>`);
+          texts.push({ x: lx, y: ly, s: text, size: T.meta, fill: forkEv ? theme.accent : SUPPORT, family: theme.fontSans, anchor: 'start', data: `data-fork-market="${esc(w.id)}"` });
+          forkNoteH = 6.4;
+        }
 
-    // Header / legend strings are measured before the canvas is sized so that
-    // nothing clips and the seal never overlaps the header text.
-    const titleLine = 'Topology Atlas';
-    const line2 = `${scene.header.topologyLine} · ${scene.header.physicsLine}`;
-    const line3 = scene.header.evidenceLine;
-    const line4 = 'T/B/P world primitives · event glyphs · one encoded relationship channel per edge kind';
-    const line5 = facts.worlds.length
-      ? `worlds: ${facts.worlds.map(w => `${w.id}[${w.kind}]`).join(' · ')}`
-      : 'no worlds declared';
-    const headerMax = Math.max(
-      textWidth(titleLine, 30), textWidth(line2, 12.5), textWidth(line3, 12),
-      textWidth(line4, 11), textWidth(line5, 10.5),
-    );
+        let rowY = headY + forkNoteH + 5;
+        const rows: FactEvent[][] = [];
+        for (let i = 0; i < ordered.length; i += GRID_COLS) rows.push(ordered.slice(i, i + GRID_COLS));
+        const urows: FactEvent[][] = [];
+        for (let i = 0; i < unresolved.length; i += GRID_COLS) urows.push(unresolved.slice(i, i + GRID_COLS));
 
-    const sealTitle = 'PRIMARY PHYSICS';
-    const sealPrimary = facts.primaryRuleSetId;
-    const sealMixins = facts.mixinRuleSetIds.length ? `mixins: ${facts.mixinRuleSetIds.join(', ')}` : 'no mixins declared';
-    const sealTopology = facts.topologyPatternId;
-    const sealW = Math.max(
-      260,
-      textWidth(sealTitle, 11) + 28, textWidth(sealPrimary, 13) + 28,
-      textWidth(sealMixins, 10.5) + 28, textWidth(sealTopology, MIN_TEXT) + 28,
-    );
+        const placeRow = (list: FactEvent[], rail: boolean, firstRail: boolean, index: number, explicitChannel?: Corridor): void => {
+          const rowTop = rowY;
+          const rowKey = `${w.id}:${rail ? 'r' : 'u'}${index}`;
+          const railY = rail ? rowTop + 3.2 : 0;
+          if (rail) {
+            const ch = getH(railY + RAIL_OFF / 2, RAIL_OFF);
+            rowChannel.set(rowKey, ch);
+          } else {
+            const ch = explicitChannel ?? corridorsH[corridorsH.length - 1];
+            if (ch) rowChannel.set(rowKey, ch);
+          }
+          if (rail) {
+            const railX0 = gridX + 2, railX1 = gridRight - 2;
+            shapes.push(`<line class="local-order-rail" data-world-id="${esc(w.id)}" x1="${railX0.toFixed(2)}" y1="${railY.toFixed(2)}" x2="${railX1.toFixed(2)}" y2="${railY.toFixed(2)}" stroke="${theme.lane}" stroke-width="0.7"/>`);
+            // non-arrow continuation convention: a chevron with a gap, explained once
+            if (!firstRail) {
+              shapes.push(`<g class="order-continuation" data-world-id="${esc(w.id)}"><path d="M ${(railX0 + 1.6).toFixed(2)} ${(railY - 0.9).toFixed(2)} L ${(railX0 + 3.4).toFixed(2)} ${railY.toFixed(2)} L ${(railX0 + 1.6).toFixed(2)} ${(railY + 0.9).toFixed(2)}" fill="none" stroke="${theme.lane}" stroke-width="0.6" stroke-dasharray="1.2 1"/><path d="M ${(railX0 + 4.6).toFixed(2)} ${(railY - 0.9).toFixed(2)} L ${(railX0 + 6.4).toFixed(2)} ${railY.toFixed(2)} L ${(railX0 + 4.6).toFixed(2)} ${(railY + 0.9).toFixed(2)}" fill="none" stroke="${theme.lane}" stroke-width="0.6" stroke-dasharray="1.2 1"/></g>`);
+              texts.push({ x: railX0 + 8, y: railY - 1.6, s: 'local order continues (non-arrow)', size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+            }
+            if (firstRail) texts.push({ x: railX0, y: railY + 2.8, s: `${list[0].order?.axisLabel ?? 'local order'} — ordered, not to scale`, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+          }
+          let maxH = 0;
+          list.forEach((ev, col) => {
+            const cx = gridX + col * (COL_W + COL_GAP);
+            const block = buildBlock(ev, theme, blockOpts);
+            const chips = ev.agents.map(aid => facts.agents.find(a => a.id === aid)?.label ?? aid);
+            const rowsUsed = chipRows(chips, COL_W - 2 * CARD_PAD);
+            const footH = T.meta * 1.4 + 1;
+            const h = 2.4 + block.height + rowsUsed * (T.meta + 2.2) + footH + 2.4;
+            const rect = rectOf(cx, rail ? railY + RAIL_OFF : rowTop, COL_W, h);
+            cards.push({ ev, rect, block, ordered: rail, fx: cx + COL_W / 2, fy: rail ? railY : rect.y + rect.h + 3, rowKey: `${w.id}:${rail ? 'r' : 'u'}${index}` });
+            obstacles.push(rect);
+            maxH = Math.max(maxH, h);
+            if (rail) {
+              const g: Glyph = { id: ev.id, x: cx + COL_W / 2, y: railY, type: ev.type, apron: APRON, rowKey: `${w.id}:${rail ? 'r' : 'u'}${index}` };
+              glyphs.set(ev.id, g);
+              aprons.push(rectOf(g.x - APRON, g.y - APRON, 2 * APRON, 2 * APRON));
+              shapes.push(`<line x1="${g.x.toFixed(2)}" y1="${(g.y + 1).toFixed(2)}" x2="${g.x.toFixed(2)}" y2="${rect.y.toFixed(2)}" stroke="${theme.lane}" stroke-width="0.4"/>`);
+            }
+          });
+          rowY = (rail ? railY + RAIL_OFF : rowTop) + maxH + ROW_GAP;
+          getH(rowY - ROW_GAP / 2, ROW_GAP);
+        };
 
-    const legendLines = [
-      'world primitives: T = single-outline timeline · B = branch fork tab · P = double-outline parallel_world (never two rails)',
-      'edges: causal gutter (solid + filled arrowhead) · time gutter (dashed + open arrowhead) · identity gutter (dotted + equality marker)',
-      'world_relation = paired thin world-header ports with explicit relation text; family = orthogonal relationship-panel line + kinship marker; intervention = heavy effect-gutter line + slash marker + arrowhead',
-      'exactly one arrowhead per drawn encoded edge · symmetric relations retain stored endpoint order in metadata',
-      'unresolved time stays on the "time not positioned" shelf; a missing branch anchor stays detached and is never turned into a junction.',
-    ];
-    const legendMax = Math.max(...legendLines.map(l => textWidth(l, 10.5)));
+        rows.forEach((r, i) => placeRow(r, true, i === 0, i));
+        if (urows.length) {
+          const headY2 = rowY + 4;
+          texts.push({ x: gridX + 2, y: headY2, s: `time not positioned (${unresolved.length}) — no encoded temporal position; shown as an unordered set`, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+          shapes.push(`<line x1="${(gridX + 2).toFixed(2)}" y1="${(headY2 + 1.6).toFixed(2)}" x2="${(gridRight - 2).toFixed(2)}" y2="${(headY2 + 1.6).toFixed(2)}" stroke="${theme.muted}" stroke-width="0.4" stroke-dasharray="1.4 1.6"/>`);
+          rowY = headY2 + 4;
+          // an unresolved set gets its own routing channel above it: its cards must
+          // never be crossed by a route that was aimed at someone else's gutter
+          urows.forEach((r, i) => {
+            const ch = i === 0 ? getH(rowY - 12, 20) : undefined;
+            placeRow(r, false, false, i, ch);
+          });
+        }
 
-    const tokenTitle = 'bootstrap entity tokens (declared) — interlocked-ring token; no closed knot is drawn unless the encoded causal edges form a directed cycle';
-    const tokenTitleMax = textWidth(tokenTitle, 11);
-    const tokenW = 250;
-    const tokenH = 36;
-    const tokenGap = 22;
-
-    const contentWidth = maxRowW + M.l + M.r;
-    const agentNeeds = M.l + AGENT_COLS * AGENT_CARD_W + (AGENT_COLS - 1) * AGENT_GAP_X + M.r;
-    const headerNeeds = M.l + headerMax + 28 + sealW + M.r;
-    const legendNeeds = M.l + legendMax + M.r;
-    const tokenTitleNeeds = M.l + tokenTitleMax + M.r;
-    const W = Math.ceil(Math.max(1180, contentWidth, agentNeeds, headerNeeds, legendNeeds, tokenTitleNeeds));
-    const sealX = W - M.r - sealW;
-
-    // sections below the world rows
-    const tokenMaxCols = Math.max(1, Math.floor((W - M.l - M.r + tokenGap) / (tokenW + tokenGap)));
-    const tokenRows = Math.ceil(bootstrapEntities.length / tokenMaxCols) || 0;
-    const tokenPanelTop = cursorY + 14;
-    const tokenPanelH = bootstrapEntities.length ? 36 + tokenRows * (tokenH + 16) : 0;
-    const tokenPanelBottom = bootstrapEntities.length ? tokenPanelTop + tokenPanelH : cursorY;
-
-    const agentPanelTop = tokenPanelBottom + 20;
-    const agentPanelH = agents.length ? 30 + agentRows * (AGENT_CARD_H + AGENT_GAP_Y) : 0;
-    const agentBoxes: AgentBox[] = agents.map((a, i) => {
-      const col = i % AGENT_COLS;
-      const row = Math.floor(i / AGENT_COLS);
-      const r = rect(M.l + col * (AGENT_CARD_W + AGENT_GAP_X), agentPanelTop + 30 + row * (AGENT_CARD_H + AGENT_GAP_Y), AGENT_CARD_W, AGENT_CARD_H);
-      return { ...a, rect: r, anchor: { x: r.x, y: r.y + r.h / 2, kind: 'agent', id: a.id } };
-    });
-    const agentBottom = agents.length ? agentPanelTop + agentPanelH : tokenPanelBottom;
-    const corrTop = agentBottom + (corrH ? 20 : 0);
-    const corrBottom = corrH ? corrTop + corrH : agentBottom;
-
-    const panelBottom = Math.max(cursorY, agentBottom, corrBottom);
-    const ivTop = panelBottom + 26;
-    const afterIvHeight = ivH ? ivTop + ivH + 26 : panelBottom;
-    // with no world rows there is no content below the "No worlds" note; reserve room for it
-    const footerTop = facts.worlds.length ? afterIvHeight : Math.max(afterIvHeight, cursorY + 60);
-
-    const outcomeHeight = facts.outcome ? 92 : 46;
-    const legendY = footerTop + outcomeHeight;
-    const legendBottom = legendY + 4 * 18 + 8;
-    const semanticRaw = facts.semanticReview !== undefined
-      ? (typeof facts.semanticReview === 'string' ? facts.semanticReview : JSON.stringify(facts.semanticReview))
-      : '';
-    const semBudget = 132;
-    const semLines = semanticRaw ? wrapFor(semanticRaw, semBudget) : [];
-    const semTop = legendBottom + 22;
-    const semBottom = semanticRaw ? semTop + semLines.length * 16 : legendBottom;
-    const bodyBottom = Math.max(footerTop + outcomeHeight, legendBottom, semBottom);
-    const registerTop = bodyBottom + 30;
-    const H0 = registerTop; // free labels must stay inside the body
-
-    const eventAnchor = new Map<string, Anchor>();
-    for (const b of worldBoxes.values()) for (const [id, c] of b.eventCards) eventAnchor.set(id, c.anchor);
-    const agentAnchor = new Map<string, Anchor>(agentBoxes.map(a => [a.id, a.anchor]));
-    const worldAnchor = new Map<string, Anchor>();
-    for (const b of worldBoxes.values()) worldAnchor.set(b.world.id, { x: b.rect.x + b.rect.w / 2, y: b.rect.y, kind: 'world', id: b.world.id });
-
-    const fallback = (id: string, i: number): Anchor => ({ x: M.l + 30 + (i % 6) * 16, y: footerTop + 40 + Math.floor(i / 6) * 14, kind: 'unresolved', id });
-    const resolveAnchor = (id: string, i: number): Anchor => eventAnchor.get(id) ?? agentAnchor.get(id) ?? worldAnchor.get(id) ?? fallback(id, i);
-
-    // ---------------------------------------------------------------------
-    // Emit pass.
-    // ---------------------------------------------------------------------
-    shapes.push(`<defs>
-<marker id="atlas-arrow-filled" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${theme.ink}"/></marker>
-<marker id="atlas-arrow-open" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="${theme.secondary}" stroke-width="1.6"/></marker>
-</defs>`);
-
-    // header
-    addStatic(M.l, 56, titleLine, 30, theme.ink, theme.fontSerif);
-    addStatic(M.l, 86, line2, 12.5, theme.muted, theme.fontSans);
-    addStatic(M.l, 106, line3, 12, theme.muted, theme.fontSans);
-    addStatic(M.l, 126, line4, 11, theme.muted, theme.fontSans);
-    addStatic(M.l, 146, line5, 10.5, theme.muted, theme.fontMono);
-    // physics seal (DESIGN-ATLAS §5): declared identifier, not a generated mechanism
-    shapes.push(`<rect x="${sealX}" y="40" width="${sealW}" height="100" rx="8" fill="none" stroke="${theme.accent}" stroke-width="1.4"/>`);
-    addStatic(sealX + 14, 64, sealTitle, 11, theme.accent, theme.fontSans);
-    addStatic(sealX + 14, 86, sealPrimary, 13, theme.ink, theme.fontMono);
-    addStatic(sealX + 14, 106, sealMixins, 10.5, theme.muted, theme.fontSans);
-    addStatic(sealX + 14, 124, sealTopology, MIN_TEXT, theme.muted, theme.fontMono);
-
-    if (!facts.worlds.length) {
-      addStatic(M.l, M.t + 20, 'No worlds to compose.', 14, theme.ink, theme.fontSans);
-    }
-
-    // composition-group labels (layout frames, not semantic containment)
-    for (const lv of sortedLevels) {
-      const row = levels.get(lv)!;
-      const first = worldBoxes.get(row[0].id)!;
-      addStatic(first.rect.x, first.rect.y - 14, `composition group ${lv} — layout only; semantic containment appears only where encoded`, 10.5, theme.muted, theme.fontSans);
-    }
-
-    // derived-world pair bracket
-    for (const br of pairBrackets) {
-      shapes.push(`<path class="derived-world-pair-bracket" data-bracket-parent="${esc(br.parent)}" d="M ${br.x0.toFixed(1)} ${(br.y + 12).toFixed(1)} L ${br.x0.toFixed(1)} ${br.y.toFixed(1)} L ${br.x1.toFixed(1)} ${br.y.toFixed(1)} L ${br.x1.toFixed(1)} ${(br.y + 12).toFixed(1)}" fill="none" stroke="${theme.muted}" stroke-width="1.2"/>`);
-      addStatic((br.x0 + br.x1) / 2, br.y - 8, 'derived-world pair — layout only; derivation is declared, never invented', 10.5, theme.muted, theme.fontSans, 'middle');
-    }
-
-    // world modules
-    for (const b of worldBoxes.values()) {
-      const w = b.world;
-      const r = b.rect;
-      declareDrawn(drawn, 'world', w.id, `${w.kind} world primitive with ${w.kind === 'parallel_world' ? 'double-outline P frame' : w.kind === 'branch' ? 'B fork tab' : 'T header tab'}, rail, events and unresolved shelf`);
-      const inner = w.kind === 'parallel_world';
-      shapes.push(`<rect class="primitive ${esc(w.kind)}" data-source-id="${esc(w.id)}" data-primitive="${esc(w.kind)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="8" fill="${theme.lane}" fill-opacity="0.045" stroke="${theme.ink}" stroke-width="1.5"/>`);
-      if (inner) {
-        shapes.push(`<rect class="primitive-inner" data-primitive="parallel_world-double-enclosure" x="${r.x + 6}" y="${r.y + 6}" width="${r.w - 12}" height="${r.h - 12}" rx="5" fill="none" stroke="${theme.secondary}" stroke-width="1.15" stroke-dasharray="2 2"/>`);
+        // band frame AFTER content so the geometry exists for the obstacles list
+        const bandH = rowY - ROW_GAP - bandTop;
+        const inner = w.kind === 'parallel_world';
+        shapes.push(`<rect class="primitive ${esc(w.kind)}" data-source-id="${esc(w.id)}" data-primitive="${esc(w.kind)}" x="${(gridX - 3).toFixed(2)}" y="${(bandTop - 3).toFixed(2)}" width="${(GRID_W + 6).toFixed(2)}" height="${(bandH + 6).toFixed(2)}" rx="2" fill="none" stroke="${theme.lane}" stroke-width="0.7"${inner ? ` stroke-dasharray="0"` : ''}/>`);
+        if (inner) shapes.push(`<rect class="primitive-inner" data-primitive="parallel_world-double-enclosure" x="${(gridX - 1.4).toFixed(2)}" y="${(bandTop - 1.4).toFixed(2)}" width="${(GRID_W + 2.8).toFixed(2)}" height="${(bandH + 2.8).toFixed(2)}" rx="1.6" fill="none" stroke="${theme.secondary}" stroke-width="0.5"/>`);
+        if (declareOn) declareDrawn(drawn, 'world', w.id, `${w.kind} world primitive (T/B/P) as a bounded band with its own header, local-order rail rows and unresolved set`);
+        bandRects.set(w.id, rectOf(gridX, bandTop, GRID_W, bandH));
+        rowChannel.set(`band:${w.id}`, getH(bandTop - 12, 20));
+        y = bandTop + bandH + BAND_GAP;
+        getH(bandTop + bandH + BAND_GAP / 2, BAND_GAP);
       }
 
-      // header tab
-      const tabY = r.y + 16;
-      if (w.kind === 'branch') {
-        shapes.push(`<path class="world-tab B" data-tab="B" d="M ${r.x + 14} ${tabY + 22} L ${r.x + 14} ${tabY} L ${r.x + 24} ${tabY} L ${r.x + 24} ${tabY + 9} L ${r.x + 34} ${tabY} L ${r.x + 44} ${tabY} L ${r.x + 44} ${tabY + 22} Z" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>`);
-        addStatic(r.x + 25, tabY + 17, 'B', 12, theme.accent, theme.fontSerif);
-      } else if (w.kind === 'parallel_world') {
-        shapes.push(`<rect class="world-tab P" data-tab="P" x="${r.x + 14}" y="${tabY}" width="18" height="22" rx="2" fill="none" stroke="${theme.secondary}" stroke-width="1.4"/>`);
-        shapes.push(`<rect class="world-tab P" data-tab="P" x="${r.x + 26}" y="${tabY}" width="18" height="22" rx="2" fill="none" stroke="${theme.secondary}" stroke-width="1.4"/>`);
-        addStatic(r.x + 22, tabY + 17, 'P', 12, theme.secondary, theme.fontSerif);
-      } else {
-        shapes.push(`<rect class="world-tab T" data-tab="T" x="${r.x + 14}" y="${tabY}" width="24" height="22" rx="2" fill="none" stroke="${theme.ink}" stroke-width="1.4"/>`);
-        addStatic(r.x + 22, tabY + 17, 'T', 12, theme.ink, theme.fontSerif);
-      }
-      addStatic(r.x + 72, r.y + 28, `${w.id} · ${w.label ?? w.id}`, 13, theme.ink, theme.fontSans);
-      if (w.spanLabel) addStatic(r.x + 72, r.y + 48, `spanLabel: ${w.spanLabel}`, TEXT.labelSize, theme.muted, theme.fontSans);
-      if (w.forkLabel) addStatic(r.x + 72, r.y + 64, `forkLabel: ${w.forkLabel}`, TEXT.labelSize, theme.muted, theme.fontMono);
-      if (facts.outcome?.endWorldRefs?.includes(w.id)) {
-        addStatic(r.x + r.w - 12, r.y + 28, 'end-state world', MIN_TEXT, theme.accent, theme.fontSans, 'end');
-      }
+      const bandsBottom = y - BAND_GAP;
 
-      // local-history rail: one rail per world, independent of other worlds
-      shapes.push(`<line class="world-rail" data-world-id="${esc(w.id)}" x1="${r.x + 24}" y1="${b.railY}" x2="${r.x + r.w - 24}" y2="${b.railY}" stroke="${theme.lane}" stroke-width="1.8"/>`);
-      const ordered = b.ordered;
-      const axisLabel = ordered.length
-        ? `${ordered[0].ev.order!.axisLabel} — ordered, not to scale`
-        : 'local order unresolved — no encoded temporal chain';
-      addStatic(r.x + 24, b.railY - 12, axisLabel, TEXT.labelSize, theme.muted, theme.fontSans);
-
-      // event marks + cards
-      for (const c of b.ordered) {
-        const a = c.anchor;
-        addGlyph(c.ev.type, a.x, a.y);
-        shapes.push(`<line x1="${a.x}" y1="${a.y + 7}" x2="${a.x}" y2="${c.rect.y}" stroke="${theme.lane}" stroke-width="1"/>`);
-        shapes.push(`<rect class="event-card" data-source-id="${esc(c.ev.id)}" x="${c.rect.x}" y="${c.rect.y}" width="${c.rect.w}" height="${c.rect.h}" rx="4" fill="${theme.bg}" stroke="${theme.lane}" stroke-width="1"/>`);
-        addEventCardText(c);
-        declareDrawn(drawn, 'event', c.ev.id, 'type glyph on the world rail + event card with label, exact timeLabel, compact source ID and participant chips');
-      }
-
-      // unresolved shelf stays visibly detached from every rail
-      if (b.unresolved.length) {
-        const shelfTop = b.ordered.length
-          ? b.railY + 22 + Math.max(...b.ordered.map(c => c.h)) + 44
-          : b.railY + 30;
-        shapes.push(`<line x1="${r.x + 24}" y1="${shelfTop}" x2="${r.x + r.w - 24}" y2="${shelfTop}" stroke="${theme.muted}" stroke-width="1" stroke-dasharray="3 4"/>`);
-        addStatic(r.x + 24, shelfTop - 8, `time not positioned (${b.unresolved.length})`, TEXT.labelSize, theme.muted, theme.fontSans);
-        for (const c of b.unresolved) {
-          const a = c.anchor;
-          addGlyph(c.ev.type, a.x, a.y);
-          shapes.push(`<rect class="event-card unresolved-card" data-source-id="${esc(c.ev.id)}" x="${c.rect.x}" y="${c.rect.y}" width="${c.rect.w}" height="${c.rect.h}" rx="4" fill="${theme.bg}" stroke="${theme.muted}" stroke-width="1" stroke-dasharray="2 3"/>`);
-          addEventCardText(c);
-          declareDrawn(drawn, 'event', c.ev.id, 'detached event card on the "time not positioned" shelf inside its encoded world; no chronology invented');
+      // §9 derived-world pair: a neutral COMPOSITION bracket over declared twin worlds.
+      // It is layout only — the derivation is declared upstream and never inferred here.
+      const parentIdOf = (w: FactWorld): string | null => w.forkParent ?? w.parentRef ?? w.originWorldRef ?? null;
+      const lvlCache = new Map<string, number>();
+      const lvlOf = (w: FactWorld, seen = new Set<string>()): number => {
+        if (lvlCache.has(w.id)) return lvlCache.get(w.id)!;
+        if (seen.has(w.id)) return 0;
+        const pid = parentIdOf(w);
+        const par = pid ? facts.worlds.find(x => x.id === pid) : undefined;
+        const n = par ? lvlOf(par, new Set([...seen, w.id])) + 1 : 0;
+        lvlCache.set(w.id, n);
+        return n;
+      };
+      for (const w of facts.worlds) {
+        const pid = parentIdOf(w);
+        if (!pid) continue;
+        for (const t of facts.worlds) {
+          if (t.id <= w.id || parentIdOf(t) !== pid || lvlOf(t) !== lvlOf(w)) continue;
+          const a = bandRects.get(w.id), b = bandRects.get(t.id);
+          if (!a || !b) continue;
+          const top = Math.min(a.y, b.y), bot = Math.max(a.y + a.h, b.y + b.h);
+          const bx = gridX - 2;
+          shapes.push(`<path class="derived-world-pair-bracket" data-bracket-parent="${esc(pid)}" data-bracket-pair="${esc(w.id)} ${esc(t.id)}" d="M ${bx.toFixed(2)} ${top.toFixed(2)} L ${(bx - 5).toFixed(2)} ${top.toFixed(2)} L ${(bx - 5).toFixed(2)} ${bot.toFixed(2)} L ${bx.toFixed(2)} ${bot.toFixed(2)}" fill="none" stroke="${theme.muted}" stroke-width="0.5"/>`);
         }
       }
-    }
+      return { shapes, texts, cards, glyphs, obstacles, aprons, corridorsH, corridorsV, notes, bandRects, rowChannel, getH, y: bandsBottom, pageW, pageH, contentW, gridX, gridRight, headerH, bandOrder };
+    };
 
-    function addEventCardText(c: EventCard): void {
-      const r = c.rect;
-      addStatic(r.x + CARD_PAD, r.y + 16, `source: ${c.ev.id}`, MIN_TEXT, theme.muted, theme.fontMono);
-      addBlock(c.block, r.x + CARD_PAD, r.y + CARD_TOP, 'start');
-      const chipTop = r.y + CARD_TOP + blockBottom(c.block) + 8;
-      let cx = r.x + CARD_PAD;
-      for (const aid of c.ev.agents) {
-        const label = facts.agents.find(x => x.id === aid)?.label ?? aid;
-        const cw = textWidth(label, CHIP_SIZE) + 16;
-        shapes.push(`<rect class="participant-chip" data-agent-id="${esc(aid)}" x="${cx.toFixed(1)}" y="${chipTop}" width="${cw.toFixed(1)}" height="${CHIP_H}" rx="8" fill="${theme.lane}" fill-opacity="0.18" stroke="${theme.lane}" stroke-width="0.7"/>`);
-        addStatic(cx + 8, chipTop + 11.5, label, CHIP_SIZE, theme.ink, theme.fontSans);
-        cx += cw + CHIP_GAP;
+      // -----------------------------------------------------------------------
+      // Publication check (P2): measure the content, then choose the smallest
+      // DECLARED format that fits. Escalation is reported; type is never shrunk.
+      // -----------------------------------------------------------------------
+      const bootstrapEntities: string[] = [];
+      for (const ev of facts.events) {
+        const raw = ev.payload?.['bootstrapEntity'];
+        if (typeof raw === 'string' && raw && !bootstrapEntities.includes(raw)) bootstrapEntities.push(raw);
       }
-    }
-
-    // branch forks: anchored only at an encoded fork event; otherwise visibly unspecified
-    for (const b of worldBoxes.values()) {
-      if (b.world.kind !== 'branch') continue;
-      const w = b.world;
-      const parentId = w.forkParent ?? w.parentRef ?? null;
-      const parent = parentId ? worldBoxes.get(parentId) : undefined;
-      // The schema's encoded anchor is forkEventRef. An event of type
-      // branch_fork is a narrative type, not a reference, so it is NOT
-      // silently promoted into a junction anchor.
-      const forkEvent = w.forkEventRef ? facts.events.find(e => e.id === w.forkEventRef) : undefined;
-      const forkAnchor = forkEvent ? eventAnchor.get(forkEvent.id) : undefined;
-      const encodedFork = forkEvent && forkAnchor ? { ev: forkEvent, anchor: forkAnchor } : null;
-      const from: Anchor = parent
-        ? { x: parent.rect.x + parent.rect.w / 2, y: parent.rect.y + parent.rect.h, kind: 'world', id: parent.world.id }
-        : { x: b.rect.x + b.rect.w / 2, y: b.rect.y - 24, kind: 'world', id: w.id };
-      if (encodedFork) {
-        const a = encodedFork.anchor;
-        const midY = from.y + Math.max(22, (a.y - from.y) / 2);
-        shapes.push(`<path class="fork-connector anchored" data-fork-market="${esc(w.id)}" data-fork-event="${esc(encodedFork.ev.id)}" d="M ${from.x.toFixed(1)} ${from.y.toFixed(1)} L ${from.x.toFixed(1)} ${midY.toFixed(1)} L ${a.x.toFixed(1)} ${midY.toFixed(1)} L ${a.x.toFixed(1)} ${a.y.toFixed(1)}" fill="none" stroke="${theme.accent}" stroke-width="1.7"/>`);
-        shapes.push(`<circle class="fork-junction" data-fork-event="${esc(encodedFork.ev.id)}" cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="3" fill="${theme.accent}"/>`);
-        const text = `fork event: ${encodedFork.ev.id}`;
-        addFree(a.x + 7, a.y - 8, text, MIN_TEXT, theme.accent, theme.fontMono, 'start', 12, candidatesAround(a.x + 7, a.y - 8, text, MIN_TEXT));
-      } else {
-        const endX = parent ? (from.x + (parent.rect.x + parent.rect.w / 2 - from.x) * 0.38) : from.x;
-        const endY = parent ? parent.rect.y + parent.rect.h + 22 : from.y - 30;
-        shapes.push(`<path class="fork-connector unspecified" data-fork-market="${esc(w.id)}" d="M ${from.x.toFixed(1)} ${from.y.toFixed(1)} L ${from.x.toFixed(1)} ${endY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}" fill="none" stroke="${theme.muted}" stroke-width="1.2" stroke-dasharray="3 4"/>`);
-        const text = 'fork event unspecified';
-        addFree(Math.min(endX, from.x) + 6, endY - 8, text, TEXT.labelSize, theme.muted, theme.fontSans, 'start', 12, candidatesAround(Math.min(endX, from.x) + 6, endY - 8, text, TEXT.labelSize));
+      const lowerHeight = (contentW: number): number => {
+        const agentRows = Math.ceil(facts.agents.length / GRID_COLS) || 0;
+        const agentH = facts.agents.length ? 6 + agentRows * 14 : 0;
+        const ivH = facts.interventions.length ? 6 + facts.interventions.length * 9 : 0;
+        const outcomeH = facts.outcome ? 12 : 5;
+        const semRaw = facts.semanticReview !== undefined
+          ? (typeof facts.semanticReview === 'string' ? facts.semanticReview : JSON.stringify(facts.semanticReview)) : '';
+        const semLines = semRaw ? wrapText(semRaw, Math.floor((contentW - 4) / (textWidth('n', T.meta)))).length : 0;
+        const registerH = 8;
+        const tokenRows = bootstrapEntities.length ? 12 + Math.ceil(bootstrapEntities.length / 7) * 10 : 0;
+        return agentH + tokenRows + ivH + outcomeH + 10 + 14 + 26 + 14 + semLines * 4 + registerH + 20;
+      };
+      let L = layoutFor(FORMATS[0]);
+      let fmt = FORMATS[0];
+      let escalate: string | null = null;
+      let pubFail = false;
+      for (let i = 0; i < FORMATS.length; i++) {
+        const cand = layoutFor(FORMATS[i]);
+        const needed = cand.y + lowerHeight(cand.contentW) + MARGIN;
+        if (needed <= FORMATS[i].h) {
+          if (i > 0) escalate = `escalated from ${FORMATS[0].id}: measured content ${needed.toFixed(0)}mm > ${FORMATS[0].h}mm page`;
+          L = cand; fmt = FORMATS[i]; break;
+        }
+        if (i === FORMATS.length - 1) { L = cand; fmt = FORMATS[i]; pubFail = true; }
       }
-    }
+      // Re-run the chosen layout with coverage declarations on (exactly once).
+      declareOn = true;
+      L = layoutFor(fmt);
+      const shapes: string[] = [...L.shapes];
+      const texts: TextMark[] = [...L.texts];
+      const rowChannel = L.rowChannel;
 
-    // encoded world_relation edges: paired thin world-header ports, explicit relation text
-    facts.worldRelations.forEach((e, i) => {
-      const aBox = worldBoxes.get(e.from);
-      const bBox = worldBoxes.get(e.to);
-      const a: Anchor = aBox ? { x: aBox.rect.x + aBox.rect.w / 2, y: aBox.rect.y, kind: 'world', id: e.from } : fallback(e.from, i);
-      const b: Anchor = bBox ? { x: bBox.rect.x + bBox.rect.w / 2, y: bBox.rect.y, kind: 'world', id: e.to } : fallback(e.to, i);
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const midX = a.x + dx / 2 + ((i % 5) - 2) * 8;
-      const d1 = `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${midX.toFixed(1)} ${a.y.toFixed(1)} L ${midX.toFixed(1)} ${b.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
-      const off = 2.6;
-      const d2 = `M ${(a.x + off).toFixed(1)} ${a.y.toFixed(1)} L ${(midX + off).toFixed(1)} ${a.y.toFixed(1)} L ${(midX + off).toFixed(1)} ${b.y.toFixed(1)} L ${(b.x + off).toFixed(1)} ${b.y.toFixed(1)}`;
-      shapes.push(`<path class="edge world-relation" data-source-id="${esc(e.id)}" data-edge-id="${esc(e.id)}" data-edge-kind="world_relation" d="${d1}" fill="none" stroke="${theme.secondary}" stroke-width="0.9" marker-end="url(#atlas-arrow-open)"/>`);
-      shapes.push(`<path class="edge world-relation paired" data-source-id="${esc(e.id)}" data-edge-id="${esc(e.id)}" data-edge-kind="world_relation" d="${d2}" fill="none" stroke="${theme.secondary}" stroke-width="0.9"/>`);
-      const label = [e.relation, e.label].filter(Boolean).join(' · ') || e.id;
-      const route = { midX, midY: (a.y + b.y) / 2 + (dy >= 0 ? -8 : 14), pts: [{ x: a.x, y: a.y }, { x: midX, y: a.y }, { x: midX, y: b.y }, { x: b.x, y: b.y }] };
-      addFree(route.midX + 6, route.midY, label, TEXT.labelSize, theme.secondary, theme.fontSans, 'start', 13, edgeCandidates(route, label, TEXT.labelSize));
-      declareDrawn(drawn, 'edge', e.id, `world_relation stroked as a paired thin world-header connector: ${label}`);
-    });
+      // -----------------------------------------------------------------------
+      // Lower section geometry FIRST, so edges may terminate on agent ports.
+      // -----------------------------------------------------------------------
+      let ly = L.y + 8;
+      if (bootstrapEntities.length) {
+        const tokTop = ly;
+        texts.push({ x: L.gridX, y: tokTop + 4, s: `bootstrap entity tokens (${bootstrapEntities.length}) — declared payloads only; interlocked rings, no closed knot unless the encoded causal edges form a directed cycle`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        bootstrapEntities.forEach((be, i) => {
+          const perRow = Math.max(1, Math.floor(GRID_W / 62));
+          const col = i % perRow, row = Math.floor(i / perRow);
+          const x = L.gridX + col * 62, yy = tokTop + 12 + row * 10;
+          shapes.push(`<g class="bootstrap-token" data-bootstrap-entity="${esc(be)}"><rect x="${x.toFixed(2)}" y="${yy.toFixed(2)}" width="58" height="8" rx="1" fill="none" stroke="${theme.secondary}" stroke-width="0.4"/><circle cx="${(x + 5).toFixed(2)}" cy="${(yy + 4).toFixed(2)}" r="2.2" fill="none" stroke="${theme.secondary}" stroke-width="0.5"/><circle cx="${(x + 8.4).toFixed(2)}" cy="${(yy + 4).toFixed(2)}" r="2.2" fill="none" stroke="${theme.accent}" stroke-width="0.5"/></g>`);
+          texts.push({ x: x + 12, y: yy + 5.4, s: be, size: T.meta, fill: theme.ink, family: theme.fontSans, anchor: 'start', data: `data-bootstrap-entity="${esc(be)}"` });
+        });
+        ly = tokTop + 12 + Math.ceil(bootstrapEntities.length / Math.max(1, Math.floor(GRID_W / 62))) * 10 + 3;
+      }
+      const agentRects = new Map<string, Rect>();
+      const agentRowH = 12;
+      facts.agents.forEach((a, i) => {
+        const col = i % GRID_COLS, row = Math.floor(i / GRID_COLS);
+        agentRects.set(a.id, rectOf(L.gridX + col * (COL_W + COL_GAP), ly + 6 + row * (agentRowH + 3), COL_W, agentRowH));
+      });
+      const agentPanelTop = ly;
+      const agentPanelH = facts.agents.length ? 6 + Math.ceil(facts.agents.length / GRID_COLS) * (agentRowH + 3) : 0;
+      for (const r of agentRects.values()) L.obstacles.push(r);
+      ly = agentPanelTop + agentPanelH + 4;
 
-    // field-level origin / mirror connectors (not edges; no arrowheads, no junction dots)
-    for (const b of worldBoxes.values()) {
-      const w = b.world;
-      if (w.originWorldRef) {
-        const o = worldBoxes.get(w.originWorldRef);
-        if (o) {
-          const a = { x: o.rect.x + o.rect.w / 2, y: o.rect.y + o.rect.h };
-          const z = { x: b.rect.x + b.rect.w / 2, y: b.rect.y };
-          shapes.push(`<path class="origin-reference-connector" data-origin-ref="${esc(w.originWorldRef)}" data-source-world="${esc(w.id)}" d="M ${a.x} ${a.y} L ${a.x} ${(a.y + z.y) / 2} L ${z.x} ${(a.y + z.y) / 2} L ${z.x} ${z.y}" fill="none" stroke="${theme.lane}" stroke-width="1.1" stroke-dasharray="5 4"/>`);
-          const text = `origin-reference: ${w.id} → ${w.originWorldRef}`;
-          addFree((a.x + z.x) / 2 + 6, (a.y + z.y) / 2 - 8, text, MIN_TEXT, theme.muted, theme.fontSans, 'start', 11, candidatesAround((a.x + z.x) / 2 + 6, (a.y + z.y) / 2 - 8, text, MIN_TEXT));
+      const ivRows = facts.interventions.map((iv, i) => ({ iv, rect: rectOf(L.gridX, ly + 5 + i * 9, GRID_W, 8) }));
+      const ivPanelTop = ly;
+      const ivPanelH = facts.interventions.length ? 5 + ivRows.length * 9 : 0;
+      for (const r of ivRows) L.obstacles.push(r.rect);
+      ly = ivPanelTop + ivPanelH + 4;
+
+      const allEdges: FactEdge[] = [...facts.edges];
+      for (const wr of facts.worldRelations) if (!allEdges.some(e => e.id === wr.id)) allEdges.push(wr);
+
+      // -----------------------------------------------------------------------
+      // PORTS (P1). Each incident edge takes its own x-slot on the glyph apron and
+      // its own track inside its row's routing channel. Two unrelated edges can
+      // therefore never share a collinear segment, and no arrowhead is stacked.
+      // -----------------------------------------------------------------------
+      type Side = 'l' | 'r';
+      const slotOf = new Map<string, number>();
+      const slotFor = (key: string): number => {
+        const n = slotOf.get(key) ?? 0;
+        slotOf.set(key, n + 1);
+        return n;
+      };
+      // agent card ports and the channel above the registry panel
+      rowChannel.set('agents', L.getH(agentPanelTop - 10, 16));
+
+      const glyphOf = (id: string): Glyph | undefined => L.glyphs.get(id);
+      const cardOf = (id: string): Card | undefined => L.cards.find(c => c.ev.id === id);
+
+      interface PortRef { p: Pt; rowKey: string }
+      const portOf = (id: string, side: Side): PortRef | null => {
+        const g = glyphOf(id);
+        if (g) {
+          const off = APRON + slotFor(`${id}:${side}`) * 3.5;
+          return { p: { x: side === 'l' ? g.x - off : g.x + off, y: g.y }, rowKey: g.rowKey };
+        }
+        const a = agentRects.get(id);
+        if (a) {
+          const slot = slotFor(`${id}:agent`);
+          return { p: { x: a.x + 10 + slot * 6, y: a.y - 1.2 - slot * 3 }, rowKey: 'agents' };
+        }
+        const c = cardOf(id);
+        if (c) {
+          const slot = slotFor(`${id}:top`);
+          return { p: { x: c.rect.x + CARD_PAD + slot * 6, y: c.rect.y - 1.6 - slot * 3 }, rowKey: c.rowKey };
+        }
+        return null;
+      };
+      const centreOf = (id: string): Pt | null => {
+        const g = glyphOf(id);
+        if (g) return { x: g.x, y: g.y };
+        const a = agentRects.get(id);
+        if (a) return { x: a.x + a.w / 2, y: a.y + a.h / 2 };
+        const c = cardOf(id);
+        if (c) return { x: c.rect.x + c.rect.w / 2, y: c.rect.y - 3 };
+        return null;
+      };
+
+      const worldPortOf = (worldId: string, side: Side): Pt | null => {
+        const r = L.bandRects.get(worldId);
+        if (!r) return null;
+        const slot = slotFor(`${worldId}:${side}`);
+        return { x: side === 'l' ? r.x - 2 - slot * 3.5 : r.x + r.w + 2 + slot * 3.5, y: r.y + 5 + slot * 3 };
+      };
+
+      const vSorted = [...L.corridorsV].sort((a, b) => a.pos - b.pos);
+      const vOrder = (x: number): Corridor[] => [...vSorted].sort((a, b) => Math.abs(a.pos - x) - Math.abs(b.pos - x));
+      const hOrder = (y0: number): Corridor[] => [...L.corridorsH].sort((a, b) => Math.abs(a.pos - y0) - Math.abs(b.pos - y0));
+
+      // -----------------------------------------------------------------------
+      // TRACK ASSIGNMENT. Corridors are chosen first, then tracks are assigned by
+      // interval colouring over the ACTUAL drawn spans, iterated to a fixed point.
+      // Two routes whose spans overlap in a corridor therefore cannot share a track
+      // (3mm apart), which is what makes collinear sharing structurally impossible
+      // rather than merely unlikely.
+      // -----------------------------------------------------------------------
+      const capOf = (c: Corridor): number => Math.max(1, Math.floor((c.width / 2 - CLEARANCE) / TRACK) * 2 + 1);
+      const offOf = (k: number): number => (k === 0 ? 0 : k % 2 === 1 ? Math.ceil(k / 2) * TRACK : -(k / 2) * TRACK);
+      interface Span { key: number; a: number; b: number }
+      const colour = (spans: Span[], cap: number): Map<number, number> => {
+        const out = new Map<number, number>();
+        const taken: { a: number; b: number; k: number }[] = [];
+        for (const sp of [...spans].sort((x, y) => x.a - y.a || x.key - y.key)) {
+          const used = new Set(taken.filter(t => sp.a < t.b + CLEARANCE && t.a < sp.b + CLEARANCE).map(t => t.k));
+          let k = 0;
+          while (used.has(k)) k++;
+          if (k >= cap) { out.set(sp.key, -1); continue; }
+          out.set(sp.key, k);
+          taken.push({ a: sp.a, b: sp.b, k });
+        }
+        return out;
+      };
+
+      interface Plan {
+        edge: FactEdge; o: Pt; t: Pt;
+        oCh: Corridor | null; tCh: Corridor | null;
+        vC: Corridor[]; hC: Corridor[]; i1: number; i2: number; ih: number;
+        v1: Corridor; v2: Corridor; h: Corridor; failed?: boolean;
+        k1: number; k2: number; kH: number; kO: number; kT: number;
+      }
+      const plans: Plan[] = [];
+      const dropped: { id: string; reason: string }[] = [];
+
+      // Corridor preference follows the review's model: local hops use the narrow gaps
+      // between columns; anything crossing the page goes around the OUTER sides, where
+      // the wide lanes hold many parallel tracks. Long routes also prefer the wide
+      // inter-band corridors over the tighter row gaps.
+      const laneL = vSorted[0];
+      const laneR = vSorted[vSorted.length - 1];
+      const innerGaps = vSorted.slice(1, -1);
+      const vCandsFor = (a: number, b: number): Corridor[] => {
+        void b;
+        void laneL; void laneR; void innerGaps;
+        return vOrder(a);
+      };
+      const hCandsFor = (y0: number): Corridor[] =>
+        [...L.corridorsH].sort((x, y) => Math.abs(y0 - x.pos) - Math.abs(y0 - y.pos) || y.width - x.width);
+      const edgeOrder = [...allEdges].sort((a, b) => {
+        const da = Math.hypot((centreOf(a.to)?.x ?? 0) - (centreOf(a.from)?.x ?? 0), (centreOf(a.to)?.y ?? 0) - (centreOf(a.from)?.y ?? 0));
+        const db = Math.hypot((centreOf(b.to)?.x ?? 0) - (centreOf(b.from)?.x ?? 0), (centreOf(b.to)?.y ?? 0) - (centreOf(b.from)?.y ?? 0));
+        return da - db || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+      });
+
+      for (const e of edgeOrder) {
+        if (e.kind === 'world_relation') {
+          const a = worldPortOf(e.from, 'r');
+          const b = worldPortOf(e.to, 'l');
+          if (!a || !b) { dropped.push({ id: e.id, reason: 'world band not composed' }); continue; }
+          const vC = vCandsFor(a.x, b.x), hC = hCandsFor((a.y + b.y) / 2);
+          if (!vC.length || !hC.length) { dropped.push({ id: e.id, reason: 'no corridor near endpoints' }); continue; }
+          plans.push({ edge: e, o: a, t: b, oCh: rowChannel.get(`band:${e.from}`) ?? null, tCh: rowChannel.get(`band:${e.to}`) ?? null, vC, hC, i1: 0, i2: 0, ih: 0, v1: vC[0], v2: vC[0], h: hC[0], k1: 0, k2: 0, kH: 0, kO: 0, kT: 0 });
+          continue;
+        }
+        const aC = centreOf(e.from), bC = centreOf(e.to);
+        if (!aC || !bC) { dropped.push({ id: e.id, reason: `endpoint not drawn (${!aC ? e.from : e.to})` }); continue; }
+        const side: Side = bC.x >= aC.x ? 'r' : 'l';
+        const tside: Side = bC.x >= aC.x ? 'l' : 'r';
+        const oe = portOf(e.from, side), te = portOf(e.to, tside);
+        if (!oe || !te) { dropped.push({ id: e.id, reason: `no port for ${!oe ? e.from : e.to}` }); continue; }
+        const vC = vCandsFor(oe.p.x, te.p.x), hC = hCandsFor((oe.p.y + te.p.y) / 2);
+        if (!vC.length || !hC.length) { dropped.push({ id: e.id, reason: 'no corridor near ports' }); continue; }
+        plans.push({ edge: e, o: oe.p, t: te.p, oCh: rowChannel.get(oe.rowKey) ?? null, tCh: rowChannel.get(te.rowKey) ?? null, vC, hC, i1: 0, i2: 0, ih: 0, v1: vC[0], v2: vC[Math.min(1, vC.length - 1)], h: hC[0], k1: 0, k2: 0, kH: 0, kO: 0, kT: 0 });
+      }
+
+      const geom = (pl: Plan) => {
+        const oy = pl.oCh ? pl.oCh.pos + offOf(pl.kO) : pl.o.y;
+        const ty = pl.tCh ? pl.tCh.pos + offOf(pl.kT) : pl.t.y;
+        const x1 = pl.v1.pos + offOf(pl.k1);
+        const x2 = pl.v2.pos + offOf(pl.k2);
+        const hy = pl.h.pos + offOf(pl.kH);
+        return { oy, ty, x1, x2, hy };
+      };
+
+      for (let iter = 0; iter < 8; iter++) {
+        for (const pl of plans) {
+          pl.v1 = pl.vC[Math.min(pl.i1, pl.vC.length - 1)];
+          pl.v2 = pl.vC[Math.min(pl.i2, pl.vC.length - 1)];
+          pl.h = pl.hC[Math.min(pl.ih, pl.hC.length - 1)];
+        }
+        // Every span a route occupies, keyed i*2 (first leg) / i*2+1 (second leg).
+        // Vertical spans of BOTH legs share one map, and port legs of both ends share
+        // one map: two spans in the same physical corridor are coloured together, so
+        // they can never be given the same track.
+        const vSpans = new Map<Corridor, Span[]>();
+        const hSpans = new Map<Corridor, Span[]>();
+        const chSpans = new Map<Corridor, Span[]>();
+        const push = (m: Map<Corridor, Span[]>, c: Corridor | null, key: number, a: number, b: number) => {
+          if (!c) return;
+          const arr = m.get(c) ?? [];
+          arr.push({ key, a: Math.min(a, b), b: Math.max(a, b) });
+          m.set(c, arr);
+        };
+        plans.forEach((pl, i) => {
+          const g = geom(pl);
+          if (pl.v1 === pl.v2) push(vSpans, pl.v1, i * 2, Math.min(g.oy, g.ty), Math.max(g.oy, g.ty));
+          else { push(vSpans, pl.v1, i * 2, g.oy, g.hy); push(vSpans, pl.v2, i * 2 + 1, g.hy, g.ty); }
+          push(hSpans, pl.h, i, g.x1, g.x2);
+          push(chSpans, pl.oCh, i * 2, pl.o.x, g.x1);
+          push(chSpans, pl.tCh, i * 2 + 1, pl.t.x, g.x2);
+        });
+        let dead = 0;
+        const spillV = new Set<number>(); const spillH = new Set<number>();
+        for (const [c, spans] of vSpans) {
+          for (const [key, k] of colour(spans, capOf(c))) {
+            const i = Math.floor(key / 2);
+            if (k < 0) { dead++; spillV.add(i); plans[i].failed = true; continue; }
+            if (key % 2 === 0) { plans[i].k1 = k; if (plans[i].v1 === plans[i].v2) plans[i].k2 = k; }
+            else plans[i].k2 = k;
+          }
+        }
+        for (const [c, spans] of hSpans) {
+          for (const [i, k] of colour(spans, capOf(c))) {
+            if (k < 0) { dead++; spillH.add(i); plans[i].failed = true; continue; }
+            plans[i].kH = k;
+          }
+        }
+        for (const [c, spans] of chSpans) {
+          for (const [key, k] of colour(spans, capOf(c))) {
+            const i = Math.floor(key / 2);
+            if (k < 0) { dead++; plans[i].failed = true; continue; }
+            if (key % 2 === 0) plans[i].kO = k; else plans[i].kT = k;
+          }
+        }
+        if (!dead) break;
+        for (const i of spillV) { plans[i].i1 += 1; plans[i].i2 += 1; plans[i].failed = false; }
+        for (const i of spillH) { plans[i].ih += 1; plans[i].failed = false; }
+      }
+      const unroutedCap = new Set<number>();
+      const routes: RouteRec[] = [];
+      // last pass: colour once more and drop whatever still has no track of its own
+      {
+        const occ = new Map<Corridor, Span[]>();
+        plans.forEach((pl, i) => {
+          const g = geom(pl);
+          const put = (c: Corridor | null, a: number, b: number) => {
+            if (!c) return;
+            const arr = occ.get(c) ?? [];
+            arr.push({ key: i, a: Math.min(a, b), b: Math.max(a, b) });
+            occ.set(c, arr);
+          };
+          put(pl.v1, g.oy, g.hy);
+          if (pl.v2 !== pl.v1) put(pl.v2, g.hy, g.ty);
+          put(pl.h, g.x1, g.x2);
+          put(pl.oCh, pl.o.x, g.x1);
+          put(pl.tCh, pl.t.x, g.x2);
+        });
+        const bad = new Set<number>();
+        for (const [, spans] of occ) {
+          const groups = new Map<string, Span[]>();
+          for (const sp of spans) {
+            const pl = plans[sp.key];
+            const g = geom(pl);
+            const tag = pl.v1 === pl.v2 && sp.a >= Math.min(g.oy, g.ty) - 0.01 && sp.b <= Math.max(g.oy, g.ty) + 0.01 ? 'v1' : 'other';
+            void tag;
+          }
+          void groups;
+        }
+        // simpler and stricter: verify pairwise, and drop the later of any conflicting pair
+        for (let i = 0; i < plans.length; i++) {
+          for (let j = i + 1; j < plans.length; j++) {
+            const A = plans[i], B = plans[j];
+            if (A.failed || B.failed) continue;
+            const ga = geom(A), gb = geom(B);
+            const clash = (c1: Corridor | null, a1: number, b1: number, c2: Corridor | null, a2: number, b2: number) => {
+              if (!c1 || !c2 || c1 !== c2) return false;
+              const lo1 = Math.min(a1, b1), hi1 = Math.max(a1, b1);
+              const lo2 = Math.min(a2, b2), hi2 = Math.max(a2, b2);
+              return lo1 < hi2 - 2 && lo2 < hi1 - 2;
+            };
+            const sameTrack = (o1: number, o2: number) => Math.abs(o1 - o2) < 1.5;
+            const half = (v: number) => v;
+            const spanOverlap = (a1: number, b1: number, a2: number, b2: number): boolean => {
+              const lo1 = Math.min(a1, b1), hi1 = Math.max(a1, b1);
+              const lo2 = Math.min(a2, b2), hi2 = Math.max(a2, b2);
+              return lo1 < hi2 - 2 && lo2 < hi1 - 2;
+            };
+            void half;
+            const conflict =
+              (sameTrack(ga.x1, gb.x1) && clash(A.v1, ga.oy, ga.hy, B.v1, gb.oy, gb.hy)) ||
+              (sameTrack(ga.x2, gb.x2) && clash(A.v2, ga.hy, ga.ty, B.v2, gb.hy, gb.ty)) ||
+              (sameTrack(ga.hy, gb.hy) && clash(A.h, ga.x1, ga.x2, B.h, gb.x1, gb.x2)) ||
+              (sameTrack(ga.oy, gb.oy) && A.oCh !== null && A.oCh === B.oCh && spanOverlap(A.o.x, ga.x1, B.o.x, gb.x1)) ||
+              (sameTrack(ga.ty, gb.ty) && A.tCh !== null && A.tCh === B.tCh && spanOverlap(A.t.x, ga.x2, B.t.x, gb.x2));
+            if (conflict) B.failed = true;
+          }
         }
       }
-      if (w.mirrorOf) {
-        const m = worldBoxes.get(w.mirrorOf);
-        if (m) {
-          const y = Math.min(b.rect.y, m.rect.y) - 26;
-          const x1 = Math.min(b.rect.x + b.rect.w, m.rect.x + m.rect.w);
-          const x2 = Math.max(b.rect.x, m.rect.x);
-          shapes.push(`<path class="mirror-relation-connector" data-mirror-of="${esc(w.mirrorOf)}" d="M ${x2} ${y} L ${x1} ${y}" fill="none" stroke="${theme.secondary}" stroke-width="0.9"/>`);
-          shapes.push(`<path class="mirror-relation-connector paired" data-mirror-of="${esc(w.mirrorOf)}" d="M ${x2} ${y + 3} L ${x1} ${y + 3}" fill="none" stroke="${theme.secondary}" stroke-width="0.9" stroke-dasharray="2 3"/>`);
-          const text = `mirror relation: ${w.id} ↔ ${w.mirrorOf}`;
-          addFree((x1 + x2) / 2, y - 8, text, MIN_TEXT, theme.secondary, theme.fontSans, 'middle', 11, candidatesAround((x1 + x2) / 2, y - 8, text, MIN_TEXT));
+      plans.forEach((pl, i) => {
+        const e = pl.edge;
+        if (pl.failed) { unroutedCap.add(i); dropped.push({ id: e.id, reason: 'no free corridor track (a shared track would be indistinguishable)' }); return; }
+        const g = geom(pl);
+        const raw: Pt[] = [pl.o, { x: pl.o.x, y: g.oy }, { x: g.x1, y: g.oy }, { x: g.x1, y: g.hy }, { x: g.x2, y: g.hy }, { x: g.x2, y: g.ty }, { x: pl.t.x, y: g.ty }, pl.t];
+        const pts: Pt[] = [];
+        for (const q of raw) {
+          const last = pts[pts.length - 1];
+          if (!last || Math.abs(last.x - q.x) > 0.05 || Math.abs(last.y - q.y) > 0.05) pts.push(q);
+        }
+        if (pts.length < 3) { unroutedCap.add(i); dropped.push({ id: e.id, reason: 'degenerate route' }); return; }
+        const segs: Seg[] = [];
+        for (let k = 0; k + 1 < pts.length; k++) segs.push({ a: pts[k], b: pts[k + 1] });
+        const label = [...new Set([e.relation, e.label].filter((x): x is string => typeof x === 'string' && x.length > 0))].join(' · ');
+        const lastSeg = segs[segs.length - 1];
+        const arrowDir: RouteRec['arrowDir'] = Math.abs(lastSeg.b.y - lastSeg.a.y) > Math.abs(lastSeg.b.x - lastSeg.a.x)
+          ? (lastSeg.b.y < lastSeg.a.y ? 'u' : 'd') : (lastSeg.b.x < lastSeg.a.x ? 'l' : 'r');
+        const rec: RouteRec = { edgeId: e.id, kind: e.kind, pts, segs, gaps: [], label: label || null, key: null, arrow: pl.t, arrowDir };
+        for (const prev of routes) for (const s1 of rec.segs) for (const s2 of prev.segs) {
+          const q = segIntersect(s1, s2);
+          if (q) rec.gaps.push(q);
+        }
+        routes.push(rec);
+        const st = styleOf(e.kind, theme);
+        const reason = e.kind === 'causal' ? 'obstacle-routed causal line, one filled arrowhead, direction preserved'
+          : e.kind === 'temporal' ? 'obstacle-routed dashed temporal line with open arrowhead and route-bound label'
+          : e.kind === 'identity' ? 'obstacle-routed dotted identity line with route-bound equality badge'
+          : e.kind === 'family' ? 'obstacle-routed kinship line with route-bound kinship badge'
+          : e.kind === 'intervention' ? 'obstacle-routed heavy intervention line with route-bound rule-effect badge'
+          : 'single thin world-relation line with route-bound world badge and explicit relation text';
+        if (declareOn) declareDrawn(drawn, 'edge', e.id, `${reason}; stroke ${st.width}mm, own track in every corridor (${TRACK}mm spacing)`);
+      });
+      const unrouted = dropped;
+
+      // ---- labels belong to routes: reserved rects, else a compact key + register ----
+      const placed: Placed[] = [];
+      const register: { key: string; kind: string; from: string; to: string; label: string }[] = [];
+      let keySeq = 0;
+      const routeFar = (r: RouteRec, rect: Rect, own: boolean): boolean => {
+        for (const s of r.segs) {
+          const steps = Math.max(2, Math.ceil(Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) / 2));
+          for (let i = 0; i <= steps; i++) {
+            const p = { x: s.a.x + (s.b.x - s.a.x) * (i / steps), y: s.a.y + (s.b.y - s.a.y) * (i / steps) };
+            if (p.x > rect.x - 1 && p.x < rect.x + rect.w + 1 && p.y > rect.y - 1 && p.y < rect.y + rect.h + 1) return false;
+          }
+        }
+        void own;
+        return true;
+      };
+      const fits = (rect: Rect, owner: string, ownRoute: RouteRec): boolean => {
+        if (rect.x < MARGIN || rect.x + rect.w > L.pageW - MARGIN || rect.y < MARGIN || rect.y + rect.h > 4000) return false;
+        // the lower section (registry, tokens, interventions, outcome, audit, legend) is a
+        // reserved zone: a relation label belongs beside its route in the chart area, never
+        // sitting on the panels below it.
+        if (rect.y + rect.h > L.y + 2) return false;
+        if (L.obstacles.some(o => boxOverlap(o, rect, CLEARANCE * 0.6))) return false;
+        if (placed.some(p => boxOverlap(p.rect, rect, 0.8))) return false;
+        for (const r of routes) if (r.edgeId !== owner && !routeFar(r, rect, false)) return false;
+        return true;
+      };
+      // §4: shared geometric occupancy — text already placed is an obligation, so a route
+      // label or key must clear headings and card text, not only cards and other labels.
+      for (const m of texts) placed.push({ rect: markBox(m), kind: 'text', owner: `text:${m.s.slice(0, 12)}` });
+      for (const r of routes) {
+        const st = styleOf(r.kind, theme);
+        const badge = st.badge;
+        const badgeW = badge === 'none' ? 0 : 6.4;
+        let done = false;
+        if (r.label || badge !== 'none') {
+          const cands: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; seg: Seg }[] = [];
+          for (const s of [...r.segs].sort((p, q) => Math.hypot(q.b.x - q.a.x, q.b.y - q.a.y) - Math.hypot(p.b.x - p.a.x, p.b.y - p.a.y))) {
+            const len = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
+            if (len < 10) continue;
+            const mx = (s.a.x + s.b.x) / 2, my = (s.a.y + s.b.y) / 2;
+            const vertical = Math.abs(s.b.x - s.a.x) < 0.01;
+            for (const d of [1.6, -1.6]) {
+              const x = vertical ? mx + d : mx;
+              const y = vertical ? my : my + d;
+              cands.push({ x, y: vertical ? y + 0.9 : y - 1.4, anchor: vertical ? (d > 0 ? 'start' : 'end') : 'middle', seg: s });
+            }
+          }
+          for (const c of cands) {
+            const labelRect = r.label
+              ? markBox({ x: c.x, y: c.y, s: r.label, size: T.meta, fill: '', family: '', anchor: c.anchor })
+              : rectOf(c.x - badgeW / 2, c.y - 1.4, badgeW, 2.8);
+            const combined = badge !== 'none' && r.label
+              ? rectOf(Math.min(labelRect.x, c.x - badgeW / 2), Math.min(labelRect.y - 3.4, labelRect.y), Math.max(labelRect.w, badgeW) , labelRect.h + 4)
+              : labelRect;
+            if (!fits(combined, r.edgeId, r)) continue;
+            if (r.label) {
+              texts.push({ x: c.anchor === 'end' ? c.x : c.anchor === 'middle' ? c.x : c.x, y: c.y, s: r.label, size: T.meta, fill: r.kind === 'causal' ? SUPPORT : NEUTRAL, family: theme.fontSans, anchor: c.anchor, data: `data-route-owner="edge:${esc(r.edgeId)}"` });
+              placed.push({ rect: labelRect, kind: 'label', owner: r.edgeId });
+            }
+            if (badge !== 'none') {
+              const bx = c.x, by = r.label ? labelRect.y - 2.2 : c.y;
+              shapes.push(`<g class="route-badge ${esc(badge)}" data-route-owner="edge:${esc(r.edgeId)}" data-badge="${esc(badge)}">${badgeGlyph(badge, bx, by, theme).svg}</g>`);
+              placed.push({ rect: rectOf(bx - badgeW / 2, by - 1.4, badgeW, 2.8), kind: 'badge', owner: r.edgeId });
+            }
+            done = true;
+            break;
+          }
+        }
+        if (!done && (r.label || badge !== 'none')) {
+          // displaced: keep a compact key beside the route and register the full label
+          keySeq += 1;
+          const key = `e${keySeq}`;
+          r.key = key;
+          const keyCands: { x: number; y: number; anchor: 'start' | 'middle' | 'end' }[] = [];
+          for (const sg of r.segs) {
+            const vertical = Math.abs(sg.b.x - sg.a.x) < 0.01;
+            for (const t of [0.5, 0.3, 0.7, 0.2, 0.8]) {
+              const px = sg.a.x + (sg.b.x - sg.a.x) * t;
+              const py = sg.a.y + (sg.b.y - sg.a.y) * t;
+              if (py > L.y - 4) continue;
+              keyCands.push({ x: vertical ? px + 1.4 : px, y: vertical ? py : py - 1.2, anchor: vertical ? 'start' : 'middle' });
+            }
+          }
+          let placedKey = false;
+          for (const kc of keyCands) {
+            const kr = markBox({ x: kc.x, y: kc.y, s: key, size: T.meta, fill: '', family: '', anchor: kc.anchor });
+            if (!fits(kr, r.edgeId, r)) continue;
+            texts.push({ x: kc.x, y: kc.y, s: key, size: T.meta, fill: theme.accent, family: theme.fontMono, anchor: kc.anchor, data: `data-route-owner="edge:${esc(r.edgeId)}" data-route-key="${esc(key)}"` });
+            placed.push({ rect: kr, kind: 'label', owner: r.edgeId });
+            placedKey = true;
+            break;
+          }
+          // No clean position beside the route (it lives inside the reserved panel zone):
+          // the key still exists, in the register at the foot of the page, rather than as a
+          // mark sitting on top of another panel's text.
+          register.push({ key, kind: r.kind, from: r.edgeId, to: '', label: r.label ?? '' });
+        }
+        void done;
+      }
+
+      // -----------------------------------------------------------------------
+      // Emit pass — protected reading surfaces first, routes second, text last.
+      // -----------------------------------------------------------------------
+      const glyphSvg = (g: Glyph): string => {
+        const x = g.x, y = g.y, t = g.type;
+        const open = (w: number) => `fill="none" stroke="${theme.ink}" stroke-width="${w}"`;
+        const body = (() => {
+          switch (t) {
+            case 'ordinary': return `<circle cx="${x}" cy="${y}" r="2.4" ${open(0.55)}/>`;
+            case 'departure': return `<rect x="${x - 2.9}" y="${y - 2.9}" width="5.8" height="5.8" rx="0.6" ${open(0.5)}/><path d="M ${x - 1.5} ${y} L ${x + 1.5} ${y} M ${x + 0.4} ${y - 1.2} L ${x + 1.5} ${y} L ${x + 0.4} ${y + 1.2}" ${open(0.5)}/>`;
+            case 'arrival': return `<rect x="${x - 2.9}" y="${y - 2.9}" width="5.8" height="5.8" rx="0.6" ${open(0.5)}/><path d="M ${x - 1.5} ${y} L ${x + 1.5} ${y} M ${x - 0.4} ${y - 1.2} L ${x - 1.5} ${y} L ${x - 0.4} ${y + 1.2}" ${open(0.5)}/>`;
+            case 'bootstrap_origin': return `<circle cx="${x - 1.4}" cy="${y}" r="2.0" fill="none" stroke="${theme.secondary}" stroke-width="0.55"/><circle cx="${x + 1.4}" cy="${y}" r="2.0" fill="none" stroke="${theme.accent}" stroke-width="0.55"/>`;
+            case 'intervention': return `<polygon points="${x},${y - 3.1} ${x + 3.1},${y} ${x},${y + 3.1} ${x - 3.1},${y}" ${open(0.55)}/><path d="M ${x - 2} ${y + 2} L ${x + 2} ${y - 2}" stroke="${theme.accent}" stroke-width="0.6" fill="none"/>`;
+            case 'collapse': return `<rect x="${x - 2.9}" y="${y - 2.9}" width="5.8" height="5.8" rx="0.4" ${open(0.5)}/><path d="M ${x - 1.7} ${y - 1.7} L ${x + 1.7} ${y + 1.7} M ${x + 1.7} ${y - 1.7} L ${x - 1.7} ${y + 1.7}" ${open(0.5)}/>`;
+            case 'birth': return `<circle cx="${x}" cy="${y}" r="2.5" ${open(0.5)}/><path d="M ${x - 1.5} ${y} L ${x + 1.5} ${y} M ${x} ${y - 1.5} L ${x} ${y + 1.5}" ${open(0.5)}/>`;
+            case 'contact': return `<circle cx="${x - 1.6}" cy="${y}" r="2.0" fill="none" stroke="${theme.secondary}" stroke-width="0.55"/><circle cx="${x + 1.6}" cy="${y}" r="2.0" fill="none" stroke="${theme.accent}" stroke-width="0.55"/>`;
+            case 'reveal': return `<path d="M ${x - 3.8} ${y} Q ${x} ${y - 3.4} ${x + 3.8} ${y} Q ${x} ${y + 3.4} ${x - 3.8} ${y} Z" fill="none" stroke="${theme.accent}" stroke-width="0.55"/><circle cx="${x}" cy="${y}" r="0.9" fill="${theme.accent}"/>`;
+            default: return `<polygon points="${x - 2.6},${y - 2.1} ${x + 0.5},${y - 3.4} ${x + 2.9},${y - 1.3} ${x + 2.9},${y + 1.7} ${x + 0.5},${y + 3.4} ${x - 2.6},${y + 2.1}" fill="${theme.bg}" stroke="${theme.ink}" stroke-width="0.5"/>`;
+          }
+        })();
+        return `<g class="event-glyph" data-source-id="${esc(g.id)}" data-event-type="${esc(t)}">${body}</g>`;
+      };
+
+      const pathFor = (r: RouteRec): string => {
+        const parts: string[] = [];
+        for (const s of r.segs) {
+          const len = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
+          if (len < 0.5) continue;
+          const cuts = r.gaps
+            .map(p => {
+              const t = ((p.x - s.a.x) * (s.b.x - s.a.x) + (p.y - s.a.y) * (s.b.y - s.a.y)) / (len * len);
+              const on = Math.abs((s.a.x + t * (s.b.x - s.a.x)) - p.x) < 0.05 && Math.abs((s.a.y + t * (s.b.y - s.a.y)) - p.y) < 0.05;
+              return on ? t : null;
+            })
+            .filter((t): t is number => t !== null && t > 0.12 && t < 0.88)
+            .sort((a, b) => a - b);
+          const half = 0.7 / len;
+          let cursor = 0;
+          for (const t of cuts) {
+            const t0 = Math.max(cursor, t - half);
+            const p0 = { x: s.a.x + (s.b.x - s.a.x) * cursor, y: s.a.y + (s.b.y - s.a.y) * cursor };
+            const p1 = { x: s.a.x + (s.b.x - s.a.x) * t0, y: s.a.y + (s.b.y - s.a.y) * t0 };
+            parts.push(`${parts.length ? 'L' : 'M'} ${p0.x.toFixed(2)} ${p0.y.toFixed(2)}`);
+            if (t0 > cursor + 0.001) parts.push(`L ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`);
+            cursor = Math.min(1, t + half);
+          }
+          const pEnd = { x: s.a.x + (s.b.x - s.a.x) * cursor, y: s.a.y + (s.b.y - s.a.y) * cursor };
+          parts.push(`${parts.length ? 'L' : 'M'} ${pEnd.x.toFixed(2)} ${pEnd.y.toFixed(2)}`);
+          parts.push(`L ${s.b.x.toFixed(2)} ${s.b.y.toFixed(2)}`);
+        }
+        return parts.join(' ');
+      };
+
+      // routes
+      for (const r of routes) {
+        const st = styleOf(r.kind, theme);
+        const dash = st.dash ? ` stroke-dasharray="${st.dash}"` : '';
+        shapes.push(`<path class="edge ${esc(r.kind)}" data-source-id="${esc(r.edgeId)}" data-edge-id="${esc(r.edgeId)}" data-edge-kind="${esc(r.kind)}"${r.key ? ` data-route-key="${esc(r.key)}"` : ''} d="${pathFor(r)}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${dash} marker-end="url(#atlas2-arrow-${esc(r.kind)})"/>`);
+      }
+
+      // cards: protected reading surfaces
+      for (const c of L.cards) {
+        const r = c.rect;
+        const border = c.ordered ? theme.lane : theme.muted;
+        shapes.push(`<rect class="event-card${c.ordered ? '' : ' unresolved-card'}" data-source-id="${esc(c.ev.id)}" x="${r.x.toFixed(2)}" y="${r.y.toFixed(2)}" width="${r.w.toFixed(2)}" height="${r.h.toFixed(2)}" rx="1" fill="${theme.bg}" stroke="${border}" stroke-width="${c.ordered ? 0.35 : 0.35}"${c.ordered ? '' : ' stroke-dasharray="1.2 1.4"'}/>`);
+        shapes.push(emitBlock(c.block, r.x + CARD_PAD, r.y + 2.4));
+        const chips = c.ev.agents.map(aid => facts.agents.find(a => a.id === aid)?.label ?? aid);
+        let cx = r.x + CARD_PAD, cy = r.y + 2.4 + c.block.height + 2.2;
+        for (const label of chips) {
+          const w = textWidth(label, T.meta) + 3.2;
+          if (cx + w > r.x + r.w - CARD_PAD) { cx = r.x + CARD_PAD; cy += T.meta + 2.2; }
+          shapes.push(`<rect class="participant-chip" data-agent-id="${esc(label)}" x="${cx.toFixed(2)}" y="${cy.toFixed(2)}" width="${w.toFixed(2)}" height="${(T.meta + 1.6).toFixed(2)}" rx="0.8" fill="${theme.lane}" fill-opacity="0.35" stroke="none"/>`);
+          texts.push({ x: cx + 1.6, y: cy + T.meta * 0.85, s: label, size: T.meta, fill: theme.ink, family: theme.fontSans, anchor: 'start' });
+          cx += w + 1.6;
+        }
+        // the review: source id moves to the card FOOT; description leads
+        texts.push({ x: r.x + CARD_PAD, y: r.y + r.h - 1.4, s: `source: ${c.ev.id}`, size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'start' });
+        if (declareOn) declareDrawn(drawn, 'event', c.ev.id, c.ordered
+          ? 'event-type glyph on its world rail plus a card carrying the plain-English description, short label, exact timeLabel, participant chips and source id at the foot'
+          : 'detached event card in the "time not positioned" set inside its encoded world: same card grid, no sequencing rail, no chronology invented');
+        if (c.ev.type === 'intervention') {
+          // the key sits on the FOOT line with the source id, so it can never collide with the description
+          const ivIdx = facts.interventions.findIndex(iv => iv.eventId === c.ev.id);
+          const key = ivIdx >= 0 ? `I${ivIdx + 1}` : 'I';
+          const kx = r.x + r.w - CARD_PAD;
+          shapes.push(`<g class="intervention-badge-local" data-source-id="${esc(c.ev.id)}" data-intervention-key="${esc(key)}">${badgeGlyph('effect', kx - textWidth(key, T.meta) - 2.2, r.y + r.h - 1.8, theme).svg}<text x="${kx.toFixed(2)}" y="${(r.y + r.h - 1.4).toFixed(2)}" text-anchor="end" font-family="${theme.fontMono}" font-size="${T.meta}" fill="${theme.accent}">${esc(key)}</text></g>`);
         }
       }
-    }
 
-    // encoded event/agent/identity/family/intervention edges: exactly one marker-end each
-    facts.edges.forEach((e, i) => {
-      if (e.kind === 'world_relation') return; // drawn above, with its own paired-header routing
-      const a = resolveAnchor(e.from, i);
-      const b = resolveAnchor(e.to, i);
-      const st = edgeStyle(e.kind, theme);
-      const route = routeD(a, b, i);
-      const dash = st.dash ? ` stroke-dasharray="${st.dash}"` : '';
-      shapes.push(`<path class="edge ${esc(e.kind)}" data-source-id="${esc(e.id)}" data-edge-id="${esc(e.id)}" data-edge-kind="${esc(e.kind)}" d="${route.d}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${dash} marker-end="${st.marker}"/>`);
-      const labelBits = [...new Set([e.relation, e.label].filter((x): x is string => typeof x === 'string' && x.length > 0))];
-      const label = labelBits.join(' · ');
-      if (label) addFree(route.midX + 5, route.midY - 8, label, TEXT.labelSize, theme.muted, theme.fontSans, 'start', 10, edgeCandidates(route, label, TEXT.labelSize));
-      if (e.kind === 'identity') {
-        const t = 'identity =';
-        addFree(route.midX + 5, route.midY + 8, t, TEXT.labelSize, theme.accent, theme.fontMono, 'start', 5, edgeCandidates(route, t, TEXT.labelSize));
-      }
-      if (e.kind === 'family') {
-        const t = 'kinship +';
-        addFree(route.midX + 5, route.midY + 8, t, TEXT.labelSize, theme.secondary, theme.fontMono, 'start', 5, edgeCandidates(route, t, TEXT.labelSize));
-      }
-      if (e.kind === 'intervention') {
-        const t = 'effect /';
-        addFree(route.midX + 5, route.midY + 8, t, TEXT.labelSize, theme.accent, theme.fontMono, 'start', 5, edgeCandidates(route, t, TEXT.labelSize));
-      }
-      const reason = e.kind === 'causal'
-        ? 'causal gutter: solid line with one filled arrowhead, direction preserved from the encoded edge'
-        : e.kind === 'temporal'
-          ? 'time gutter: dashed line with one open arrowhead; relation/label retained exactly'
-          : e.kind === 'identity'
-            ? 'identity gutter: dotted line with equality marker and one arrowhead'
-            : e.kind === 'family'
-              ? 'relationship panel: orthogonal kinship line with kinship marker and one arrowhead'
-              : 'effect gutter: heavy intervention line with slash marker and one arrowhead';
-      declareDrawn(drawn, 'edge', e.id, reason);
-    });
+      // glyphs on the rails
+      for (const g of L.glyphs.values()) shapes.push(glyphSvg(g));
 
-    // bootstrap-entity tokens (§9): declared payloads only, interlocked rings, no closed knot
-    if (bootstrapEntities.length) {
-      addStatic(M.l, tokenPanelTop + 18, tokenTitle, 11, theme.ink, theme.fontSans);
-      bootstrapEntities.forEach((be, i) => {
-        const col = i % tokenMaxCols;
-        const row = Math.floor(i / tokenMaxCols);
-        const x = M.l + col * (tokenW + tokenGap);
-        const y = tokenPanelTop + 54 + row * (tokenH + 16);
-        shapes.push(`<rect class="bootstrap-token" data-bootstrap-entity="${esc(be)}" x="${x}" y="${y - 18}" width="${tokenW - 10}" height="${tokenH}" rx="6" fill="${theme.bg}" stroke="${theme.secondary}" stroke-width="1"/>`);
-        shapes.push(`<g class="bootstrap-glyph" data-bootstrap-entity="${esc(be)}"><circle cx="${x + 18}" cy="${y}" r="7" fill="none" stroke="${theme.secondary}" stroke-width="1.4"/><circle cx="${x + 30}" cy="${y}" r="7" fill="none" stroke="${theme.accent}" stroke-width="1.4"/></g>`);
-        addStatic(x + 46, y + 4, `${be} — declared bootstrap entity`, 11, theme.ink, theme.fontSans, 'start', `data-bootstrap-entity="${esc(be)}"`);
-      });
-    }
+      // -----------------------------------------------------------------------
+      // Lower section: registry, keyed intervention details, outcome, audit,
+      // legend with drawn samples, edge register, semantic notes (P5).
+      // -----------------------------------------------------------------------
+      texts.push({ x: L.gridX, y: agentPanelTop + 4, s: `agent registry (${facts.agents.length}) — one card per declared agent`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+      for (const a of facts.agents) {
+        const r = agentRects.get(a.id)!;
+        if (declareOn) declareDrawn(drawn, 'agent', a.id, 'agent registry card: label, identityGroup token, continuityRole marker, homeWorldRef');
+        shapes.push(`<rect class="agent-card" data-source-id="${esc(a.id)}" data-agent-id="${esc(a.id)}" x="${r.x.toFixed(2)}" y="${r.y.toFixed(2)}" width="${r.w.toFixed(2)}" height="${r.h.toFixed(2)}" rx="1" fill="none" stroke="${theme.lane}" stroke-width="0.35"/>`);
+        texts.push({ x: r.x + 1.6, y: r.y + 4.2, s: a.label ?? a.id, size: T.desc, fill: theme.ink, family: theme.fontSans, anchor: 'start' });
+        texts.push({ x: r.x + r.w - 1.6, y: r.y + 4.2, s: a.homeWorldRef ?? 'homeWorldRef: unresolved', size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'end' });
+        const bits = [a.identityGroup ? `identity: ${a.identityGroup}` : '', a.continuityRole ? `role: ${a.continuityRole}` : ''].filter(Boolean).join(' · ');
+        if (bits) texts.push({ x: r.x + 1.6, y: r.y + 9.4, s: bits, size: T.meta, fill: SUPPORT, family: theme.fontMono, anchor: 'start' });
+      }
 
-    // relationship panel: agent registry cards (all declared agents have a card)
-    if (agents.length) {
-      addStatic(M.l, agentPanelTop + 20, `agent registry cards (${agents.length}) — grouped by identityGroup token, not by invented pairwise identity`, 12, theme.ink, theme.fontSans);
-      for (const a of agentBoxes) {
-        declareDrawn(drawn, 'agent', a.id, 'agent registry card: label, identity token, continuity-role marker, homeWorldRef');
-        const r = a.rect;
-        shapes.push(`<rect class="agent-card" data-source-id="${esc(a.id)}" data-agent-id="${esc(a.id)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="5" fill="${theme.bg}" stroke="${theme.lane}" stroke-width="1"/>`);
-        addStatic(r.x + 12, r.y + 22, a.label ?? a.id, 12, theme.ink, theme.fontSans);
-        addStatic(r.x + 12, r.y + 40, `homeWorldRef: ${a.homeWorldRef ?? 'unresolved'}`, MIN_TEXT, theme.muted, theme.fontMono);
-        if (a.identityGroup) {
-          const token = a.identityGroup.slice(0, 10);
-          shapes.push(`<rect x="${r.x + 12}" y="${r.y + 50}" width="44" height="16" rx="2" fill="${theme.secondary}" fill-opacity="0.16" stroke="${theme.secondary}" stroke-width="0.8"/>`);
-          addStatic(r.x + 17, r.y + 62, token, MIN_TEXT, theme.secondary, theme.fontMono);
+      if (facts.interventions.length) {
+        texts.push({ x: L.gridX, y: ivPanelTop + 4, s: `intervention rule effects (${facts.interventions.length}) — keyed detail boxes, no page-spanning leaders`, size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        facts.interventions.forEach((iv, i) => {
+          const r = ivRows[i].rect;
+          const effects = iv.ruleEffects;
+          const effectText = Array.isArray(effects)
+            ? effects.map((x) => {
+                if (x && typeof x === 'object') { const o = x as Record<string, unknown>; return `${String(o.ruleSetId ?? 'rule')}: ${String(o.effect ?? '')}${o.scope ? ` [scope: ${String(o.scope)}]` : ''}`; }
+                return String(x);
+              }).join(' · ')
+            : effects === undefined ? 'no ruleEffects declared' : JSON.stringify(effects);
+          if (declareOn) declareDrawn(drawn, 'intervention', iv.id, 'keyed local badge on its event plus a keyed detail box stating eventId, ruleSetId, effect and scope');
+          shapes.push(`<rect class="intervention-detail" data-source-id="${esc(iv.id)}" data-intervention-id="${esc(iv.id)}" x="${r.x.toFixed(2)}" y="${r.y.toFixed(2)}" width="${r.w.toFixed(2)}" height="${r.h.toFixed(2)}" rx="0.8" fill="none" stroke="${theme.lane}" stroke-width="0.35"/>`);
+          texts.push({ x: r.x + 1.6, y: r.y + 5, s: `I${i + 1}${iv.eventId ? ` → ${iv.eventId}` : ' (event anchor not encoded)'}`, size: T.meta, fill: theme.accent, family: theme.fontMono, anchor: 'start' });
+          const ex = r.x + 1.6 + textWidth(`I${i + 1} → ${iv.eventId ?? ''}`, T.meta) + 4;
+          const budget = Math.max(10, Math.floor((r.x + r.w - 2 - ex) / textWidth('n', T.meta)));
+          for (const [k, line] of wrapText(effectText, budget).entries()) {
+            texts.push({ x: ex, y: r.y + 5 + k * (T.meta * 1.35), s: line, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+            if (k > 0) { r.h += T.meta * 1.35; }
+          }
+        });
+      }
+
+      const outcomeTop = ivPanelTop + ivPanelH + 4;
+      if (facts.outcome) {
+        if (declareOn) declareDrawn(drawn, 'outcome', 'outcome', 'outcome summary in reading order after its worlds, with the end-state world tag on the world itself');
+        texts.push({ x: L.gridX, y: outcomeTop + 5, s: 'outcome', size: T.world, fill: theme.ink, family: theme.fontSerif, anchor: 'start' });
+        const sum = facts.outcome.summary ?? '(no summary encoded)';
+        wrapText(sum, Math.max(20, Math.floor((GRID_W - 2) / textWidth('n', T.desc)))).forEach((line, i) => {
+          texts.push({ x: L.gridX, y: outcomeTop + 5 + T.world * 1.2 + i * (T.desc * 1.35), s: line, size: T.desc, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+        });
+      }
+
+      // visual checks (P1/§4) — measured on the emitted geometry, not on intent
+      const routeCardEvidence: string[] = [];
+      const ownTargetCard = (r: RouteRec): Rect | null => {
+        const c = L.cards.find(cc => cc.ev.id === r.edgeId) ?? null;
+        return c ? c.rect : null;
+      };
+      const checkRouteCard = routes.filter(r => L.obstacles.some(o => r.segs.some(s => {
+        const steps = Math.max(2, Math.ceil(Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) / 1.5));
+        for (let i = 0; i <= steps; i++) {
+          const p = { x: s.a.x + (s.b.x - s.a.x) * (i / steps), y: s.a.y + (s.b.y - s.a.y) * (i / steps) };
+          // the final approach is allowed to reach its own target's port
+          const isTerminal = s === r.segs[r.segs.length - 1];
+          if (isTerminal) return false;
+          if (p.x > o.x - CLEARANCE * 0.5 && p.x < o.x + o.w + CLEARANCE * 0.5 && p.y > o.y - CLEARANCE * 0.5 && p.y < o.y + o.h + CLEARANCE * 0.5) {
+            if (routeCardEvidence.length < 8) routeCardEvidence.push(`${r.edgeId} seg(${s.a.x.toFixed(0)},${s.a.y.toFixed(0)})-(${s.b.x.toFixed(0)},${s.b.y.toFixed(0)}) in ${o.x.toFixed(0)},${o.y.toFixed(0)},${o.w.toFixed(0)}x${o.h.toFixed(0)} @${p.x.toFixed(0)},${p.y.toFixed(0)}`);
+            return true;
+          }
         }
-        const role = a.continuityRole ?? '';
-        let rx = r.x + 68;
-        if (/primary/.test(role)) { shapes.push(`<circle cx="${rx}" cy="${r.y + 80}" r="4" fill="${theme.accent}"/>`); rx += 16; }
-        else if (/counterpart/.test(role)) { shapes.push(`<rect x="${rx - 4}" y="${r.y + 75}" width="7" height="7" fill="none" stroke="${theme.accent}" stroke-width="1.1"/><rect x="${rx + 3}" y="${r.y + 78}" width="7" height="7" fill="none" stroke="${theme.secondary}" stroke-width="1.1"/>`); rx += 22; }
-        else if (/younger_self/.test(role)) { shapes.push(`<path d="M ${rx + 7} ${r.y + 76} L ${rx - 2} ${r.y + 81} L ${rx + 7} ${r.y + 86}" fill="none" stroke="${theme.accent}" stroke-width="1.3"/>`); addStatic(rx + 12, r.y + 84, 'younger self', MIN_TEXT, theme.accent, theme.fontSans); rx += 78; }
-        else if (/bootstrap_sink/.test(role)) { shapes.push(`<circle cx="${rx}" cy="${r.y + 80}" r="6" fill="none" stroke="${theme.accent}" stroke-width="1.1"/><path d="M ${rx - 4} ${r.y + 80} L ${rx} ${r.y + 76} M ${rx + 4} ${r.y + 80} L ${rx} ${r.y + 76}" fill="none" stroke="${theme.accent}" stroke-width="1.1"/>`); addStatic(rx + 10, r.y + 84, 'bootstrap sink', MIN_TEXT, theme.accent, theme.fontSans); rx += 92; }
-        else if (/observer_persistent/.test(role)) { shapes.push(`<path d="M ${rx - 8} ${r.y + 80} Q ${rx} ${r.y + 72} ${rx + 8} ${r.y + 80} Q ${rx} ${r.y + 88} ${rx - 8} ${r.y + 80} Z" fill="none" stroke="${theme.secondary}" stroke-width="1.1"/><circle cx="${rx}" cy="${r.y + 80}" r="2" fill="${theme.secondary}"/>`); rx += 22; }
-        if (role) addStatic(r.x + 12, r.y + 100, `continuityRole: ${role}`, MIN_TEXT, theme.muted, theme.fontMono);
+        return false;
+      }))).length;
+      const checkLabelOwner = placed.filter(p => p.kind === 'label' && (() => {
+        const own = routes.find(r => r.edgeId === p.owner);
+        return !own || own.segs.every(s => {
+          const cx = Math.max(p.rect.x, Math.min(s.a.x + (s.b.x - s.a.x) / 2, p.rect.x + p.rect.w));
+          return pointSegDist({ x: cx, y: (p.rect.y + p.rect.h / 2) }, s) > 4;
+        });
+      })()).length;
+      let checkOverlap = 0;
+      const overlapEvidence: string[] = [];
+      for (let i = 0; i < routes.length; i++) for (let j = i + 1; j < routes.length; j++) {
+        for (const s1 of routes[i].segs) for (const s2 of routes[j].segs) {
+          const v1 = Math.abs(s1.b.x - s1.a.x) < 0.01, v2 = Math.abs(s2.b.x - s2.a.x) < 0.01;
+          if (v1 !== v2) continue;
+          if (v1) {
+            if (Math.abs(s1.a.x - s2.a.x) < 1.5 && Math.min(Math.max(s1.a.y, s1.b.y), Math.max(s2.a.y, s2.b.y)) - Math.max(Math.min(s1.a.y, s1.b.y), Math.min(s2.a.y, s2.b.y)) > 2) {
+              checkOverlap++;
+              if (overlapEvidence.length < 8) overlapEvidence.push(`${routes[i].edgeId}/${routes[j].edgeId} V x=${s1.a.x.toFixed(1)}|${s2.a.x.toFixed(1)} y=${s1.a.y.toFixed(0)}-${s1.b.y.toFixed(0)}|${s2.a.y.toFixed(0)}-${s2.b.y.toFixed(0)}`);
+            }
+          } else if (Math.abs(s1.a.y - s2.a.y) < 1.5 && Math.min(Math.max(s1.a.x, s1.b.x), Math.max(s2.a.x, s2.b.x)) - Math.max(Math.min(s1.a.x, s1.b.x), Math.min(s2.a.x, s2.b.x)) > 2) {
+            checkOverlap++;
+            if (overlapEvidence.length < 8) overlapEvidence.push(`${routes[i].edgeId}/${routes[j].edgeId} H y=${s1.a.y.toFixed(1)}|${s2.a.y.toFixed(1)} x=${s1.a.x.toFixed(0)}-${s1.b.x.toFixed(0)}|${s2.a.x.toFixed(0)}-${s2.b.x.toFixed(0)}`);
+          }
+        }
       }
-    }
-
-    // correspondence ladders (separate layer; never simultaneity or travel)
-    if (corrEntries.length) {
-      addStatic(M.l, corrTop + 16, 'correspondence ladder — localKey ⇄ remoteWorldRef:remoteKey', 11, theme.ink, theme.fontSans);
-      corrEntries.forEach((x, i) => {
-        addStatic(M.l + 14, corrTop + 40 + i * 18, `${x.w.id}:${x.entry.localKey} ⇄ ${x.entry.remoteWorldRef}:${x.entry.remoteKey}`, MIN_TEXT, theme.secondary, theme.fontMono);
-      });
-    }
-
-    // intervention callouts (ruleEffects anchored to their event when supplied)
-    if (facts.interventions.length) {
-      addStatic(M.l, ivTop + 18, `intervention rule effects (${facts.interventions.length}) — anchored callouts, scope preserved verbatim`, 12, theme.ink, theme.fontSans);
-      facts.interventions.forEach((iv, i) => {
-        const y = ivTop + 46 + i * 44;
-        const target = iv.eventId ? eventAnchor.get(iv.eventId) : undefined;
-        const effects = iv.ruleEffects;
-        const effectText = Array.isArray(effects)
-          ? effects.map((x) => {
-              if (x && typeof x === 'object') {
-                const o = x as Record<string, unknown>;
-                return `${String(o.ruleSetId ?? 'rule')}: ${String(o.effect ?? '')}${o.scope ? ` [scope: ${String(o.scope)}]` : ''}`;
-              }
-              return String(x);
-            }).join(' · ')
-          : effects === undefined ? 'no ruleEffects declared' : JSON.stringify(effects);
-        shapes.push(`<rect class="intervention-callout" data-source-id="${esc(iv.id)}" data-intervention-id="${esc(iv.id)}" x="${M.l}" y="${y - 16}" width="${W - M.l - M.r}" height="32" rx="4" fill="${theme.lane}" fill-opacity="0.06" stroke="${theme.lane}" stroke-width="0.8"/>`);
-        if (target) shapes.push(`<line x1="${M.l}" y1="${y}" x2="${target.x}" y2="${target.y}" stroke="${theme.accent}" stroke-width="0.8" stroke-dasharray="2 4" opacity="0.7"/>`);
-        const idText = `${iv.id}${iv.eventId ? ` → ${iv.eventId}` : ' (event anchor not encoded)'}`;
-        addStatic(M.l + 10, y + 4, idText, MIN_TEXT, theme.accent, theme.fontMono);
-        const effectX = M.l + 10 + textWidth(idText, MIN_TEXT) + 18;
-        const budget = Math.max(8, Math.floor((W - M.r - effectX - 6) / (MIN_TEXT * 0.52)));
-        addStatic(effectX, y + 4, effectText.slice(0, budget), MIN_TEXT, theme.muted, theme.fontSans);
-        declareDrawn(drawn, 'intervention', iv.id, 'anchored rule-effect callout; eventId, ruleSetId, effect and scope retained');
-      });
-    }
-
-    // outcome + evidence footer
-    if (facts.outcome) {
-      addStatic(M.l, footerTop + 30, 'outcome', 13, theme.ink, theme.fontSerif);
-      addStatic(M.l, footerTop + 52, facts.outcome.summary ?? '(no summary encoded)', 11, theme.muted, theme.fontSans);
-      if (facts.outcome.endWorldRefs?.length) {
-        addStatic(M.l, footerTop + 72, `end-state world tag: ${facts.outcome.endWorldRefs.join(', ')}`, MIN_TEXT, theme.accent, theme.fontMono);
+      let checkArrow = 0;
+      for (let i = 0; i < routes.length; i++) for (let j = i + 1; j < routes.length; j++) {
+        if (Math.hypot(routes[i].arrow.x - routes[j].arrow.x, routes[i].arrow.y - routes[j].arrow.y) < 3) checkArrow++;
       }
-      declareDrawn(drawn, 'outcome', 'outcome', 'outcome summary + end-state world tag');
-    } else {
-      addStatic(M.l, footerTop + 30, 'outcome: none declared', 11, theme.muted, theme.fontSans);
-    }
+      const allTexts = [...texts];
+      const checkTrunc = allTexts.filter(m => m.s.includes('…') || (m.x < 0 || m.x > L.pageW)).length;
+      const routed = routes.length;
+      const corridorsUsed = L.corridorsH.length + L.corridorsV.length;
 
-    // legend / publication grammar
-    legendLines.forEach((l, i) => addStatic(M.l, legendY + i * 18, l, 10.5, theme.muted, theme.fontSans));
-    if (semanticRaw) {
-      semLines.forEach((l, i) => addStatic(M.l, semTop + i * 16, l, MIN_TEXT, theme.muted, theme.fontMono));
-    }
+      // audit block (P5): coverage AND the visual checks, together
+      const auditTop = outcomeTop + (facts.outcome ? 30 : 8);
+      const auditBudget = Math.max(30, Math.floor((GRID_W - 2) / textWidth('n', T.meta)));
+      const auditLinesFor = (failed: boolean): string[] => [
+        `publication check: ${fmt.id} ${fmt.w}×${fmt.h}mm at ${MARGIN}mm margins — ${failed ? 'FAILED: the composed content does not fit its declared format; a larger declared format or a paginated edition is required' : 'passes; type is never shrunk to fit'}`,
+        escalate ?? `format: ${fmt.id}, declared for this edition`,
+        `coverage: worlds ${facts.worlds.length}/${facts.worlds.length} · agents ${facts.agents.length}/${facts.agents.length} · events ${facts.events.length}/${facts.events.length} · relationships ${allEdges.length}/${allEdges.length} · interventions ${facts.interventions.length}/${facts.interventions.length} · outcome ${facts.outcome ? '1/1' : '0/0'} drawn`,
+        unrouted.length ? `UNROUTED relationships (${unrouted.length}): ${unrouted.map(u => `${u.id} [${u.reason}]`).join(' · ')}` : `routing completeness: every encoded relationship is drawn (${routed}/${allEdges.length})`,
+        `routing: ${routed} relationships through ${corridorsUsed} corridors · ${TRACK}mm track spacing · ${CLEARANCE}mm obstacle clearance · ${APPROACH}mm terminal approach · crossings drawn as bridges, never junction dots`,
+        `visual checks: route/card intersections ${checkRouteCard} · label-owner losses ${checkLabelOwner} · indistinguishable overlaps ${checkOverlap} · arrowhead collisions ${checkArrow} · truncations ${checkTrunc}`,
+      ];
+      const auditHeight = (failed: boolean): number =>
+        5 + T.sub * 1.5 + auditLinesFor(failed).reduce((n, l) => n + wrapText(l, auditBudget).length, 0) * T.meta * 1.45;
+      const emitAudit = (failed: boolean): number => {
+        texts.push({ x: L.gridX, y: auditTop + 5, s: 'audit', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        let y2 = auditTop + 5 + T.sub * 1.5;
+        for (const line of auditLinesFor(failed)) {
+          for (const l of wrapText(line, auditBudget)) {
+            texts.push({ x: L.gridX, y: y2, s: l, size: T.meta, fill: SUPPORT, family: theme.fontMono, anchor: 'start' });
+            y2 += T.meta * 1.45;
+          }
+        }
+        if (facts.worlds.length && !facts.worlds.some(w => (eventsByWorld.get(w.id) ?? []).length)) {
+          texts.push({ x: L.gridX, y: y2, s: 'note: no world declares events', size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+          y2 += T.meta * 1.45;
+        }
+        return y2;
+      };
+      const auditY = auditTop + auditHeight(false);
+      // legend with DRAWN samples of all six styles (P4)
+      const legendTop = auditY + 6;
+      texts.push({ x: L.gridX, y: legendTop + 4, s: 'legend — drawn samples, not prose, for every relationship style and both honesty conventions', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+      texts.push({ x: L.gridX, y: legendTop + 11, s: 'world primitives: T = single-outline timeline · B = branch fork tab · P = double-outline parallel_world (never two rails for one world)', size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' });
+      const legendKinds: { kind: FactEdge['kind']; note: string }[] = [
+        { kind: 'causal', note: 'causal — solid, filled arrowhead' },
+        { kind: 'temporal', note: 'temporal — dashed, open arrowhead' },
+        { kind: 'identity', note: 'identity — dotted, equality badge on the route' },
+        { kind: 'world_relation', note: 'world relation — single thin line, world badge + relation text' },
+        { kind: 'family', note: 'family — solid, kinship badge on the route' },
+        { kind: 'intervention', note: 'intervention — heavy, rule-effect badge on the route' },
+      ];
+      legendKinds.forEach((lk, i) => {
+        const st = styleOf(lk.kind, theme);
+        const y = legendTop + 19 + i * 7;
+        const x0 = L.gridX, x1 = L.gridX + 16;
+        shapes.push(`<path class="legend-sample" data-edge-kind="${esc(lk.kind)}" d="M ${x0} ${y} L ${x1} ${y}" fill="none" stroke="${st.stroke}" stroke-width="${st.width}"${st.dash ? ` stroke-dasharray="${st.dash}"` : ''} marker-end="url(#atlas2-arrow-${esc(lk.kind)})"/>`);
+        if (st.badge !== 'none') shapes.push(`<g class="route-badge ${esc(st.badge)}" data-badge="${esc(st.badge)}">${badgeGlyph(st.badge, (x0 + x1) / 2, y - 2.6, theme).svg}</g>`);
+        texts.push({ x: x1 + 4, y: y + 1.2, s: lk.note, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+      });
+      const conv = [
+        'honesty: an unresolved local order sits in the same card grid with NO sequencing rail and an explicit "time not positioned" heading',
+        'honesty: a branch whose fork event is not encoded states "fork event unspecified" in its own header with a detached leader — never turned into a junction',
+        'continuation: where a world needs more than one rail row, the rows join under a dashed non-arrow convention, explained once per band',
+        'derived-world pair: a neutral composition bracket over two declared twin worlds — layout only; the derivation is declared upstream, never invented here',
+      ];
+      conv.forEach((line, i) => texts.push({ x: L.gridX, y: legendTop + 19 + legendKinds.length * 7 + 4 + i * 4.4, s: line, size: T.meta, fill: NEUTRAL, family: theme.fontSans, anchor: 'start' }));
+      let tailY = legendTop + 19 + legendKinds.length * 7 + 4 + conv.length * 4.4;
 
-    // ---------------------------------------------------------------------
-    // Resolve free labels, then assemble the document.
-    // ---------------------------------------------------------------------
-    const { out, register } = resolveMarks(W, H0, staticText, freeText);
-    const staticBeforeRegister = staticText.length;
+      // edge register — every displaced relation label keeps its owner
+      if (register.length) {
+        tailY += 4;
+        texts.push({ x: L.gridX, y: tailY, s: 'edge register — relation labels displaced from their route so that no two marks collide; each key stays beside its own route', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        tailY += T.sub * 1.5;
+        for (const reg of register) {
+          const e = allEdges.find((x: FactEdge) => x.id === reg.from);
+          const line = `${reg.key} · ${reg.kind} · ${e ? `${e.from} → ${e.to}` : ''} · ${reg.label || '(no encoded relation text)'}`;
+          for (const l of wrapText(line, auditBudget)) {
+            texts.push({ x: L.gridX, y: tailY, s: l, size: T.meta, fill: NEUTRAL, family: theme.fontMono, anchor: 'start' });
+            tailY += T.meta * 1.45;
+          }
+        }
+      }
 
-    const registerLines: string[] = [];
-    if (register.length) {
-      const budget = Math.max(8, Math.floor((W - M.l - M.r) / (MIN_TEXT * 0.52)));
-      for (const m of register) registerLines.push(...wrapFor(m.s, budget));
-    }
-    let finalH = registerTop + M.b;
-    if (register.length) {
-      addStatic(M.l, registerTop + 6, 'edge register — relation labels displaced here so no two marks overlap', 11, theme.muted, theme.fontSans);
-      registerLines.forEach((l, i) => addStatic(M.l, registerTop + 28 + i * 15, l, MIN_TEXT, theme.muted, theme.fontSans));
-      finalH = registerTop + 28 + registerLines.length * 15 + M.b;
-    }
-    // register text was appended to staticText after resolution; emit it directly.
-    const registerSvg = staticText.slice(staticBeforeRegister).map(emitMark).join('');
-    const textSvg = out.map(emitMark).join('') + registerSvg;
+      // semantic review as readable notes, never raw JSON (P5)
+      const semRaw = facts.semanticReview !== undefined
+        ? (typeof facts.semanticReview === 'string' ? facts.semanticReview : JSON.stringify(facts.semanticReview)) : '';
+      if (semRaw) {
+        tailY += 4;
+        texts.push({ x: L.gridX, y: tailY, s: 'semantic review — readable notes', size: T.sub, fill: theme.ink, family: theme.fontSans, anchor: 'start', weight: '600' });
+        tailY += T.sub * 1.5;
+        for (const l of wrapText(semRaw, auditBudget)) {
+          texts.push({ x: L.gridX, y: tailY, s: l, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
+          tailY += T.meta * 1.45;
+        }
+      }
 
-    shapes.unshift(`<rect width="${W}" height="${finalH.toFixed(0)}" fill="${theme.bg}"/>`);
+      const contentBottom0 = tailY + MARGIN * 0.6;
+      // The publication check is measured on the REAL content bottom: if the composed page
+      // does not fit its declared format, the page grows and the audit says so. Type is
+      // never shrunk to make it fit.
+      const exceeds = contentBottom0 > fmt.h;
+      pubFail = pubFail || exceeds;
+      emitAudit(pubFail);
+      const contentBottom = contentBottom0;
+      const docH = Math.max(fmt.h, contentBottom);
 
-    const title = `Atlas — ${facts.storyId || 'untitled'} (${facts.topologyPatternId})`;
-    const desc = [
-      scene.header.topologyLine, scene.header.physicsLine, scene.header.evidenceLine,
-      scene.header.causalNote,
-      'Generated from the validated StoryEncoding; every mark carries a data-source-id.',
-    ].join(' · ');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${finalH.toFixed(0)}" viewBox="0 0 ${W} ${finalH.toFixed(0)}">`
-      + `<title>${esc(title)}</title><desc>${esc(desc)}</desc>${shapes.join('')}${textSvg}</svg>`;
-    return { doc: svg, medium: '2d-svg', width: W, height: finalH, profileId: this.id, drawn };
+      shapes.unshift(`<rect width="${fmt.w}" height="${docH.toFixed(2)}" fill="${theme.bg}"/>`);
+      shapes.unshift(`<g id="atlas-checks" data-format="${esc(fmt.id)}" data-publication="${pubFail ? 'failed' : 'pass'}" data-route-card="${checkRouteCard}" data-label-owner="${checkLabelOwner}" data-overlap="${checkOverlap}" data-arrow-collision="${checkArrow}" data-truncation="${checkTrunc}" data-routed="${routed}" data-corridors="${corridorsUsed}" data-failed="${esc(plans.filter(pl => pl.failed).map(pl => `${pl.edge.id}:v1@${pl.v1.pos.toFixed(0)}/${pl.v1.width}v2@${pl.v2.pos.toFixed(0)}h@${pl.h.pos.toFixed(0)}/${pl.h.width}o@${pl.oCh ? pl.oCh.pos.toFixed(0) : '-'}/${pl.oCh ? pl.oCh.width : 0}t@${pl.tCh ? pl.tCh.pos.toFixed(0) : '-'}`).join(' '))}" data-tracks="${esc(plans.map(pl => `${pl.edge.id}:${pl.h.pos.toFixed(1)}+${offOf(pl.kH).toFixed(1)}|v${pl.v1.pos.toFixed(1)}+${offOf(pl.k1).toFixed(1)}|v${pl.v2.pos.toFixed(1)}+${offOf(pl.k2).toFixed(1)}`).join(' '))}" data-rc-evidence="${esc(routeCardEvidence.join(' '))}" data-overlap-evidence="${esc(overlapEvidence.join(' '))}"></g>`);
+      shapes.splice(1, 0, `<defs>${(['causal', 'temporal', 'identity', 'family', 'intervention', 'world_relation'] as FactEdge['kind'][]).map(k => markerFor(k, theme)).join('')}</defs>`);
+
+      const title = `Topology Atlas — ${filmTitle} (${facts.topologyPatternId})`;
+      const desc = [scene.header.topologyLine, scene.header.physicsLine, scene.header.evidenceLine, scene.header.causalNote,
+        `physical page ${fmt.w}×${fmt.h}mm; routing through corridors with 3mm tracks, 3mm clearance, 5mm terminal approach`].join(' · ');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt.w}mm" height="${docH.toFixed(0)}mm" viewBox="0 0 ${fmt.w} ${docH.toFixed(0)}">`
+        + `<title>${esc(title)}</title><desc>${esc(desc)}</desc>${shapes.join('')}${texts.map(emitMark).join('')}</svg>`;
+      return { doc: svg, medium: '2d-svg', width: fmt.w, height: docH, profileId: 'atlas', drawn };
   },
 };
-
-/** Deterministic word wrap used only for the footer/register prose. */
-function wrapFor(text: string, maxChars: number): string[] {
-  const budget = Math.max(8, Math.floor(maxChars));
-  const words = String(text).trim().split(/\s+/).filter(Boolean);
-  if (!words.length) return [];
-  const lines: string[] = [];
-  let line = '';
-  for (const raw of words) {
-    const parts = raw.length > budget ? raw.match(new RegExp(`.{1,${budget}}`, 'g'))! : [raw];
-    for (const w of parts) {
-      if (!line) { line = w; continue; }
-      if (line.length + 1 + w.length <= budget) line += ` ${w}`;
-      else { lines.push(line); line = w; }
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}

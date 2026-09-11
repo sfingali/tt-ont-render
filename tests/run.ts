@@ -341,11 +341,13 @@ console.log('— atlas: the DESIGN-ATLAS §2 grammar is actually drawn —');
   ok(edgeGroups.length >= 6, `all six encoded edge kinds are reported (${edgeGroups.length})`);
 
   // §2: exactly one arrowhead per drawn edge (marker references, not marker defs)
-  const arrowheads = (doc.match(/marker-end=/g) ?? []).length;
+  // Legend samples are drawn instances of each style (the review asks for real samples),
+  // so they carry markers too; the contract is one arrowhead per DRAWN ENCODED EDGE.
+  const arrowheads = (doc.replace(/<path class="legend-sample"[^>]*>/g, '').match(/marker-end=/g) ?? []).length;
   ok(arrowheads === dark.edges.length, `one arrowhead per encoded edge (${arrowheads} for ${dark.edges.length} edges)`);
 
   // §8: title, desc, data-source-id, and a stated evidence status
-  ok(doc.includes('<title>Atlas'), 'native SVG carries a <title>');
+  ok(doc.includes('<title>Topology Atlas'), 'native SVG carries a <title>');
   ok(doc.includes('<desc>'), 'native SVG carries a <desc>');
   ok(/data-source-id=/.test(doc) && (doc.match(/data-source-id=/g) ?? []).length >= dark.events.length,
     'every mark carries a data-source-id (§8 provenance)');
@@ -354,7 +356,12 @@ console.log('— atlas: the DESIGN-ATLAS §2 grammar is actually drawn —');
   // §2 world primitives: tabs, double-outline parallelism, labelled composition groups
   ok(/T\b/.test(doc) && doc.includes('single-outline'), 'T primitive labelled as single-outline');
   ok(doc.includes('double-outline'), 'P primitive labelled as double-outline (never two rails)');
-  ok(doc.includes('composition group'), 'layout groups are labelled as layout, not semantic containment');
+  // The 2026-09-11 review removed the repeated "composition group N — layout only"
+  // labels as visual clutter. The requirement they served is unchanged: nothing that is
+  // merely a layout device may read as semantic containment, and the conventions that
+  // remain (display order, the derived-world pair bracket) must say "layout only".
+  ok(doc.includes('layout only'), 'layout devices are labelled as layout, not semantic containment');
+  ok(!/composition group/.test(doc), 'the removed composition-group clutter stays removed');
   ok(!/\bjunction\b(?![^<]{0,80}never)/i.test(doc) || doc.includes('never turned into a junction'), 'no invented junction is drawn in place of a missing anchor');
 
   // §6: an axis that declares its own basis
@@ -373,14 +380,17 @@ console.log('— atlas: the DESIGN-ATLAS §2 grammar is actually drawn —');
   ok(rb.invariants.ok, 'anchor-less branch keeps invariants okay');
 }
 
-console.log('— atlas: legibility floor — no drawn text below 10px —');
+console.log('— atlas: legibility floor — no drawn text below 9pt (physical floor) —');
 {
   for (const s of STORIES) {
     const r = render({ story: load(s), storyId: s, profile: 'atlas' });
     const texts = parseTexts(r.doc.doc);
-    const tiny = texts.filter(t => t.size < 10);
+    // The atlas is now a physical page in millimetres: the floor is the review's
+    // 9pt minimum (9pt = 3.175mm), not a pixel count.
+    const TINY_PT = 3.17;
+    const tiny = texts.filter(t => t.size < TINY_PT);
     ok(tiny.length === 0,
-      `atlas/${s}: every one of ${texts.length} text marks is >= 10px`,
+      `atlas/${s}: every one of ${texts.length} text marks is >= 9pt (${TINY_PT}mm)`,
       tiny.slice(0, 4).map(t => `${t.size}px "${t.text.slice(0, 24)}"`).join('; '));
   }
 }

@@ -2,12 +2,12 @@
  * ENGINE — index + resolve a validated StoryEncoding into Facts.
  * Pure, deterministic, no design knowledge. Read-only over the story.
  *
- * Ordering policy (SEMANTIC_CONTRACT-compliant):
- *  - Within a world, an event's ordinal is resolved ONLY from encoded `temporal`
- *    edges among that world's events. Heads (in-degree 0) are walked in lexicographic
- *    order; ordinal = walk position. This is "temporal-chain order" — asserted
- *    orderings, NOT coordinate time.
- *  - Events on no temporal chain get order = null  ->  "time not positioned" shelf.
+ * Ordering policy:
+ *  - Only temporal edges explicitly marked chronological constrain calendar order.
+ *  - An ordinal is assigned only when those constraints establish a unique sequence
+ *    within the world. Kahn's algorithm waits for every predecessor to be visited.
+ *  - Partial orders, cycles and isolated events remain unpositioned. A scalar
+ *    legacy axis cannot represent incomparable groups without inventing an order.
  *    causal-path layering is available to designs as an ADDITIONAL signal but is
  *    never substituted for unresolved time.
  */
@@ -35,7 +35,7 @@ export interface RawStory {
     at?: { worldRef?: string; timeLabel?: string };
     payload?: Record<string, unknown>;
   }>;
-  edges: Array<{ id: string; kind: string; from: string; to: string; relation?: string; label?: string }>;
+  edges: Array<{ id: string; kind: string; from: string; to: string; relation?: string; label?: string; orderKind?: string }>;
   interventions?: Array<{ id: string; [k: string]: unknown }>;
   meta?: { title?: string; [k: string]: unknown };
 }
@@ -194,7 +194,7 @@ export function indexAndResolve(story: RawStory): Facts {
   // temporal edges grouped by the world of their FROM endpoint
   const temporalInWorld = new Map<string, FactEdge[]>();
   for (const e of edges) {
-    if (e.kind !== 'temporal') continue;
+    if (e.kind !== 'temporal' || e.orderKind !== 'chronological') continue;
     const w = rawById.get(e.from)?.at?.worldRef;
     const w2 = rawById.get(e.to)?.at?.worldRef;
     if (w && w === w2) {
@@ -206,34 +206,45 @@ export function indexAndResolve(story: RawStory): Facts {
   for (const [w, tedges] of temporalInWorld) {
     const succ = new Map<string, string[]>(); // keep multi-succ (chains may fork); deterministic order by id
     const indeg = new Map<string, number>();
-    const worldEventIds = events.filter(e => e.worldRef === w).map(e => e.id);
+    const worldEventIds = [...new Set(tedges.flatMap(e => [e.from, e.to]))];
     for (const id of worldEventIds) { indeg.set(id, 0); succ.set(id, []); }
     for (const t of tedges) {
       if (!succ.has(t.from) || !indeg.has(t.to)) continue;
-      succ.get(t.from)!.push(t.to);
-      indeg.set(t.to, (indeg.get(t.to) ?? 0) + 1);
+      if (!succ.get(t.from)!.includes(t.to)) {
+        succ.get(t.from)!.push(t.to);
+        indeg.set(t.to, (indeg.get(t.to) ?? 0) + 1);
+      }
     }
     const heads = [...indeg.entries()].filter(([, d]) => d === 0).map(([id]) => id).sort();
-    let ordinal = 0;
-    // BFS across chain forks, lexicographic among ready nodes, per walk
     const queue = [...heads];
-    const seen = new Set<string>();
+    const ordered: string[] = [];
+    let ambiguous = false;
     while (queue.length) {
+      if (queue.length > 1) ambiguous = true;
       queue.sort();
       const cur = queue.shift()!;
-      if (seen.has(cur)) continue;
-      seen.add(cur);
-      const node = byId.get(cur);
-      if (node) node.order = { ordinal, basis: 'temporal_edge', axisLabel: 'temporal-chain order (encoded temporal edges)' };
-      ordinal++;
-      for (const nx of succ.get(cur) ?? []) queue.push(nx);
+      ordered.push(cur);
+      for (const nx of succ.get(cur) ?? []) {
+        indeg.set(nx, indeg.get(nx)! - 1);
+        if (indeg.get(nx) === 0) queue.push(nx);
+      }
+    }
+    // Legacy profiles have only a scalar position. They cannot express incomparable
+    // groups honestly, so keep a partial/cyclic chronology on the unresolved shelf.
+    if (ordered.length !== worldEventIds.length || ambiguous) {
+      issues.push({ severity: 'warning', code: ordered.length !== worldEventIds.length ? 'CHRONOLOGY_CYCLE' : 'CHRONOLOGY_PARTIAL',
+        message: `World ${w}: chronological constraints do not establish a single sequence; events remain unpositioned.`, sourceId: w });
+    } else {
+      ordered.forEach((id, ordinal) => {
+        byId.get(id)!.order = { ordinal, basis: 'temporal_edge', axisLabel: 'chronological temporal order in this world (ordered, not to scale)' };
+      });
     }
   }
   const unresolved = events.filter(e => !e.order);
   if (unresolved.length) {
     issues.push({
       severity: 'info', code: 'TIME_UNRESOLVED',
-      message: `${unresolved.length}/${events.length} event(s) lack encoded temporal ordering — render on "time not positioned" shelf`,
+      message: `${unresolved.length}/${events.length} event(s) lack an unambiguous chronological sequence — render on "time not positioned" shelf. Experienced, presentation, unspecified and simultaneous relations do not establish chronology.`,
     });
   }
 

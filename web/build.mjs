@@ -1,83 +1,146 @@
 #!/usr/bin/env node
-/**
- * Build the browser GUI into web/dist/.
- *
- *   node web/build.mjs            # bundle + corpus + shell
- *   node web/build.mjs --no-corpus
- *
- * The renderer is the SAME code the CLI runs: esbuild bundles src/render.ts
- * (engine + design profiles) for the browser. Nothing in src/engine or
- * src/design imports a Node builtin, so the bundle is clean by construction —
- * if that ever stops being true this build fails loudly.
- */
-import { build } from 'esbuild';
-import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(HERE, '..');
-const DIST = join(HERE, 'dist');
-const WITH_CORPUS = !process.argv.includes('--no-corpus');
-
-// corpus: the sibling ontology repo when present, else the vendored fixtures
-const CORPUS_SRC = existsSync(join(ROOT, '..', 'tt-ont', 'instances'))
-  ? join(ROOT, '..', 'tt-ont', 'instances')
-  : join(ROOT, 'fixtures');
-
+/** Build authored, readable HTML first. Keep the ontology viewer under /legacy. */
+import { build } from "esbuild";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+const HERE = dirname(fileURLToPath(import.meta.url)),
+  ROOT = resolve(HERE, ".."),
+  DIST = join(HERE, "dist");
+const catalog = JSON.parse(
+  await readFile(join(ROOT, "content/catalog.json"), "utf8"),
+);
+const release = process.argv.includes("--release");
+if (
+  release &&
+  catalog.some(
+    (s) => s.sourceReview !== "passed" || s.readerReview !== "passed",
+  )
+)
+  throw new Error(
+    "Release blocked: complete source and reader review in content/catalog.json. Preview builds remain available.",
+  );
+// DIST is a fixed child of this script's directory, never supplied by content.
 await rm(DIST, { recursive: true, force: true });
-await mkdir(join(DIST, 'corpus'), { recursive: true });
-
-const result = await build({
-  entryPoints: [join(ROOT, 'src', 'render.ts')],
-  outfile: join(DIST, 'renderer.js'),
+await mkdir(DIST, { recursive: true });
+const bundle = {
   bundle: true,
-  format: 'esm',
-  platform: 'browser',
-  target: ['es2022'],
-  minify: false,
-  sourcemap: true,
-  metafile: true,
-  logLevel: 'warning',
+  format: "esm",
+  platform: "browser",
+  target: ["es2022"],
+  logLevel: "warning",
+};
+const server = await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/reader/render.ts")],
+  write: false,
 });
-
-const inputs = Object.keys(result.metafile.inputs);
-const nodeOnly = inputs.filter(p => /node:/.test(p) || /(^|\/)cli\.ts$/.test(p));
-if (nodeOnly.length) {
-  console.error(`build: refusing to ship a browser bundle that pulls in Node-only modules:\n  ${nodeOnly.join('\n  ')}`);
-  process.exit(1);
+const renderer = await import(
+  `data:text/javascript;base64,${Buffer.from(server.outputFiles[0].text).toString("base64")}`
+);
+const contract = await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/content/story.ts")],
+  write: false,
+});
+const { validateStory } = await import(
+  `data:text/javascript;base64,${Buffer.from(contract.outputFiles[0].text).toString("base64")}`
+);
+const diagram = await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/reader/diagram.ts")],
+  write: false,
+});
+const { renderDiagram } = await import(
+  `data:text/javascript;base64,${Buffer.from(diagram.outputFiles[0].text).toString("base64")}`
+);
+const stories = [];
+for (const entry of catalog) {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(entry.id))
+    throw new Error("Invalid catalog ID");
+  const raw = await readFile(
+    join(ROOT, "content/stories", `${entry.id}.json`),
+    "utf8",
+  );
+  const result = validateStory(JSON.parse(raw));
+  if (!result.story) throw new Error(JSON.stringify(result.errors));
+  if (Object.keys(result.viewErrors).length)
+    throw new Error(
+      `Invalid optional view in ${entry.id}: ${JSON.stringify(result.viewErrors)}`,
+    );
+  if (result.story.id !== entry.id || stories.some((s) => s.id === entry.id))
+    throw new Error(`Catalog ID mismatch or duplicate: ${entry.id}`);
+  stories.push(result.story);
+  await mkdir(join(DIST, "read", entry.id), { recursive: true });
+  await mkdir(join(DIST, "stories"), { recursive: true });
+  await writeFile(
+    join(DIST, "read", entry.id, "index.html"),
+    renderer.renderStoryPage(result.story, !release),
+  );
+  await writeFile(join(DIST, "stories", `${entry.id}.json`), raw);
+  await mkdir(join(DIST, "diagrams", entry.id), { recursive: true });
+  for (const event of result.story.events)
+    await writeFile(
+      join(DIST, "diagrams", entry.id, `${event.id}.svg`),
+      renderDiagram(result.story, event.id),
+    );
 }
-
-await cp(join(HERE, 'index.html'), join(DIST, 'index.html'));
-await cp(join(HERE, 'app.js'), join(DIST, 'app.js'));
-await cp(join(HERE, 'style.css'), join(DIST, 'style.css'));
-await cp(join(HERE, 'favicon.svg'), join(DIST, 'favicon.svg'));
-
-let manifest = [];
-if (WITH_CORPUS) {
-  const files = (await readdir(CORPUS_SRC)).filter(f => f.endsWith('.json') && f !== 'manifest.json');
-  for (const f of files) {
-    const raw = await readFile(join(CORPUS_SRC, f), 'utf-8');
-    let story;
-    try { story = JSON.parse(raw); } catch { continue; }
-    const id = f.replace(/\.json$/, '');
-    await writeFile(join(DIST, 'corpus', `${id}.json`), raw);
+await writeFile(
+  join(DIST, "index.html"),
+  renderer.renderLibrary(stories, !release),
+);
+await writeFile(join(DIST, "edit.html"), renderer.renderEditor());
+await cp(join(HERE, "reader.css"), join(DIST, "reader.css"));
+await cp(join(HERE, "favicon.svg"), join(DIST, "favicon.svg"));
+await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/reader/app.ts")],
+  outfile: join(DIST, "reader.js"),
+});
+await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/reader/editor.ts")],
+  outfile: join(DIST, "editor.js"),
+});
+const legacy = join(DIST, "legacy");
+await mkdir(join(legacy, "corpus"), { recursive: true });
+await build({
+  ...bundle,
+  entryPoints: [join(ROOT, "src/render.ts")],
+  outfile: join(legacy, "renderer.js"),
+});
+for (const file of ["index.html", "app.js", "style.css", "favicon.svg"])
+  await cp(join(HERE, file), join(legacy, file));
+const corpus = existsSync(join(ROOT, "../tt-ont/instances"))
+  ? join(ROOT, "../tt-ont/instances")
+  : join(ROOT, "fixtures");
+const manifest = [];
+if (!process.argv.includes("--no-corpus"))
+  for (const file of (await readdir(corpus)).filter(
+    (f) => f.endsWith(".json") && f !== "manifest.json",
+  )) {
+    const raw = await readFile(join(corpus, file), "utf8");
+    let s;
+    try {
+      s = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+    await writeFile(join(legacy, "corpus", file), raw);
     manifest.push({
-      id,
-      title: story.meta?.title ?? id,
-      topology: story.topologyPatternId ?? '',
-      physics: story.primaryRuleSetId ?? '',
-      worlds: story.worlds?.length ?? 0,
-      events: story.events?.length ?? 0,
-      described: (story.events ?? []).filter(e => e.description).length,
+      id: file.replace(/\.json$/, ""),
+      title: s.meta?.title ?? file,
+      topology: s.topologyPatternId ?? "",
+      physics: s.primaryRuleSetId ?? "",
+      worlds: s.worlds?.length ?? 0,
+      events: s.events?.length ?? 0,
+      described: (s.events ?? []).filter((e) => e.description).length,
       bytes: raw.length,
     });
   }
-  manifest.sort((a, b) => a.title.localeCompare(b.title));
-  await writeFile(join(DIST, 'corpus', 'manifest.json'), JSON.stringify(manifest, null, 1));
-}
-
-const bytes = (await readdir(DIST, { withFileTypes: true })).length;
-console.log(`built web/dist — renderer.js ${Object.keys(result.metafile.outputs).length ? '' : ''}from ${inputs.length} modules · ${manifest.length} corpus files · ${bytes} top-level entries`);
-console.log(`  source: ${CORPUS_SRC}`);
+manifest.sort((a, b) => a.title.localeCompare(b.title));
+await writeFile(join(legacy, "corpus/manifest.json"), JSON.stringify(manifest));
+console.log(
+  `Built ${stories.length} authored guides and ${manifest.length} legacy records in web/dist. ${process.argv.includes("--release") ? "Release checks passed." : "Editorial preview; reviews pending."}`,
+);

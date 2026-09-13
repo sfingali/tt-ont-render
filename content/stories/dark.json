@@ -1,0 +1,149 @@
+{
+  "version": "2.0",
+  "id": "dark",
+  "title": "Dark",
+  "scope": "Season 1 · the Mikkel–Michael relationship only",
+  "premise": "Mikkel disappears from 2019. The child’s life in the past explains how Jonas can be searching for his own father without knowing it.",
+  "ending": "Mikkel grows up as Michael Kahnwald, Jonas’s father. Michael’s adult life occurs before Mikkel’s disappearance on the calendar, but after that disappearance in Mikkel’s own experience. This is one strand of Dark, not an explanation of its entire family knot.",
+  "people": [
+    {
+      "id": "mikkel",
+      "name": "Mikkel Nielsen / Michael Kahnwald",
+      "introduction": "One person: Mikkel is the child; Michael is the name he uses as an adult."
+    }
+  ],
+  "events": [
+    {
+      "id": "disappear",
+      "title": "Mikkel goes missing in 2019",
+      "text": "Mikkel disappears near the Winden caves. For his family, this starts a search for a missing child.",
+      "whenLabel": "2019 · the disappearance",
+      "people": [
+        "mikkel"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "past",
+      "title": "He finds himself in 1986",
+      "text": "Mikkel emerges in a Winden that is recognisable but decades too early. He cannot simply return to his family’s present.",
+      "whenLabel": "1986 · Mikkel’s arrival",
+      "people": [
+        "mikkel"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "grow",
+      "title": "The missing child grows up as Michael",
+      "text": "Mikkel remains in the past and is raised by Ines Kahnwald. The adult known as Michael is the same person, not a separate counterpart.",
+      "whenLabel": "From 1986 onward",
+      "people": [
+        "mikkel"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "father",
+      "title": "Michael becomes Jonas’s father",
+      "text": "Michael’s life with Hannah leads to Jonas’s birth. The missing boy and Jonas’s father belong to different stages of one life.",
+      "whenLabel": "Before the 2019 disappearance",
+      "people": [
+        "mikkel"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "letter",
+      "title": "His letter connects the two names",
+      "text": "Michael dies before Mikkel’s disappearance in 2019. His letter explains the identity connecting the child to the father. The sequence is strange on a calendar but continuous within his life.",
+      "whenLabel": "2019 · before Mikkel goes missing",
+      "people": [
+        "mikkel"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Mikkel",
+    "personRef": "mikkel",
+    "chapters": [
+      {
+        "title": "Follow the missing child",
+        "eventRefs": [
+          "disappear",
+          "past"
+        ]
+      },
+      {
+        "title": "Follow the life he lives",
+        "eventRefs": [
+          "grow",
+          "father",
+          "letter"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/dark.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "caves",
+      "kind": "journey",
+      "personRef": "mikkel",
+      "fromEvent": "disappear",
+      "toEvent": "past",
+      "label": "Mikkel’s journey takes him from 2019 to 1986."
+    }
+  ],
+  "views": [
+    {
+      "id": "calendar",
+      "kind": "chronology",
+      "title": "This strand by calendar date",
+      "frame": "Winden’s calendar, at the broad periods stated here",
+      "groups": [
+        {
+          "label": "1986 and the following years",
+          "eventRefs": [
+            "past",
+            "grow"
+          ],
+          "withinGroup": "unspecified"
+        },
+        {
+          "label": "Before the disappearance",
+          "eventRefs": [
+            "father",
+            "letter"
+          ],
+          "withinGroup": "unspecified"
+        },
+        {
+          "label": "The disappearance in 2019",
+          "eventRefs": [
+            "disappear"
+          ],
+          "withinGroup": "unspecified"
+        }
+      ]
+    }
+  ]
+}

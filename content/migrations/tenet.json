@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "storyId": "tenet",
+  "status": "editorial-draft",
+  "source": {
+    "url": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/tenet.json",
+    "sha256": "53a6be5e74878ccab99e725561da1ec431aa41c22229e3c831f68164806dd4e4",
+    "eventCount": 32,
+    "edgeCount": 44
+  },
+  "scope": "The 2020 film · the two sides of the Oslo encounter",
+  "events": [
+    {
+      "oldId": "e_opera",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_suicide_pill",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_recruit",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_barbara_demo",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_neil_meet",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_mumbai_priya",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_goya_plot",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_amalfi",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_oslo_freeport_fwd",
+      "disposition": "prose",
+      "newIds": [
+        "first-entry"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_turnstile_oslo_seen",
+      "disposition": "prose",
+      "newIds": [
+        "first-fight"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_priya_algorithm",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_tallinn_heist",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_tallinn_pincer",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_kat_inverted_bullet",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_invert_protagonist",
+      "disposition": "prose",
+      "newIds": [
+        "invert"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_oslo_freeport_inv",
+      "disposition": "prose",
+      "newIds": [
+        "other-fight"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_kat_care_invert",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_stalsk_plan",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_vietnam_kat",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_stalsk_red",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_stalsk_blue",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_neil_unlock",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_algorithm_secure",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_sator_dead",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_neil_trinket",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_founder",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_spare_priya",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_opera",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_turnstile_oslo",
+      "disposition": "prose",
+      "newIds": [
+        "first-fight"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_tallinn_pincer",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_stalsk",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_neil_reveal",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2020 film · the two sides of the Oslo encounter. Original remains in the pinned archive."
+    }
+  ],
+  "edges": [
+    {
+      "oldId": "tc1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc7",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc8",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc9",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc10",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc11",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc12",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc13",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc14",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc15",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc16",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc17",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc18",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc19",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc20",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tc21",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "tp6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv_neil_gate",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv_pincer_war",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv_pincer_war2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id_prot",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id_neil",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id_neil2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id_founder",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id_sator",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    }
+  ],
+  "addedBeats": [
+    {
+      "id": "return",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "exit",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    }
+  ]
+}

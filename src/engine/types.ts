@@ -108,6 +108,7 @@ export interface FactEdge {
   to: string;
   relation?: string;
   label?: string;
+  orderKind?: string;
   prov: Provenance;
 }
 

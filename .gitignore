@@ -1,4 +1,7 @@
 node_modules/
+.npm-cache/
+.compiled-*
+.inspect-*
 out/
 web/dist/
 *.log

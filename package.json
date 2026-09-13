@@ -3,18 +3,19 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Deterministic visual compiler for the time-travel ontology. The engine (semantic, design-agnostic) is strictly separated from design profiles (aesthetic grammars).",
+  "description": "Authored, human-readable guides to stories that bend time, with an optional legacy ontology viewer.",
   "license": "MIT",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "tsx tests/run.ts",
+    "test": "tsx tests/run.ts && tsx --test tests/reader.test.ts",
     "typecheck": "tsc --noEmit",
     "render": "tsx src/cli.ts",
     "coverage": "tsx src/coverage-cli.ts",
     "build:web": "node web/build.mjs",
-    "serve:web": "node web/build.mjs && npx --yes http-server web/dist -p 8099 -c-1"
+    "serve:web": "node web/build.mjs && npx --yes http-server web/dist -p 8099 -c-1",
+    "build:release": "node web/build.mjs --release"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

@@ -1,0 +1,133 @@
+{
+  "version": "2.0",
+  "id": "arrival",
+  "title": "Arrival",
+  "scope": "The 2016 film · Louise’s changing experience of time",
+  "premise": "Louise’s visions look like memories. Understanding the visitors’ language reveals that they belong to a future she has not yet lived.",
+  "ending": "Louise’s experience of time includes her future with Ian and their daughter Hannah. Information from a future encounter helps her act in the present; the family scenes are not simply an earlier chapter of her life.",
+  "people": [
+    {
+      "id": "louise",
+      "name": "Louise Banks",
+      "introduction": "A linguist learning a language that changes how she experiences time."
+    }
+  ],
+  "events": [
+    {
+      "id": "visions",
+      "title": "Family scenes appear without their place in time",
+      "text": "The film shows Louise with a daughter. At first, these scenes invite us to understand them as recollections. Their position in Louise’s life is the central reveal.",
+      "whenLabel": "As the film first presents them",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Louise begins learning the visitors’ language",
+      "text": "Louise works with Ian to communicate with the heptapods. As her understanding grows, she experiences scenes from her own future.",
+      "whenLabel": "During the arrival",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "recognition",
+      "title": "She recognises a future, not a lost past",
+      "text": "Louise comes to understand the experiences differently. Hannah belongs to the life she will share with Ian, rather than to a life that ended before the visitors arrived.",
+      "whenLabel": "During the arrival · the reveal",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "future-shang",
+      "title": "A future conversation contains what she needs now",
+      "text": "Louise experiences a later meeting with General Shang. He gives her information about the phone call that changed his decision during the crisis.",
+      "whenLabel": "A later reception, experienced during the crisis",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "call",
+      "title": "She uses that information to make the call",
+      "text": "During the crisis, Louise calls Shang and repeats the words learned through the future encounter. This helps avert an attack on the visitors.",
+      "whenLabel": "During the arrival · the crisis",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "choice",
+      "title": "She accepts the life she has glimpsed",
+      "text": "Louise chooses the relationship and family whose joys and losses she has experienced in advance. The guide leaves open the wider philosophical question of how choice works in this story.",
+      "whenLabel": "The future family life",
+      "people": [
+        "louise"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Louise",
+    "personRef": "louise",
+    "chapters": [
+      {
+        "title": "Reconsider the apparent memories",
+        "eventRefs": [
+          "visions",
+          "contact",
+          "recognition"
+        ]
+      },
+      {
+        "title": "See how future knowledge acts now",
+        "eventRefs": [
+          "future-shang",
+          "call"
+        ]
+      },
+      {
+        "title": "Understand her choice",
+        "eventRefs": [
+          "choice"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/arrival.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "information",
+      "kind": "influence",
+      "fromEvent": "future-shang",
+      "toEvent": "call",
+      "label": "Words learned at the later meeting enable Louise’s earlier phone call."
+    }
+  ]
+}

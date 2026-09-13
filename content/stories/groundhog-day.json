@@ -1,0 +1,147 @@
+{
+  "version": "2.0",
+  "id": "groundhog-day",
+  "title": "Groundhog Day",
+  "scope": "The 1993 film · representative stages of Phil’s repeating day",
+  "premise": "Phil keeps waking up on the same morning. If the town forgets each day, what can change?",
+  "ending": "The next morning finally arrives. The town has been repeating, but Phil has accumulated experience and changed the way he treats people. The film does not give an exact count of all his repeated days.",
+  "people": [
+    {
+      "id": "phil",
+      "name": "Phil Connors",
+      "introduction": "A weather presenter who remembers days that everyone else forgets."
+    }
+  ],
+  "events": [
+    {
+      "id": "first-day",
+      "title": "An ordinary assignment becomes a trap",
+      "text": "Phil reports on Groundhog Day in Punxsutawney. A blizzard prevents him from leaving town.",
+      "whenLabel": "February 2 · first shown day",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "again",
+      "title": "The morning starts again",
+      "text": "Phil wakes to the same alarm and finds the day repeating. Other people behave as though yesterday’s encounters have not happened. Phil remembers them.",
+      "whenLabel": "February 2 · another iteration",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "exploit",
+      "title": "He tests what the repetition lets him do",
+      "text": "With no lasting consequences for the town, Phil pursues pleasure and uses remembered details to manipulate encounters. These attempts do not free him.",
+      "whenLabel": "Across repeated days",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "despair",
+      "title": "Knowing the day does not give him control",
+      "text": "Phil’s attempts to escape the repetition fail. Even extreme actions lead back to the familiar morning. This is a phase of many days, not one documented iteration.",
+      "whenLabel": "Across repeated days",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "learn",
+      "title": "Experience becomes a way to help",
+      "text": "Phil develops skills and learns to respond to the people around him. Their day resets, but his practice and attention accumulate.",
+      "whenLabel": "Across repeated days",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "last-day",
+      "title": "He spends the day caring for other people",
+      "text": "Phil’s actions express the person he has become. His relationship with Rita is no longer just a sequence of tricks designed to obtain a particular response.",
+      "whenLabel": "February 2 · the final shown iteration",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "tomorrow",
+      "title": "A different morning arrives",
+      "text": "Phil wakes with Rita and discovers that time is moving forward again. The repeating day has ended.",
+      "whenLabel": "February 3",
+      "people": [
+        "phil"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Phil",
+    "personRef": "phil",
+    "chapters": [
+      {
+        "title": "Recognise the repetition",
+        "eventRefs": [
+          "first-day",
+          "again"
+        ]
+      },
+      {
+        "title": "Change within it",
+        "eventRefs": [
+          "exploit",
+          "despair",
+          "learn"
+        ]
+      },
+      {
+        "title": "Reach tomorrow",
+        "eventRefs": [
+          "last-day",
+          "tomorrow"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/groundhog-day.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "reset",
+      "kind": "reset",
+      "fromEvent": "first-day",
+      "toEvent": "again",
+      "label": "The town returns to the same morning.",
+      "retainedText": "Phil carries his memory into the next iteration. This pair illustrates the repeated reset; it does not count every day."
+    }
+  ]
+}

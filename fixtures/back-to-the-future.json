@@ -1,0 +1,682 @@
+{
+  "meta": {
+    "id": "back-to-the-future",
+    "title": "Back to the Future",
+    "year": 1985,
+    "medium": "film",
+    "sources": [
+      "Robert Zemeckis & Bob Gale (1985)",
+      "time-travel-archive/films/back-to-the-future.md",
+      "time-travel-archive true-deep wave 2026-09-06",
+      "collated dates 2026-09-08: depart Oct 26 1985 1:35 AM; arrive Nov 5 1955 6:15 AM; dance + lightning Nov 12 1955 (10:04 PM); return Oct 26 1985 1:24 AM; wake 10:28 AM",
+      "tenet-class deepen 2026-09-06"
+    ]
+  },
+  "ruleSetIds": [
+    "mutable_ripple",
+    "branch_on_intervention"
+  ],
+  "primaryRuleSetId": "mutable_ripple",
+  "mixinRuleSetIds": [
+    "branch_on_intervention"
+  ],
+  "topologyPatternId": "mutable_single_with_ripples",
+  "worlds": [
+    {
+      "kind": "timeline",
+      "id": "w_1985",
+      "label": "1985 Hill Valley (start)",
+      "spanLabel": "1985-10-25 to 10-26 (1:16 AM-11:33 PM)"
+    },
+    {
+      "kind": "branch",
+      "id": "w_1955",
+      "label": "1955 intervention field",
+      "parentRef": "w_1985",
+      "forkLabel": "lightning / DeLorean arrival"
+    },
+    {
+      "kind": "branch",
+      "id": "w_1985A",
+      "label": "1985A alternate (threat state)",
+      "parentRef": "w_1955",
+      "forkLabel": "parents fail to meet",
+      "pruned": false
+    },
+    {
+      "kind": "branch",
+      "id": "w_1985B",
+      "label": "1985B improved present",
+      "parentRef": "w_1955",
+      "forkLabel": "Enchantment Under the Sea success",
+      "description": "Ripple consolidates; supersedes 1985A"
+    }
+  ],
+  "agents": [
+    {
+      "id": "marty",
+      "label": "Marty McFly",
+      "identityGroup": "marty",
+      "continuityRole": "primary",
+      "homeWorldRef": "w_1985"
+    },
+    {
+      "id": "doc",
+      "label": "Doc Brown",
+      "identityGroup": "doc",
+      "continuityRole": "primary",
+      "homeWorldRef": "w_1985"
+    },
+    {
+      "id": "doc_1955",
+      "label": "Doc Brown (1955)",
+      "identityGroup": "doc",
+      "continuityRole": "younger_self",
+      "homeWorldRef": "w_1955"
+    },
+    {
+      "id": "george",
+      "label": "George McFly",
+      "identityGroup": "george",
+      "homeWorldRef": "w_1985"
+    },
+    {
+      "id": "lorraine",
+      "label": "Lorraine Baines",
+      "identityGroup": "lorraine",
+      "homeWorldRef": "w_1985"
+    },
+    {
+      "id": "biff",
+      "label": "Biff Tannen",
+      "identityGroup": "biff",
+      "homeWorldRef": "w_1985"
+    }
+  ],
+  "events": [
+    {
+      "id": "e_terrorists",
+      "type": "ordinary",
+      "label": "Libyans attack; Doc shot (apparent)",
+      "description": "The Libyan terrorists Doc stole the plutonium from track him down at the mall and shoot him. (He survives it, thanks to a bulletproof vest.)",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1985-10-26 01:16 mall"
+      },
+      "agents": [
+        "doc",
+        "marty"
+      ]
+    },
+    {
+      "id": "e_depart_85",
+      "type": "departure",
+      "label": "Marty flees in DeLorean to 1955",
+      "description": "Marty flees in the time machine and accidentally triggers it, vanishing thirty years into the past.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1985-10-26 01:35"
+      },
+      "agents": [
+        "marty"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "destinationTimeLabel": "1955",
+        "travelDelta": "-30y"
+      }
+    },
+    {
+      "id": "e_arrive_55",
+      "type": "arrival",
+      "label": "Marty arrives 1955 Hill Valley",
+      "description": "Marty crash-lands on a farm outside town. It is November 1955 - thirty years before he was born.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-05 06:15"
+      },
+      "agents": [
+        "marty"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "originTimeLabel": "1985"
+      }
+    },
+    {
+      "id": "e_interfere",
+      "type": "intervention",
+      "label": "Marty interferes with parents' first meeting",
+      "description": "Marty gets in the way of the car accident that first brought his parents together - and accidentally becomes the object of his teenage mother's affection.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-05 cafe/street"
+      },
+      "agents": [
+        "marty",
+        "george",
+        "lorraine",
+        "biff"
+      ]
+    },
+    {
+      "id": "e_fade",
+      "type": "observation",
+      "label": "Photograph / siblings begin to fade",
+      "description": "In a photograph from home, Marty's brother and sister start to vanish. If his parents never fall in love, he will be next.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-08 to 11-12"
+      },
+      "agents": [
+        "marty"
+      ],
+      "payload": {
+        "signal": "fading_photograph"
+      }
+    },
+    {
+      "id": "e_doc55",
+      "type": "contact",
+      "label": "1955 Doc recruited; clock tower plan",
+      "description": "Marty finds the Doc of 1955 and shows him the time machine. The only way home: a lightning bolt due to strike the courthouse clock tower in a week's time.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-05 lab"
+      },
+      "agents": [
+        "marty",
+        "doc_1955"
+      ]
+    },
+    {
+      "id": "e_dance",
+      "type": "intervention",
+      "label": "Enchantment Under the Sea — George punches Biff, kisses Lorraine",
+      "description": "At the school dance, Marty's father finally stands up to the bully and kisses Marty's mother. Marty's existence is safe again.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-12 21:00 dance"
+      },
+      "agents": [
+        "george",
+        "lorraine",
+        "marty",
+        "biff"
+      ]
+    },
+    {
+      "id": "e_lightning",
+      "type": "departure",
+      "label": "Clock tower lightning sends Marty to 1985",
+      "description": "The lightning hits the clock tower right on schedule and powers the time machine. Marty is thrown back to 1985.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-12 22:04"
+      },
+      "agents": [
+        "marty",
+        "doc_1955"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "destinationTimeLabel": "1985"
+      }
+    },
+    {
+      "id": "e_save_doc",
+      "type": "intervention",
+      "label": "Marty warns/saves Doc via letter (bulletproof vest)",
+      "description": "Back in 1985, Marty arrives too late to stop the shooting - but Doc taped together the warning letter Marty left him in 1955 and is wearing a bulletproof vest.",
+      "at": {
+        "worldRef": "w_1985B",
+        "timeLabel": "1985-10-26 01:24 mall"
+      },
+      "agents": [
+        "marty",
+        "doc"
+      ]
+    },
+    {
+      "id": "e_new_85",
+      "type": "reveal",
+      "label": "Improved 1985B: confident George, humbled Biff",
+      "description": "Marty wakes up in a different home: his father is a confident science-fiction author, his mother is happy, and the bully now works for his dad.",
+      "at": {
+        "worldRef": "w_1985B",
+        "timeLabel": "1985-10-26 10:28"
+      },
+      "agents": [
+        "marty",
+        "george",
+        "lorraine",
+        "biff"
+      ]
+    },
+    {
+      "id": "e_future_tease",
+      "type": "departure",
+      "label": "Doc arrives from 2015 — to be continued",
+      "description": "Doc bursts back from a trip to the future: Marty's kids are in trouble, and the adventure is not over.",
+      "at": {
+        "worldRef": "w_1985B",
+        "timeLabel": "1985-10-26 morning (Doc departs for 2015)"
+      },
+      "agents": [
+        "doc",
+        "marty"
+      ],
+      "payload": {
+        "travelMode": "machine",
+        "originTimeLabel": "2015"
+      }
+    },
+    {
+      "id": "ev_1955",
+      "type": "ordinary",
+      "label": "Marty arrives 1955",
+      "description": "Marty lands in 1955.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-05 06:15"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_enchantment",
+      "type": "ordinary",
+      "label": "Enchantment Under the Sea — parents unite",
+      "description": "At the dance, his parents finally fall for each other.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-12 21:28"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_lightning",
+      "type": "ordinary",
+      "label": "Clock tower lightning return",
+      "description": "The lightning strike sends Marty home.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-12 22:04"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "ev_1985b",
+      "type": "ordinary",
+      "label": "Rewritten affluent 1985",
+      "description": "The McFly family's life has been rewritten for the better.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1985-10-26"
+      },
+      "payload": {
+        "note": "repaired from true-deep stub",
+        "tags": [
+          "stub_repair"
+        ]
+      }
+    },
+    {
+      "id": "e_libyans",
+      "type": "ordinary",
+      "label": "Libyan attack; Doc shot",
+      "description": "The Libyans Doc cheated out of plutonium find him and shoot him at the mall.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1985-10-26 01:16"
+      }
+    },
+    {
+      "id": "e_1955",
+      "type": "arrival",
+      "label": "Marty arrives 1955",
+      "description": "Marty lands in 1955.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-05 06:15"
+      },
+      "payload": {
+        "travelMode": "machine"
+      }
+    },
+    {
+      "id": "e_parents",
+      "type": "intervention",
+      "label": "Interferes with George/Lorraine meet-cute",
+      "description": "Marty spoils the moment his parents were supposed to meet, putting his own existence at risk.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-05"
+      }
+    },
+    {
+      "id": "e_enchantment",
+      "type": "intervention",
+      "label": "Enchantment Under the Sea dance fix",
+      "description": "The plan to get his parents together comes off at the school dance.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-12"
+      }
+    },
+    {
+      "id": "e_1985b",
+      "type": "arrival",
+      "label": "Improved 1985; Doc lives",
+      "description": "Marty returns to a better 1985 - and Doc is alive.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1985-10-26"
+      },
+      "payload": {
+        "travelMode": "machine"
+      }
+    },
+    {
+      "id": "e_photo",
+      "type": "observation",
+      "label": "Family photo fades then restores",
+      "description": "Marty's family photograph fades as his existence becomes less likely, then comes back as his parents get together.",
+      "at": {
+        "worldRef": "w_1985",
+        "timeLabel": "1955-11-12"
+      }
+    },
+    {
+      "id": "e_darth_vader",
+      "type": "intervention",
+      "label": "Marty as \"Darth Vader\" pushes George toward Lorraine",
+      "description": "Wearing a radiation suit, Marty scares his timid father into asking Lorraine out by pretending to be an alien called Darth Vader.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-08 01:21"
+      },
+      "agents": [
+        "marty",
+        "george"
+      ],
+      "payload": {
+        "note": "added 2026-09-08: Futurepedia Timeline 2, Tuesday Nov 8, 1:21 AM radiation-suit scene"
+      }
+    },
+    {
+      "id": "e_george_lorraine",
+      "type": "contact",
+      "label": "George and Lorraine’s first meeting restored; love begins",
+      "description": "History back on course: George rescues Lorraine at the dance and the two fall in love - this time for real.",
+      "at": {
+        "worldRef": "w_1955",
+        "timeLabel": "1955-11-12"
+      },
+      "agents": [
+        "george",
+        "lorraine"
+      ],
+      "payload": {
+        "note": "added 2026-09-08: original meet-cute was Nov 5 car accident, displaced by Marty; restored at the dance"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "wr1",
+      "kind": "world_relation",
+      "from": "w_1955",
+      "to": "w_1985",
+      "relation": "forksFrom"
+    },
+    {
+      "id": "wr2",
+      "kind": "world_relation",
+      "from": "w_1985A",
+      "to": "w_1955",
+      "relation": "forksFrom",
+      "label": "parents fail"
+    },
+    {
+      "id": "wr3",
+      "kind": "world_relation",
+      "from": "w_1985B",
+      "to": "w_1955",
+      "relation": "forksFrom",
+      "label": "dance success"
+    },
+    {
+      "id": "wr4",
+      "kind": "world_relation",
+      "from": "w_1985B",
+      "to": "w_1985A",
+      "relation": "supersedes",
+      "label": "ripple consolidates"
+    },
+    {
+      "id": "c1",
+      "kind": "causal",
+      "from": "e_terrorists",
+      "to": "e_depart_85"
+    },
+    {
+      "id": "c2",
+      "kind": "causal",
+      "from": "e_depart_85",
+      "to": "e_arrive_55"
+    },
+    {
+      "id": "c3",
+      "kind": "causal",
+      "from": "e_arrive_55",
+      "to": "e_interfere"
+    },
+    {
+      "id": "c4",
+      "kind": "causal",
+      "from": "e_interfere",
+      "to": "e_fade"
+    },
+    {
+      "id": "c5",
+      "kind": "causal",
+      "from": "e_fade",
+      "to": "e_doc55"
+    },
+    {
+      "id": "c6",
+      "kind": "causal",
+      "from": "e_doc55",
+      "to": "e_dance"
+    },
+    {
+      "id": "c7",
+      "kind": "causal",
+      "from": "e_dance",
+      "to": "e_lightning"
+    },
+    {
+      "id": "c8",
+      "kind": "causal",
+      "from": "e_lightning",
+      "to": "e_save_doc"
+    },
+    {
+      "id": "c9",
+      "kind": "causal",
+      "from": "e_save_doc",
+      "to": "e_new_85"
+    },
+    {
+      "id": "c10",
+      "kind": "causal",
+      "from": "e_new_85",
+      "to": "e_future_tease"
+    },
+    {
+      "id": "id1",
+      "kind": "identity",
+      "from": "doc",
+      "to": "doc_1955"
+    },
+    {
+      "id": "iv1",
+      "kind": "intervention",
+      "from": "e_dance",
+      "to": "e_new_85",
+      "label": "rewrite present"
+    },
+    {
+      "id": "rep_1",
+      "kind": "temporal",
+      "from": "ev_1955",
+      "to": "ev_enchantment",
+      "label": "precedes"
+    },
+    {
+      "id": "rep_2",
+      "kind": "causal",
+      "from": "ev_enchantment",
+      "to": "ev_lightning",
+      "label": "enables"
+    },
+    {
+      "id": "rep_3",
+      "kind": "causal",
+      "from": "ev_lightning",
+      "to": "ev_1985b",
+      "label": "causes"
+    },
+    {
+      "id": "nbac1",
+      "kind": "causal",
+      "from": "e_libyans",
+      "to": "e_1955"
+    },
+    {
+      "id": "nbac2",
+      "kind": "causal",
+      "from": "e_1955",
+      "to": "e_parents"
+    },
+    {
+      "id": "nbac3",
+      "kind": "causal",
+      "from": "e_parents",
+      "to": "e_enchantment"
+    },
+    {
+      "id": "nbac4",
+      "kind": "causal",
+      "from": "e_enchantment",
+      "to": "e_1985b"
+    },
+    {
+      "id": "nbac5",
+      "kind": "causal",
+      "from": "e_1985b",
+      "to": "e_photo"
+    },
+    {
+      "id": "bridge_back-to-",
+      "kind": "causal",
+      "from": "ev_1985b",
+      "to": "e_libyans"
+    },
+    {
+      "id": "bx1",
+      "kind": "causal",
+      "from": "e_parents",
+      "to": "e_photo"
+    },
+    {
+      "id": "bx2",
+      "kind": "intervention",
+      "from": "e_enchantment",
+      "to": "e_lightning"
+    },
+    {
+      "id": "bx3",
+      "kind": "temporal",
+      "from": "e_1955",
+      "to": "e_1985b"
+    },
+    {
+      "id": "c_darth",
+      "kind": "causal",
+      "from": "e_darth_vader",
+      "to": "e_dance"
+    },
+    {
+      "id": "c_glor",
+      "kind": "causal",
+      "from": "e_george_lorraine",
+      "to": "e_1985b"
+    }
+  ],
+  "interventions": [
+    {
+      "id": "iv_meet",
+      "eventId": "e_interfere",
+      "ruleEffects": [
+        {
+          "ruleSetId": "mutable_ripple",
+          "effect": "Past change threatens Marty existence; fade signal"
+        }
+      ]
+    },
+    {
+      "id": "iv_dance",
+      "eventId": "e_dance",
+      "ruleEffects": [
+        {
+          "ruleSetId": "mutable_ripple",
+          "effect": "Parents' success rewrites 1985 into improved present"
+        },
+        {
+          "ruleSetId": "branch_on_intervention",
+          "effect": "1985A threat state superseded by 1985B"
+        }
+      ]
+    }
+  ],
+  "outcome": {
+    "summary": "Marty restores and improves his present via 1955 interventions; photograph fade reverses; Doc returns from 2015.",
+    "endWorldRefs": [
+      "w_1985B"
+    ]
+  },
+  "semanticReview": [
+    {
+      "target": {
+        "kind": "story"
+      },
+      "dimension": "topology",
+      "status": "INCOMPLETE",
+      "note": "Topology conformance unresolved (count-level mismatch); classification UNKNOWN pending inspection"
+    },
+    {
+      "target": {
+        "kind": "story"
+      },
+      "dimension": "event_identity",
+      "status": "INCOMPLETE",
+      "note": "Summary/padding event-id candidates present; granularity UNKNOWN"
+    }
+  ]
+}

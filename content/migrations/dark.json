@@ -1,0 +1,386 @@
+{
+  "version": 1,
+  "storyId": "dark",
+  "status": "editorial-draft",
+  "source": {
+    "url": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/dark.json",
+    "sha256": "582ee64487271d202e0be71b784cac68f60cecf52aadd98c3e0ef2b25e7d6fdb",
+    "eventCount": 24,
+    "edgeCount": 34
+  },
+  "scope": "Season 1 · the Mikkel–Michael relationship only",
+  "events": [
+    {
+      "oldId": "e_accident",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_machine",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_cave",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_mikkel",
+      "disposition": "prose",
+      "newIds": [
+        "grow"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_sic_mundus",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_book",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_chair",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_apocalypse",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_twin_contact",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_unknown_born",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_knot",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_claudia_truth",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_origin_trip",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_save",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_dissolve",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_dinner",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_mikkel",
+      "disposition": "prose",
+      "newIds": [
+        "grow"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_apocalypse",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_eva_world",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_origin_fix",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_unknot",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_adam",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_martha",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_origin_world",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: Season 1 · the Mikkel–Michael relationship only. Original remains in the pinned archive."
+    }
+  ],
+  "edges": [
+    {
+      "oldId": "wr1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c7",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c8",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c9",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c10",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c11",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c12",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c13",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c14",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c15",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ndar1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ndar2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bridge_dark",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "dkx1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "dkx2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    }
+  ],
+  "addedBeats": [
+    {
+      "id": "disappear",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "past",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "father",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "letter",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    }
+  ]
+}

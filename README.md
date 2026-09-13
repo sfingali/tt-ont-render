@@ -1,183 +1,76 @@
-# tt-ont-render
+# Timelines
 
-**Deterministic visual compiler for the [time-travel ontology](https://github.com/sfingali/time-travel-ontology).**
+Readable guides to stories that bend time. Start with a person's problem, follow a small set of meaningful moments, and explain where the story leaves them.
 
-[![CI](https://github.com/sfingali/tt-ont-render/actions/workflows/ci.yml/badge.svg)](https://github.com/sfingali/tt-ont-render/actions/workflows/ci.yml)
+The default site is an authored story reader. The original ontology renderer remains available at `/legacy/` and through the CLI.
 
-Takes a validated `StoryEncoding` — worlds, agents, events, edges — and compiles it into a chart.
-Pure functions, no clocks, no randomness, no I/O: the same input always produces byte-identical output.
+## Run
 
-**Zero runtime dependencies.** three.js is pinned by importmap inside the HTML the 3D profile emits.
+Requires Node 20 or later.
 
-| Design profile | Medium | Designed for | Draws |
-|---|---|---|---|
-| `counterpoint` — Counterpoint Score | 2D SVG | `inverted_single_timeline`, `single_fixed_timeline` | one world band, agent lanes as staves |
-| `reveal` — Reveal Atlas | 2D SVG | `single_fixed_timeline` | one world band, terraces by causal depth |
-| `temporal` — Temporal Section | 2.5D SVG | `origin_plus_twins`, nested worlds | every world, as stacked planes |
-| `worldline` — Worldline Loom | 3D HTML | `worldline_bundle`, `single_fixed_timeline` | every world, time-resolved events only |
-| `atlas` — Topology Atlas | 2D SVG | any topology | everything declared: worlds as T/B/P primitives, every event, every encoded edge |
-
-`topoAffinity` is advisory. A profile rendering a topology outside its affinity is a **declared warning**, never a refusal.
-Because `counterpoint` and `reveal` are single-world grids, a multi-world story raises
-`TOPO_AFFINITY_MISMATCH` and only its first world is drawn — use `temporal` or `worldline` for those.
-
-Every profile returns a `drawn` declaration alongside its document: the concrete ontology source
-ids it actually marked. `npm run coverage -- --story <name>` reconciles that declaration against the
-resolved `Facts` and prints every declared world, agent, event, edge (grouped by kind), intervention
-and outcome as drawn or not drawn with a reason. A declaration naming an id the story does not
-declare is a hard error, and not-drawn status is derived from `Facts` itself, so a profile cannot
-hide an omission.
-
----
-
-## Quick start
-
-Node **20+**.
-
-```bash
-npm install
-
-npm test                 # determinism, invariants, seam, provenance, node text, coverage
+```sh
+npm ci
 npm run typecheck
-
-npx tsx src/cli.ts --story tenet       --profile counterpoint --out out/tenet.svg
-npx tsx src/cli.ts --story arrival     --profile reveal       --out out/arrival.svg
-npx tsx src/cli.ts --story dark        --profile temporal     --out out/dark.svg
-npx tsx src/cli.ts --story steins-gate --profile worldline    --out out/steins-gate.html
-
-npm run coverage -- --story dark         # drawn/not-drawn report for every profile
+npm test
+npm run serve:web
 ```
 
-The CLI exits `2` on invariant violations — it never silently renders a broken scene.
-It prints the audit: unrecoverable problems are errors, advisory anomalies are warnings.
+Open http://localhost:8099. `npm run build:web` creates a static preview in `web/dist`; it can be served under a subdirectory. `npm run build:release` additionally requires source and reader reviews to be recorded as passed in `content/catalog.json`.
 
-### Where stories come from
+## Write a guide
 
-`--story` takes a bare name (`tenet`) or any path containing a `/`. The corpus is resolved in this order:
+The seven editorial pilots are in `content/stories`. Begin with a title, scope, premise, ending and an explicit reading path. Add optional connections only when they explain something the reader needs to understand.
 
-1. `--instances <dir>`
-2. `$TT_ONT_INSTANCES`
-3. `../tt-ont/instances` — the sibling ontology repo, if checked out alongside
-4. `./fixtures` — the vendored subset committed here (tenet, steins-gate, dark, arrival)
-
-`npm test` loads from `fixtures/` (or `$TT_ONT_INSTANCES`) the same way, so the suite runs standalone.
-
----
-
-## Node text: the description leads
-
-Every event in the corpus carries a plain-English `description`, written for a reader who has not seen
-the work and knows no ontology vocabulary. **That description is the node's primary text**; the short
-`label` sits beneath it, and the encoded `timeLabel` last in mono. Ids are never rendered, and a long
-word is never allowed to widen a column.
-
-This is a rendering contract, not a style choice: chart text is prose a person can read, not a dump of
-ontology terms. `src/design/registry.ts` holds the whole text layer — `wrapText`, `nodeTextBlock`,
-`emitNodeText` — and it is measurement-free: a fixed 0.52em advance estimate and greedy word wrap, so
-layout stays deterministic across machines.
-
-### Legibility is not negotiable; canvas size is
-
-No profile draws text below **10px**, and the `atlas` profile's layout is sized to that floor: box heights
-follow their own text, and the canvas grows instead of the type shrinking. `npm test` asserts the floor and
-checks that no two text boxes overlap, so a layout change that quietly reintroduces 7px labels fails CI.
-
-## The seam
-
-The one architectural decision that everything else depends on:
-
-```
-src/engine/   semantic, design-agnostic       src/design/   aesthetic grammars
-────────────                                 ────────────
-index + resolve → Facts (provenance)          pure (scene, theme) → SVG / HTML
-scene graph, audits, invariants               counterpoint · reveal · temporal · worldline
+```json
+{
+  "version": "2.0",
+  "id": "a-small-example",
+  "title": "A message from tomorrow",
+  "scope": "An original one-moment example",
+  "premise": "What does Mira learn from the message?",
+  "ending": "She knows the bridge will close tomorrow.",
+  "events": [{
+    "id": "message",
+    "title": "Mira reads the warning",
+    "text": "A message dated tomorrow warns Mira that the bridge will close."
+  }],
+  "guide": {
+    "title": "Read the explanation",
+    "chapters": [{ "title": "The warning", "eventRefs": ["message"] }]
+  }
+}
 ```
 
-- `src/engine/` must **never** import from `src/design/`. A test walks the engine directory and fails if it does.
-- `src/render.ts` is the only place the two meet, and it is ~50 lines long.
-- A design profile receives only the `SemanticScene`. It cannot re-interpret the ontology: every visual assertion it makes carries provenance the engine computed.
+Use **Edit a guide** to open or paste a document, preview it, recover a local draft and download it. Opening legacy JSON extracts candidate descriptions and preserves the original with a migration ledger; it deliberately leaves the guide unwritten. Import success does not mean a guide is ready to publish.
 
-### Ordering is asserted, not assumed
+The reader works as static HTML without JavaScript. JavaScript adds moment selection, optional authored reading orders and print controls. Phone layouts place connection details beside their moments. Each moment also has a downloadable SVG explanation.
 
-- An event's position comes **only** from encoded `temporal` edges within its world. Ordinal = position in that walk.
-- Events on no temporal chain get `order = null` and land on a visible **"time not positioned"** shelf. Gaps stay visible; nothing is invented.
-- Nesting depth derives **only** from encoded `nestsWithin` world relations.
-- **Causal depth is a longest acyclic path.** Causal graphs here are frequently cyclic — a bootstrap knot is a cycle by definition — so a naive relaxation never converges (Tenet inflated to depth 17,116). Back edges are not expanded, the count is reported as an audit issue, and every chart that uses causal depth states the derivation on its face.
-- Causal layering is a *derived, labeled* signal. It is never passed off as chronology.
+## Where things live
 
-Every assertion carries one of four statuses: `declared` (a catalogue id) · `encoded` (present in the JSON) · `derived` (a documented deterministic rule) · `unresolved` (the data does not establish it — render the gap).
+| Location | Responsibility |
+| --- | --- |
+| `content/stories` | Authored explanations |
+| `content/catalog.json` | Library and editorial release review |
+| `content/migrations` | Record-by-record dispositions and pinned sources |
+| `src/content` | Reader document contract and cautious legacy import |
+| `src/reader` | Static HTML, interaction, author preview and SVG export |
+| `web/reader.css` | Responsive reader and print styling |
+| `src/engine`, `src/design` | Legacy ontology renderer |
+| `tests` | Reader contracts and legacy regressions |
 
-### How each profile places text
+See [the reader design contract](docs/READER-DESIGN.md) for the implemented scope, content meanings, migration policy and release requirements. Older design documents describe the research viewer; they do not govern the new reader.
 
-- `counterpoint` — four text bands, two above the staves and two below, staggered. Column width comes from the wrap budget, so a dense story makes a wider score, never smaller type.
-- `reveal` — the terrace *is* the text: its height is set by the description, and the caption hangs beneath it.
-- `temporal` — text is a callout outside its plane, tied to its dot by a leader line (the axonometric convention). Planes are spaced by the text height as well as their own depth, so no callout lands on the plane above.
-- `worldline` — one screen-facing panel per event, alternating above and below the bead. Panels are 3D sprites: orbiting separates them, and crowded views overlap by nature of the medium.
+## Status
 
----
+Seven pilot guides are implemented. Their wording is adapted from repository material and awaits independent primary-source review and comprehension sessions with readers. Preview and release are intentionally distinct. The remaining ontology corpus has not been bulk-converted into published guides.
 
-## Contract
+## Legacy renderer
 
-The **`atlas` profile implements [DESIGN-ATLAS.md](https://github.com/sfingali/time-travel-ontology/blob/main/docs/DESIGN-ATLAS.md) literally** (§2 primitive-to-form grammar, §5 physics seals, §6 axis states, §8 renderer contract, §9 worked composition): T/B/P world primitives with header tabs, a double-outline enclosure for a `parallel_world`, a fork connector anchored at the encoded fork event — and "fork event unspecified" rather than an invented junction — the per-event-type glyph vocabulary, and one routing channel per encoded edge kind with exactly one arrowhead per edge. The other four profiles are aesthetic interpretations of the same facts, authored as their own grammars: they compose from events and their own derived signals, and (as `npm run coverage` will tell you) they stroke no encoded edges at all. The ontology stays the source of truth: `worlds[].kind` selects the world primitive, `topologyPatternId` selects the composition, and **only encoded relationships become connections** — shared labels, proximity and shared event participation establish nothing.
+The existing `render` and `coverage` commands remain available. The web research viewer defaults to Atlas. Only explicitly chronological temporal edges can establish its calendar ordering; ambiguous and unconnected events are left unpositioned.
 
-No LLM participates in runtime semantic interpretation. The four design grammars were authored as prose design briefs, then implemented here as deterministic profiles that obey the atlas.
-
----
-
-## The GUI
-
-**https://timelines.stephenfingleton.com** — load a scheme file, pick a rendering, look at it.
-The page runs *this compiler*, bundled for the browser: the same engine and the same four profiles
-the CLI uses, so what you see on the site is what `npm run render` produces, with no server involved
-and nothing uploaded anywhere.
-
-```bash
-npm run build:web     # bundle → web/dist/ (renderer.js + the shell + a copy of the corpus)
+```sh
+npm run render -- --help
+npm run coverage -- --help
 ```
 
-`web/dist/` is a build product and is git-ignored; the sources are `web/index.html`, `web/app.js`,
-`web/style.css`, `web/build.mjs`. The build copies every hand-crafted scheme from `../tt-ont/instances`
-(or `fixtures/` when the sibling repo is not checked out) into `web/dist/corpus/` with a `manifest.json`,
-which is what the corpus list on the left of the page reads. **Re-run the build after the corpus changes**,
-or the site serves stale schemes.
-
-`build.mjs` fails the build if the browser bundle ever pulls in a Node builtin, which is the one
-constraint that keeps the engine portable: nothing in `src/engine/` or `src/design/` may use `node:*`
-(only `src/cli.ts` may).
-
-The site is served from `web/dist` by the Caddy block for `timelines.stephenfingleton.com`; a deploy is
-therefore `npm run build:web` — no copy step, no restart.
-
-`web/smoke.mjs` drives the built page in a real browser (corpus list, all four profiles, a dropped local
-file, and the audit column's width) and reports console errors:
-
-```bash
-PLAYWRIGHT=/path/to/playwright-core/index.js CHROME=/path/to/chrome node web/smoke.mjs https://timelines.stephenfingleton.com
-```
-
----
-
-## Layout
-
-```
-src/engine/     facts resolution, scene graph, audits, invariants (design-agnostic)
-src/design/     profile registry, text layer, four aesthetic grammars
-src/render.ts   render(request) — the only engine↔design meeting point
-src/coverage.ts draw-declaration reconciliation + report formatter
-src/cli.ts      command line
-src/coverage-cli.ts  coverage report command line
-tests/run.ts    correctness suite
-fixtures/       vendored corpus subset for standalone tests
-examples/       committed renders (SVG + HTML; PNGs are build products)
-web/            the browser GUI (shell + build script + smoke test); web/dist/ is built
-```
-
-## Examples
-
-`examples/` holds vector output only — diffable, no rasterised build products. `dark-atlas.svg` is the
-`atlas` profile on the three-world worked example from DESIGN-ATLAS §9. Rasterise with any SVG
-tool (`cairosvg`, `rsvg-convert`, a browser); the 3D profile needs a WebGL-capable browser.
-
-## Licence
-
-MIT
+MIT license.

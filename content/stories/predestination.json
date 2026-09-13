@@ -3,7 +3,7 @@
   "id": "predestination",
   "title": "Predestination",
   "scope": "The 2014 film · the central character’s identity loop",
-  "premise": "Several people appear to occupy different roles in this story. Following one life reveals that they are stages of the same person.",
+  "premise": "A bartender, a missing lover and an abandoned child appear to belong to different lives. How do they fit into the life first told as Jane’s story?",
   "ending": "Jane, John, the agent and the Fizzle Bomber are stages of one life. The child is also that same person: the story closes the parentage loop rather than providing an outside origin. Names here identify stages and roles; they do not imply separate people.",
   "people": [
     {
@@ -40,7 +40,7 @@
     {
       "id": "meeting",
       "title": "John tells the bartender about that life",
-      "text": "John recounts these events to a bartender, who is a temporal agent. The agent offers John a chance to confront the man who abandoned Jane.",
+      "text": "Now living as John, the person who grew up as Jane tells a bartender about the missing lover and child. The bartender is an agent who travels through time. He offers to take John back to confront the man who abandoned Jane.",
       "whenLabel": "John’s encounter with the agent",
       "people": [
         "traveller"
@@ -64,7 +64,7 @@
     {
       "id": "agent",
       "title": "The agent closes the child’s loop",
-      "text": "John’s life leads toward becoming the agent. The agent takes Jane’s baby to the orphanage in the past, where the child grows up as Jane. The baby has no separate identity outside this loop.",
+      "text": "John later becomes the agent—the same person as the bartender who offered him the journey. As the agent, he takes Jane’s baby back to the orphanage. That baby grows up as Jane, completing the circle.",
       "whenLabel": "The agent’s journeys",
       "people": [
         "traveller"
@@ -76,7 +76,7 @@
     {
       "id": "bomber",
       "title": "The final enemy is another future stage",
-      "text": "The agent confronts the Fizzle Bomber and discovers an older version of himself. The ending links the attempt to prevent the bomber with the life that becomes him.",
+      "text": "The agent confronts the Fizzle Bomber, the criminal he has been pursuing, and recognises an older version of himself. This brings another apparently separate person into the same life.",
       "whenLabel": "The confrontation with the older self",
       "people": [
         "traveller"
@@ -87,7 +87,7 @@
     }
   ],
   "guide": {
-    "title": "Follow Jane",
+    "title": "Follow one life through its changing roles",
     "personRef": "traveller",
     "chapters": [
       {
@@ -104,7 +104,8 @@
           "lover",
           "agent",
           "bomber"
-        ]
+        ],
+        "introduction": "Connect the roles one at a time: John is the lover; the older John is the agent; the baby the agent carries is the child who grows up as Jane."
       }
     ]
   },
@@ -114,6 +115,12 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/predestination.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "hawke-interview",
+      "title": "Ethan Hawke and the Spierig brothers discuss the identity puzzle",
+      "locator": "https://legacy.aintitcool.com/node/69928",
+      "note": "Interview conducted at SXSW 2014 and published 5 January 2015. Hawke discusses the audience recognising one person. It corroborates the broad identity premise, not every role, journey or claim about the ending."
     }
   ],
   "connections": [

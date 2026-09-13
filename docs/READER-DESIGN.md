@@ -49,6 +49,8 @@ The model distinguishes an explanatory phase from a timestamp through ordinary w
 
 These are editorial drafts based on existing repository material. They have not been independently checked against every scene of the primary works. `content/catalog.json` therefore records source and reader review as pending. Preview builds work; `npm run build:release` fails until both reviews pass. A passing schema is never recorded as a source review.
 
+The [source and editorial review](SOURCE-AND-READER-REVIEW.md) records the subsequent wording changes, specific corroboration and outstanding checks. The [reader study kit](READER-STUDY.md) supplies a session protocol and per-guide questions. No participant results are claimed.
+
 ## Author workspace and migration
 
 `/edit.html` accepts a format 2.0 JSON file or a legacy ontology file. It supports editing, validation, guide preview, local draft recovery and download. This is a minimal document editor, not a visual graph editor. Browser storage is best-effort; downloading is the durable handoff.

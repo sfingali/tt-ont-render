@@ -16,25 +16,27 @@
     {
       "id": "escape",
       "title": "Marty escapes into the past",
-      "text": "After Doc is attacked at the mall, Marty flees in the DeLorean. Its time circuits send him thirty years into the past.",
+      "text": "In 1985, Marty’s father George is still intimidated by Biff, the bully he knew at school. Marty’s friend Doc Brown has built a time machine in a DeLorean car. When Doc is attacked at the mall, Marty escapes in it and is sent thirty years into the past.",
       "whenLabel": "1985 · the departure",
       "people": [
         "marty"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "amblin"
       ]
     },
     {
       "id": "arrival",
       "title": "He arrives before his parents met",
-      "text": "Marty lands in 1955. He finds the younger Doc, who must work out how to send him home without a fresh supply of plutonium.",
+      "text": "Marty arrives in 1955, when his parents, George and Lorraine, are teenagers. They have yet to fall in love.",
       "whenLabel": "1955 · the arrival",
       "people": [
         "marty"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "amblin"
       ]
     },
     {
@@ -46,7 +48,9 @@
         "marty"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "amblin",
+        "creators-faq"
       ]
     },
     {
@@ -64,7 +68,7 @@
     {
       "id": "lightning",
       "title": "Lightning provides the way home",
-      "text": "Doc channels the clock-tower lightning strike into the DeLorean. Marty makes the run and travels back to 1985. His warning letter to Doc is another intervention in the past.",
+      "text": "The younger Doc helps Marty plan his return. Without the plutonium normally needed to power the time machine, they use a clock-tower lightning strike. Marty travels back to 1985, leaving Doc a letter warning him about the attack at the mall.",
       "whenLabel": "1955 · the return journey",
       "people": [
         "marty"
@@ -95,7 +99,8 @@
         "eventRefs": [
           "escape",
           "arrival"
-        ]
+        ],
+        "introduction": "Follow the order Marty lives through: 1985, then 1955, then back to 1985."
       },
       {
         "title": "Repair the meeting",
@@ -119,6 +124,18 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/back-to-the-future.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "amblin",
+      "title": "Amblin: Back to the Future (1985)",
+      "locator": "https://amblin.com/movie/back-to-the-future/",
+      "note": "The producer’s synopsis supports the 1985–1955 trip, Doc’s role and the danger to Marty’s family. It does not verify every scene in this guide."
+    },
+    {
+      "id": "creators-faq",
+      "title": "Bob Gale and Robert Zemeckis: trilogy questions",
+      "locator": "https://www.backtothefuture.com/movies/faq",
+      "note": "The question about paradoxes discusses Marty interrupting George’s accident and threatening his own existence. This is creator commentary, not a scene-by-scene check of the film."
     }
   ],
   "connections": [

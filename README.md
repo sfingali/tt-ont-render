@@ -62,7 +62,7 @@ See [the reader design contract](docs/READER-DESIGN.md) for the implemented scop
 
 ## Status
 
-Seven pilot guides are implemented. Their wording is adapted from repository material and awaits independent primary-source review and comprehension sessions with readers. Preview and release are intentionally distinct. The remaining ontology corpus has not been bulk-converted into published guides.
+Seven pilot guides are implemented. An [editorial and source review](docs/SOURCE-AND-READER-REVIEW.md) records clarity fixes, limited creator/screenplay corroboration and the remaining scene checks. The [reader study kit](docs/READER-STUDY.md) is ready for actual comprehension sessions; none have been conducted. Both review flags remain pending for every guide. The remaining ontology corpus has not been bulk-converted into published guides.
 
 ## Legacy renderer
 

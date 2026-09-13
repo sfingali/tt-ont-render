@@ -3,7 +3,7 @@
   "id": "arrival",
   "title": "Arrival",
   "scope": "The 2016 film · Louise’s changing experience of time",
-  "premise": "Louise’s visions look like memories. Understanding the visitors’ language reveals that they belong to a future she has not yet lived.",
+  "premise": "Louise sees scenes with a daughter before we understand where they belong in her life. How does seeing her future help her during the visitors’ arrival?",
   "ending": "Louise’s experience of time includes her future with Ian and their daughter Hannah. Information from a future encounter helps her act in the present; the family scenes are not simply an earlier chapter of her life.",
   "people": [
     {
@@ -22,13 +22,14 @@
         "louise"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "heisserer"
       ]
     },
     {
       "id": "contact",
       "title": "Louise begins learning the visitors’ language",
-      "text": "Louise works with Ian to communicate with the heptapods. As her understanding grows, she experiences scenes from her own future.",
+      "text": "Louise, a linguist, works with physicist Ian Donnelly to communicate with the alien visitors, the heptapods. As she learns their language, she experiences scenes from her own future.",
       "whenLabel": "During the arrival",
       "people": [
         "louise"
@@ -40,19 +41,20 @@
     {
       "id": "recognition",
       "title": "She recognises a future, not a lost past",
-      "text": "Louise comes to understand the experiences differently. Hannah belongs to the life she will share with Ian, rather than to a life that ended before the visitors arrived.",
+      "text": "The girl is Hannah, the daughter Louise will have with Ian. The family scenes show a life still ahead of Louise during the arrival.",
       "whenLabel": "During the arrival · the reveal",
       "people": [
         "louise"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "heisserer"
       ]
     },
     {
       "id": "future-shang",
       "title": "A future conversation contains what she needs now",
-      "text": "Louise experiences a later meeting with General Shang. He gives her information about the phone call that changed his decision during the crisis.",
+      "text": "During the crisis, Louise experiences a future reception with General Shang, a Chinese military leader. At that later meeting, he tells her what she said in the phone call that changed his decision.",
       "whenLabel": "A later reception, experienced during the crisis",
       "people": [
         "louise"
@@ -64,25 +66,27 @@
     {
       "id": "call",
       "title": "She uses that information to make the call",
-      "text": "During the crisis, Louise calls Shang and repeats the words learned through the future encounter. This helps avert an attack on the visitors.",
+      "text": "Louise calls Shang during the crisis. She repeats his wife’s dying words, learned through their future encounter, and helps persuade him to call off the attack on the visitors.",
       "whenLabel": "During the arrival · the crisis",
       "people": [
         "louise"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "heisserer"
       ]
     },
     {
       "id": "choice",
       "title": "She accepts the life she has glimpsed",
-      "text": "Louise chooses the relationship and family whose joys and losses she has experienced in advance. The guide leaves open the wider philosophical question of how choice works in this story.",
-      "whenLabel": "The future family life",
+      "text": "Knowing the joy and loss ahead, Louise embraces a life with Ian and their daughter Hannah. Her knowledge of that future is part of the decision she makes as the arrival ends.",
+      "whenLabel": "As the arrival ends · with knowledge of the future",
       "people": [
         "louise"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "heisserer"
       ]
     }
   ],
@@ -96,7 +100,8 @@
           "visions",
           "contact",
           "recognition"
-        ]
+        ],
+        "introduction": "Begin with what the film shows us, then reconsider it with Louise. Seeing a moment and living through its events can happen at different points in her life."
       },
       {
         "title": "See how future knowledge acts now",
@@ -119,6 +124,12 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/arrival.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "heisserer",
+      "title": "Eric Heisserer on the opening, Shang’s words and Louise’s choice",
+      "locator": "https://whatsuphollywood.com/features/2693/",
+      "note": "Julian Blythe’s 4 December 2016 interview with the screenwriter. Relevant answers concern the Mandarin line, the daughter’s illness and writing the film’s order. This supports those elements, not every detail of the reception or a complete theory of free will."
     }
   ],
   "connections": [

@@ -96,3 +96,11 @@ Automated tests cover every pilot, the multi-lane example, the split/existing di
 Browser checks should cover the diagram link, SVG and HTML export controls, zoom, phone scrolling, text links and the editor’s current-draft validation. Inspect a copied local HTML file with no site server dependency. Proof an actual print on the target browser before asserting print readiness for publication.
 
 Add these questions to the reader study: “Which timeline begins at the split?”; “Which existed before the traveller arrived?”; “Does this arrow create a timeline or move a person?” Ask participants to identify the arrow and both endpoints without relying on colour. Keep their actual answers with the existing study records. No human comprehension results are claimed by this implementation.
+
+## Connected branching view
+
+Set `flowchart.layout` to `"branches"` for a compact world-history tree. Every outcome begins at its explicit fork, without a detached world header. To show both universes being created, give the split two links into two new timelines. Put the next choice on the surviving outcome, so repeated choices are separate splitting events.
+
+Columns are reused after a perspective ends. A terminal outcome is drawn beside its fork with a short end bar, not as a tall, empty world column. The bar ends the selected perspective; it does not claim that the whole universe ceases to exist. Character travel keeps its blue dashed arrow and cannot create a destination implicitly.
+
+This view has no numbered arrow badges or reading-order connectors. `sequence` links are rejected in branch layout; use the reading guide for presentation order. An isolated single-moment universe is shown as an independent panel, with no invented connection. The existing lane view remains available when `layout` is omitted. Standalone HTML, SVG and text alternatives use the same authored branching source.

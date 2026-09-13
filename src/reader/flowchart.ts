@@ -1,6 +1,10 @@
+import { renderBranchSvg, renderBranchText } from "./branch-flowchart.ts";
 import { validateStory, type Story } from "../content/story.ts";
 import type { TimelineFlowchart } from "../content/flowchart.ts";
 import { escapeHtml as e } from "./html.ts";
+import { wrapFlowText } from "./flow-text.ts";
+
+export { wrapFlowText } from "./flow-text.ts";
 
 const INK = "#263633",
   GREEN = "#28745c",
@@ -17,42 +21,6 @@ const routeColor = (kind: string) =>
 const CARD = 260,
   GAP = 82,
   LEFT = 36;
-export function wrapFlowText(text: string, max = 30): string[] {
-  const lines: string[] = [];
-  let line = "";
-  const width = (s: string) =>
-    Array.from(s).reduce(
-      (sum, c) =>
-        sum +
-        (/\s/.test(c)
-          ? 0.34
-          : /[MW@]/.test(c)
-            ? 0.94
-            : /[ilI.,'!:;]/.test(c)
-              ? 0.3
-              : c.codePointAt(0)! > 0x2e80
-                ? 1
-                : /[A-Z]/.test(c)
-                  ? 0.67
-                  : 0.56),
-      0,
-    );
-  for (const word of text.split(/\s+/)) {
-    if (line && width(line + " " + word) > max * 0.5) {
-      lines.push(line);
-      line = "";
-    }
-    for (const char of Array.from((line ? " " : "") + word)) {
-      if (line && width(line + char) > max * 0.5) {
-        lines.push(line);
-        line = "";
-      }
-      line += char;
-    }
-  }
-  if (line) lines.push(line);
-  return lines.length ? lines : [""];
-}
 const text = (
   lines: string[],
   x: number,
@@ -213,6 +181,7 @@ export function layoutFlowchart(story: Story) {
 }
 
 export function renderFlowSvg(story: Story, draft = true): string {
+  if (checked(story).layout === "branches") return renderBranchSvg(story);
   const g = layoutFlowchart(story),
     { f } = g;
   const marks: string[] = [];
@@ -393,6 +362,7 @@ export function renderFlowSvg(story: Story, draft = true): string {
 export const flowStyles = `.flow-viewport{overflow:auto;border:1px solid #d6dfd8;border-radius:12px;background:#faf9f4;max-width:100%}.flow-svg{display:block;width:100%;min-width:720px;height:auto}.flow-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:20px 0}.flow-tools button,.flow-tools a{font:inherit;padding:9px 13px;border:1px solid #9aaea2;background:#fffefa;color:#225740;border-radius:6px;text-decoration:none}.flow-tools button:focus-visible,.flow-tools a:focus-visible,.flow-viewport:focus-visible{outline:3px solid #265d9f;outline-offset:3px}.flow-text{max-width:85ch}.flow-text li{margin-bottom:18px}.flow-text h3{margin-top:28px}.flow-text p{line-height:1.6}.flow-text [id]{scroll-margin-top:24px}@media print{.flow-tools,.flow-help{display:none!important}.flow-viewport{overflow:visible;border:0;break-inside:avoid}.flow-svg{width:100%!important;min-width:0!important;max-height:245mm}.flow-text{break-before:page}body{background:white!important}h2,h3{break-after:avoid}@page{size:A3 landscape;margin:12mm}}`;
 
 export function renderFlowText(story: Story): string {
+  if (checked(story).layout === "branches") return renderBranchText(story);
   const f = checked(story),
     g = layoutFlowchart(story);
   const lane = (id: string) => f.timelines.find((l) => l.id === id)!.label;
@@ -424,6 +394,6 @@ export function renderFlowText(story: Story): string {
 export function renderFlowPage(story: Story, draft = true): string {
   const f = checked(story),
     svg = renderFlowSvg(story, draft);
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(story.title)} — Timeline diagram</title><style>body{margin:0;background:#faf9f4;color:${INK};font:16px/1.6 system-ui,sans-serif}main{max-width:1440px;padding:32px;margin:auto}h1{font:600 clamp(30px,4vw,48px)/1.15 Georgia,serif;margin:20px 0}a{color:${BLUE}}.flow-intro{max-width:85ch}.flow-status{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:#586862}@media(max-width:600px){main{padding:18px}}${flowStyles}</style></head><body><main data-filename="${e(story.id)}-timeline"><p class="flow-status">${draft ? "Editorial preview · source and reader reviews pending" : "Timeline diagram"} · Full spoilers</p><h1>${e(story.title)}<br>${e(f.title)}</h1><p class="flow-intro">${e(f.description)}</p><p class="flow-intro"><strong>Reading frame:</strong> ${e(f.frame)}</p><p class="flow-help">Follow each lane downwards. Trace the numbered arrows using the key below. Scroll sideways for a wide diagram, or use the text version.</p><div class="flow-tools"><a href="#flow-text">Text version</a><a href="data:image/svg+xml;charset=utf-8,${e(encodeURIComponent(svg))}" download="${e(story.id)}-timeline.svg">Download SVG</a><button id="save-page" hidden>Save standalone page</button><button id="flow-print" hidden>Print / save PDF</button><button id="flow-fit" hidden>Fit width</button><button id="flow-larger" hidden>Zoom in</button><button id="flow-smaller" hidden>Zoom out</button></div><div class="flow-viewport" tabindex="0" role="region" aria-label="Timeline diagram; scroll horizontally if needed">${svg}</div><div id="flow-text">${renderFlowText(story)}</div></main><script>${flowScript}</script></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(story.title)} — Timeline diagram</title><style>body{margin:0;background:#faf9f4;color:${INK};font:16px/1.6 system-ui,sans-serif}main{max-width:1440px;padding:32px;margin:auto}h1{font:600 clamp(30px,4vw,48px)/1.15 Georgia,serif;margin:20px 0}a{color:${BLUE}}.flow-intro{max-width:85ch}.flow-status{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:#586862}@media(max-width:600px){main{padding:18px}}${flowStyles}</style></head><body><main data-filename="${e(story.id)}-timeline"><p class="flow-status">${draft ? "Editorial preview · source and reader reviews pending" : "Timeline diagram"} · Full spoilers</p><h1>${e(story.title)}<br>${e(f.title)}</h1><p class="flow-intro">${e(f.description)}</p><p class="flow-intro"><strong>Reading frame:</strong> ${e(f.frame)}</p><p class="flow-help">${f.layout === "branches" ? "Follow the connected forks. Each outcome starts at its splitting event. Viewing order is kept in the reading guide." : "Follow each lane downwards. Trace the numbered arrows using the key below. Scroll sideways for a wide diagram, or use the text version."}</p><div class="flow-tools"><a href="#flow-text">Text version</a><a href="data:image/svg+xml;charset=utf-8,${e(encodeURIComponent(svg))}" download="${e(story.id)}-timeline.svg">Download SVG</a><button id="save-page" hidden>Save standalone page</button><button id="flow-print" hidden>Print / save PDF</button><button id="flow-fit" hidden>Fit width</button><button id="flow-larger" hidden>Zoom in</button><button id="flow-smaller" hidden>Zoom out</button></div><div class="flow-viewport" tabindex="0" role="region" aria-label="Timeline diagram; scroll horizontally if needed">${svg}</div><div id="flow-text">${renderFlowText(story)}</div></main><script>${flowScript}</script></body></html>`;
 }
 const flowScript = `const box=document.querySelector('.flow-viewport'),svg=box.querySelector('svg');document.querySelectorAll('.flow-tools button').forEach(b=>b.hidden=false);document.getElementById('flow-fit').onclick=()=>{svg.style.width='100%';svg.style.minWidth='0'};function zoom(f){svg.style.width=Math.max(320,Math.min(6000,svg.getBoundingClientRect().width*f))+'px';svg.style.minWidth='0'}document.getElementById('flow-larger').onclick=()=>zoom(1.25);document.getElementById('flow-smaller').onclick=()=>zoom(.8);document.getElementById('flow-print').onclick=()=>window.print();document.getElementById('save-page').onclick=()=>{const url=URL.createObjectURL(new Blob(['<!doctype html>'+document.documentElement.outerHTML],{type:'text/html;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=document.querySelector('main').dataset.filename+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)};`;

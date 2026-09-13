@@ -2,6 +2,7 @@ import type { Issue, Story } from "./story.ts";
 
 /** Authored lanes and placements; a trip never creates a timeline implicitly. */
 export interface TimelineFlowchart {
+  layout?: "branches";
   title: string;
   description: string;
   frame: string;
@@ -68,6 +69,7 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
     });
   };
   const f = obj(value, "", [
+    "layout",
     "title",
     "description",
     "frame",
@@ -75,6 +77,8 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
     "nodes",
     "links",
   ]);
+  if (f.layout !== undefined && f.layout !== "branches")
+    fail("layout", "Choose branches or omit the layout for lanes.");
   for (const key of ["title", "description", "frame"]) text(f[key], key);
   const lanes = list(
     f.timelines,
@@ -184,6 +188,11 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
         )
           fail(p, "The traveller must be present at both endpoints.");
     } else if (l.kind === "sequence") {
+      if (f.layout === "branches")
+        fail(
+          p,
+          "Keep viewing order in the reading view, outside the branching diagram.",
+        );
       if (l.personRef !== undefined)
         fail(`${p}.personRef`, "Reading order does not assert a traveller.");
       if (from && to && Number(to.row) <= Number(from.row))

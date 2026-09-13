@@ -158,6 +158,32 @@ export function layoutBranches(story: Story) {
           ];
     return { ...l, points };
   });
+  // A lane that already existed did not begin where the traveller reached it.
+  // Its line runs to the top of the chart, so the drawing cannot be read as
+  // the arrival having created that history. A lane created by a split is the
+  // opposite claim and never gets one: it begins at its fork and connects to
+  // nothing earlier -- the outcome where a shot proves fatal is exactly that.
+  // Only a lane entered partway down needs this: one that starts on the first
+  // row has no charted history above it to be mistaken for.
+  // Columns are reused once a perspective ends, so a straight line up the
+  // column centre would pass through whichever cards occupied it earlier and
+  // read as one continuous history. The line runs up the gutter beside the
+  // column instead, then turns into the lane's first card.
+  const firstRow = Math.min(...rows);
+  const priorLines = active
+    .filter((l) => l.origin === "existing" && l.placed[0].row > firstRow)
+    .map((l) => {
+      const first = placed.get(l.placed[0].id)!;
+      return {
+        timelineRef: l.id,
+        x: first.x - (STEP - CARD) / 2,
+        top: introY + 12,
+        join: first.y + 26,
+        cardX: first.x,
+      };
+    })
+    .filter((l) => l.join - l.top > 40);
+
   const panels = lanes
     .filter((l) => independent.has(l.id))
     .map((l) => ({
@@ -169,6 +195,7 @@ export function layoutBranches(story: Story) {
     nodes,
     routes,
     panels,
+    priorLines,
     width: width + (exterior ? 70 + exterior * 30 : 0),
     chartEnd: y,
     cols,
@@ -212,6 +239,15 @@ export function renderBranchSvg(story: Story): string {
       14,
     ),
   ];
+  // Drawn before routes and cards so the arrows and boxes sit over it.
+  for (const l of g.priorLines) {
+    marks.push(
+      `<path data-timeline="${e(l.timelineRef)}" data-origin="existing" d="M${l.x} ${l.top}V${l.join}H${l.cardX}" fill="none" stroke="#a5b4ab" stroke-width="3"><title>This history was already running before anyone reached it.</title></path>`,
+    );
+    marks.push(
+      txt("ALREADY RUNNING", l.x - 4, l.top - 8, 30, 11, "#586862", 700),
+    );
+  }
   for (const r of g.routes)
     marks.push(
       `<path data-link="${e(r.id)}" data-kind="${r.kind}" d="${r.points.map((p, i) => `${i ? "L" : "M"}${p.x} ${p.y}`).join(" ")}" fill="none" stroke="${r.kind === "travel" ? BLUE : GREEN}" stroke-width="3" ${r.kind === "travel" ? 'stroke-dasharray="7 5"' : ""} marker-end="url(#branch-${r.kind === "travel" ? "travel" : "split"})"><title>${e(r.label)}</title></path>`,
@@ -253,7 +289,7 @@ export function renderBranchSvg(story: Story): string {
   }
   marks.push(
     txt(
-      "Green forks: branching universes. Dashed blue arrows: a character crosses into another world.",
+      "Green forks: branching universes. Dashed blue arrows: a character crosses into another world. A grey line reaching the top of the chart: that history was already running, and the arrival did not create it.",
       LEFT,
       y + 20,
       Math.floor(g.width / 8),
@@ -273,16 +309,31 @@ export function renderBranchSvg(story: Story): string {
       "",
     )}</defs><rect width="100%" height="100%" fill="#faf9f4"/><g font-family="Arial,sans-serif">${marks.join("")}</g></svg>`;
 }
+function lane_prior_sentence(label: string): string {
+  return `${label} was already running before this point; arriving here did not begin it.`;
+}
 export function renderBranchText(story: Story): string {
   const f = story.flowchart!,
     events = new Map(story.events.map((x) => [x.id, x]));
+  // The drawing says "already running" with a line to the top of the chart;
+  // the text alternative has to say it in words, on the same nodes.
+  const priorFirstNodes = new Map(
+    layoutBranches(story).priorLines.map((l) => {
+      const lane = f.timelines.find((t) => t.id === l.timelineRef)!;
+      const first = f.nodes
+        .filter((n) => n.timelineRef === l.timelineRef)
+        .sort((a, b) => a.row - b.row)[0];
+      return [first.id, lane.label];
+    }),
+  );
   return `<section class="flow-text"><h2>Read the branching diagram as text</h2><p>${e(f.description)}</p>${[
     ...f.nodes,
   ]
     .sort((a, b) => a.row - b.row)
     .map((n) => {
       const ev = events.get(n.eventRef)!;
-      return `<section id="flow-note-${e(n.id)}"><h3>${e(ev.title)}</h3><p>${e(ev.whenLabel ?? "")}</p><p>${e(ev.text)}</p>${f.links
+      const prior = priorFirstNodes.get(n.id);
+      return `<section id="flow-note-${e(n.id)}"><h3>${e(ev.title)}</h3><p>${e(ev.whenLabel ?? "")}</p><p>${e(ev.text)}</p>${prior ? `<p>${e(lane_prior_sentence(prior))}</p>` : ""}${f.links
         .filter((k) => k.from === n.id)
         .map(
           (k) =>

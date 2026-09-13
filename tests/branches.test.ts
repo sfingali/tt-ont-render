@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { validateStory, type Story } from "../src/content/story.ts";
 import { layoutBranches } from "../src/reader/branch-flowchart.ts";
 import { renderFlowPage, renderFlowSvg } from "../src/reader/flowchart.ts";
+import { renderBranchText } from "../src/reader/branch-flowchart.ts";
 function example(): Story {
   const s: Story = {
     version: "2.0",
@@ -169,4 +170,78 @@ test("branch routes stay out of event cards", () => {
               Math.min(a.x, b.x) < n.x + n.width;
         assert.ok(!crosses, `${r.id} crosses ${n.id}`);
       }
+});
+
+/** A world entered partway down did not begin where the traveller reached it. */
+function withPriorWorld(): Story {
+  const s = example();
+  const f = s.flowchart!;
+  s.people = [{ id: "trav", name: "The traveller", introduction: "Crosses over." }];
+  s.events.push({
+    id: "elsewhere",
+    title: "A history already under way",
+    text: "It has been running independently.",
+    whenLabel: "Long before",
+    people: ["trav"],
+  });
+  // the traveller departs from the last surviving outcome
+  const depart = f.nodes.find((n) => n.id === "live-3")!;
+  s.events.find((e) => e.id === depart.eventRef)!.people = ["trav"];
+  f.timelines.push({
+    id: "prior",
+    label: "A world already under way",
+    description: "Running long before the traveller arrives.",
+    origin: "existing",
+  });
+  f.nodes.push({
+    id: "prior-1",
+    eventRef: "elsewhere",
+    timelineRef: "prior",
+    row: depart.row + 1,
+  });
+  f.links.push({
+    id: "cross",
+    kind: "travel",
+    from: depart.id,
+    to: "prior-1",
+    personRef: "trav",
+    label: "The traveller crosses into it.",
+  });
+  s.guide.chapters[0].eventRefs.push("elsewhere");
+  return s;
+}
+test("a world entered partway down is drawn as already running; a forked one is not", () => {
+  const s = withPriorWorld();
+  assert.deepEqual(validateStory(s).flowchartErrors, []);
+  const g = layoutBranches(s);
+
+  assert.equal(g.priorLines.length, 1, "only the pre-existing world gets one");
+  const line = g.priorLines[0];
+  assert.equal(line.timelineRef, "prior");
+
+  const first = g.nodes.find((n) => n.id === "prior-1")!;
+  assert.ok(line.top < first.y, "its line reaches back above its first moment");
+  assert.ok(line.top <= g.introY + 20, "and runs to the top of the chart");
+
+  // Columns are reused, so the line must not run down a column centre.
+  for (const n of g.nodes)
+    assert.ok(
+      line.x < n.x || line.x > n.x + 250,
+      `the line must not cross the card ${n.id}`,
+    );
+
+  const svg = renderFlowSvg(s);
+  assert.match(svg, /data-timeline="prior" data-origin="existing"/);
+  // A world created by a split makes the opposite claim and never gets one.
+  for (const id of ["stop-1", "stop-2", "stop-3"])
+    assert.ok(
+      !g.priorLines.some((l) => l.timelineRef === id),
+      "a fatal outcome connects to nothing earlier",
+    );
+  assert.match(renderBranchText(s), /was already running before this point/);
+});
+test("a world present from the first row needs no prior-history line", () => {
+  const g = layoutBranches(example());
+  assert.equal(g.priorLines.length, 0);
+  assert.doesNotMatch(renderFlowSvg(example()), /data-origin="existing"/);
 });

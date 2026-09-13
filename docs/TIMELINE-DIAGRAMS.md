@@ -16,6 +16,7 @@ The library’s **Explore a branching timeline** link opens _The observatory doo
 | Solid green arrow, numbered S1, S2… | A split starts a new timeline. It does not by itself move a character.                                                            |
 | Dashed blue arrow, numbered T1, T2… | A named character travels. The destination may be the same timeline, a pre-existing other timeline, or an already-created branch. |
 | Labelled moments                    | Reuse the guide’s event titles and date labels. Full descriptions are present in the text alternative.                            |
+| Grey line to the top, "Already running" | Branch view only. This timeline was running before the moment the reader meets it; arriving did not create it. |
 
 Line style, explicit labels and arrow direction supplement colour. The numbered key supplies the complete relationship descriptions and endpoint names. Rows are positions in an authored explanation: alignment does not establish simultaneity, and spacing does not measure elapsed time. A changed history is not automatically a coexisting branch.
 
@@ -100,6 +101,10 @@ Add these questions to the reader study: “Which timeline begins at the split?�
 ## Connected branching view
 
 Set `flowchart.layout` to `"branches"` for a compact world-history tree. Every outcome begins at its explicit fork, without a detached world header. To show both universes being created, give the split two links into two new timelines. Put the next choice on the surviving outcome, so repeated choices are separate splitting events.
+
+A timeline the reader meets partway down, declared `origin: "existing"`, is drawn with a grey line reaching the top of the chart and the caption **Already running**, turning into its first moment. The line states that the history predates the arrival, so a crossing cannot be read as having created its destination. A timeline created by a split makes the opposite claim and never receives one: it begins at its fork and connects to nothing earlier. The outcome in which a character's own shot proves fatal is exactly that case — created at the pull, capped where the perspective ends, joined to no pre-existing world.
+
+A lane whose first moment sits on the chart's first row has no charted history above it to be mistaken for, so it is drawn without the line even when it is pre-existing. Because columns are reused, the line runs up the gutter beside its column rather than down the column centre, where it would pass through whichever cards occupied that column earlier. The text alternative states the same thing in words on the same moment.
 
 Columns are reused after a perspective ends. A terminal outcome is drawn beside its fork with a short end bar, not as a tall, empty world column. The bar ends the selected perspective; it does not claim that the whole universe ceases to exist. Character travel keeps its blue dashed arrow and cannot create a destination implicitly.
 

@@ -434,11 +434,11 @@ export const atlas: DesignProfile = {
           const headY2 = rowY + 4;
           addAnnotation({ x: gridX + 2, y: headY2, s: `time not positioned (${unresolved.length}) — no encoded temporal position; shown as an unordered set`, size: T.meta, fill: SUPPORT, family: theme.fontSans, anchor: 'start' });
           shapes.push(`<line x1="${(gridX + 2).toFixed(2)}" y1="${(headY2 + 1.6).toFixed(2)}" x2="${(gridRight - 2).toFixed(2)}" y2="${(headY2 + 1.6).toFixed(2)}" stroke="${theme.muted}" stroke-width="0.4" stroke-dasharray="1.4 1.6"/>`);
-          rowY = headY2 + 4;
+          rowY = headY2 + ROW_GAP + 4;
           // an unresolved set gets its own routing channel above it: its cards must
           // never be crossed by a route that was aimed at someone else's gutter
           urows.forEach((r, i) => {
-            const ch = i === 0 ? getH(rowY - 12, 20) : undefined;
+            const ch = i === 0 ? getH(rowY - ROW_GAP / 2, ROW_GAP) : undefined;
             placeRow(r, false, false, i, ch);
           });
         }
@@ -714,6 +714,7 @@ export const atlas: DesignProfile = {
       let lastSig = '';
       for (let iter = 0; iter < 14; iter++) {
         for (const pl of plans) {
+          pl.failed = false;
           pl.v1 = pl.vC[Math.min(pl.i1, pl.vC.length - 1)];
           pl.v2 = pl.vC[Math.min(pl.i2, pl.vC.length - 1)];
           pl.h = pl.hC[Math.min(pl.ih, pl.hC.length - 1)];
@@ -767,7 +768,7 @@ export const atlas: DesignProfile = {
         const sig = plans.map(pl => `${pl.i1}.${pl.i2}.${pl.ih}.${pl.k1}.${pl.k2}.${pl.kH}.${pl.kO}.${pl.kT}`).join('|');
         if (sig === lastSig) { converged = true; break; }
         lastSig = sig;
-        if (!dead) break;
+        // Re-colour until geometry and assignments agree, even when this pass fits.
         for (const i of spillV) { plans[i].i1 += 1; plans[i].i2 += 1; plans[i].failed = false; }
         for (const i of spillH) { plans[i].ih += 1; plans[i].failed = false; }
       }

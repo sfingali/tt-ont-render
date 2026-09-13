@@ -1,0 +1,153 @@
+{
+  "version": "2.0",
+  "id": "tenet",
+  "title": "Tenet",
+  "scope": "The 2020 film · the two sides of the Oslo encounter",
+  "premise": "At Oslo, the Protagonist fights a masked figure. Returning to that encounter reveals why both sides looked so strange.",
+  "ending": "The masked opponent was the Protagonist himself, travelling through the encounter while inverted. The later visit supplies the other participant in the fight already shown; this guide makes no claim to explain every operation in the film.",
+  "people": [
+    {
+      "id": "protagonist",
+      "name": "The Protagonist",
+      "introduction": "The same person encountering an earlier stage of his own life."
+    }
+  ],
+  "events": [
+    {
+      "id": "first-entry",
+      "title": "He enters the Oslo freeport",
+      "text": "The Protagonist and Neil enter the freeport while a staged plane crash provides cover. They find a turnstile whose function they do not yet understand.",
+      "whenLabel": "Oslo · the first visit",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "first-fight",
+      "title": "He fights someone moving strangely",
+      "text": "A masked opponent emerges at the turnstile. The fight looks physically wrong because the two participants are moving in opposite temporal directions.",
+      "whenLabel": "Oslo · the forward side of the encounter",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "invert",
+      "title": "Later, he becomes inverted",
+      "text": "After the events in Tallinn, the Protagonist joins an inverted journey back toward the earlier Oslo operation. He now needs the freeport’s turnstile.",
+      "whenLabel": "Tallinn · later by the ordinary calendar",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "return",
+      "title": "He reaches Oslo from the other direction",
+      "text": "The inverted Protagonist reaches the freeport around the plane crash. His route brings him into the same encounter that he previously experienced from the other side.",
+      "whenLabel": "Oslo again · travelling while inverted",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "other-fight",
+      "title": "He is the masked opponent",
+      "text": "He fights his earlier, uninverted self. The two appearances belong to one person at different points in his experienced life.",
+      "whenLabel": "Oslo · the inverted side of the same encounter",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "exit",
+      "title": "The turnstile lets him move forward again",
+      "text": "He passes through the turnstile and leaves in the ordinary temporal direction. The apparent mystery opponent now has a place in his own journey.",
+      "whenLabel": "Oslo · after his passage through the turnstile",
+      "people": [
+        "protagonist"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow The",
+    "personRef": "protagonist",
+    "chapters": [
+      {
+        "title": "The unexplained encounter",
+        "eventRefs": [
+          "first-entry",
+          "first-fight"
+        ]
+      },
+      {
+        "title": "Return with a different direction",
+        "eventRefs": [
+          "invert",
+          "return"
+        ]
+      },
+      {
+        "title": "Recognise the other participant",
+        "eventRefs": [
+          "other-fight",
+          "exit"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/tenet.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "back-to-oslo",
+      "kind": "journey",
+      "personRef": "protagonist",
+      "fromEvent": "invert",
+      "toEvent": "return",
+      "label": "While inverted, he travels from the later Tallinn events back toward Oslo."
+    }
+  ],
+  "comparisons": [
+    {
+      "title": "One encounter, two experiences",
+      "rows": [
+        {
+          "subject": "The masked figure",
+          "beforeText": "An unknown opponent with puzzling movements.",
+          "afterText": "The Protagonist at a later stage of his own journey, while inverted.",
+          "eventRefs": [
+            "first-fight",
+            "other-fight"
+          ],
+          "sourceRefs": [
+            "archive"
+          ]
+        }
+      ]
+    }
+  ]
+}

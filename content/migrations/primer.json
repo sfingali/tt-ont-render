@@ -1,0 +1,354 @@
+{
+  "version": 1,
+  "storyId": "primer",
+  "status": "editorial-draft",
+  "source": {
+    "url": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/primer.json",
+    "sha256": "3e130be8eb784de059c30fc64582580bb6ad33ac903580a71d438ce726ceae30",
+    "eventCount": 23,
+    "edgeCount": 30
+  },
+  "scope": "The 2004 film · the basic first-box method only",
+  "events": [
+    {
+      "oldId": "e_garage",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_box_found",
+      "disposition": "prose",
+      "newIds": [
+        "start"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_abe_hotel",
+      "disposition": "prose",
+      "newIds": [
+        "wait"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_abe_exit",
+      "disposition": "prose",
+      "newIds": [
+        "emerge"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_stocks",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_recordings",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_party",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_granger",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_failsafe_act",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_drugged",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_confront",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_abe_plan",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_exit",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_phone",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_granger",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_party_iter",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_stock_protocol",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_box",
+      "disposition": "prose",
+      "newIds": [
+        "start"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_pad_hotel",
+      "disposition": "prose",
+      "newIds": [
+        "wait"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_pad_stocks",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_trust",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_exit",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "e_pad_contain",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 2004 film · the basic first-box method only. Original remains in the pinned archive."
+    }
+  ],
+  "edges": [
+    {
+      "oldId": "wr1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c7",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c8",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c9",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c10",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c11",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c12",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "npri1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "npri2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "npri3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "npri4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "npri5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bridge_primer",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "prx1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "prx2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    }
+  ],
+  "addedBeats": [
+    {
+      "id": "enter",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "overlap",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    }
+  ]
+}

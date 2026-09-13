@@ -365,7 +365,7 @@ console.log('— atlas: the DESIGN-ATLAS §2 grammar is actually drawn —');
   ok(!/\bjunction\b(?![^<]{0,80}never)/i.test(doc) || doc.includes('never turned into a junction'), 'no invented junction is drawn in place of a missing anchor');
 
   // §6: an axis that declares its own basis
-  ok(doc.includes('ordered, not to scale'), 'ordinal axis is labelled "ordered, not to scale"');
+  ok(doc.includes('time not positioned'), 'unspecified temporal relations remain on the unpositioned shelf');
 
   // §2 + §1: a branch with no encoded anchor must not gain one
   const orphan: RawStory = {

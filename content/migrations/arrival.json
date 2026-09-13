@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "storyId": "arrival",
+  "status": "editorial-draft",
+  "source": {
+    "url": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/arrival.json",
+    "sha256": "0af8eb4d34011eb3889eeed7546d9116ca22b2baee01cb9e2862ef167e24100a",
+    "eventCount": 22,
+    "edgeCount": 25
+  },
+  "scope": "The 2016 film · Louise’s changing experience of time",
+  "events": [
+    {
+      "oldId": "e_landing",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_recruit",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_logograms",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_weapon",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_shang",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_unity",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_daughter_life",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_daughter_death",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_choice",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_book",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_heptapod_b",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_shang",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_choose_hannah",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_team",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_weapon_fear",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_shang_call",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_hannah_arc",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_choose",
+      "disposition": "prose",
+      "newIds": [
+        "choice"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_abbott_costello",
+      "disposition": "prose",
+      "newIds": [
+        "contact"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_nonlinearity",
+      "disposition": "prose",
+      "newIds": [
+        "recognition"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_ian_father",
+      "disposition": "prose",
+      "newIds": [
+        "recognition"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_departure_ships",
+      "disposition": "prose",
+      "newIds": [
+        "call"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    }
+  ],
+  "edges": [
+    {
+      "oldId": "c1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c7",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c8",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c9",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "boot1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "t1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "narr1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "narr2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "narr3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "narr4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bridge_arrival",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ax1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ax2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ax3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ax4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "ax5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    }
+  ],
+  "addedBeats": [
+    {
+      "id": "visions",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    },
+    {
+      "id": "future-shang",
+      "reason": "Editorial decomposition or explanatory framing added for this scoped guide. Must be checked against the primary work before release."
+    }
+  ]
+}

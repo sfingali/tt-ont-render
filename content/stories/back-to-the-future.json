@@ -1,0 +1,198 @@
+{
+  "version": "2.0",
+  "id": "back-to-the-future",
+  "title": "Back to the Future",
+  "scope": "The 1985 film · Marty’s trip and the changed homecoming",
+  "premise": "Marty accidentally travels to 1955 and prevents his parents from meeting. How can he save their future—and return to his own?",
+  "ending": "Marty gets his parents together and returns to 1985. His family still exists, but their lives have changed because of what happened in 1955. He remembers the home he left as well as the one he finds.",
+  "people": [
+    {
+      "id": "marty",
+      "name": "Marty McFly",
+      "introduction": "A teenager who needs his parents to fall in love before he can go home."
+    }
+  ],
+  "events": [
+    {
+      "id": "escape",
+      "title": "Marty escapes into the past",
+      "text": "After Doc is attacked at the mall, Marty flees in the DeLorean. Its time circuits send him thirty years into the past.",
+      "whenLabel": "1985 · the departure",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "arrival",
+      "title": "He arrives before his parents met",
+      "text": "Marty lands in 1955. He finds the younger Doc, who must work out how to send him home without a fresh supply of plutonium.",
+      "whenLabel": "1955 · the arrival",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "disruption",
+      "title": "Saving his father puts his future at risk",
+      "text": "Marty pushes George out of the path of a car and takes his place. Lorraine becomes interested in Marty instead of George. The meeting that led to Marty’s birth has been disrupted.",
+      "whenLabel": "1955 · an unintended change",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "dance",
+      "title": "George and Lorraine choose each other",
+      "text": "Marty helps bring his parents together at the school dance. George stands up to Biff and the couple kiss. Marty’s disappearing image in the family photograph returns.",
+      "whenLabel": "1955 · the dance",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "lightning",
+      "title": "Lightning provides the way home",
+      "text": "Doc channels the clock-tower lightning strike into the DeLorean. Marty makes the run and travels back to 1985. His warning letter to Doc is another intervention in the past.",
+      "whenLabel": "1955 · the return journey",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "home",
+      "title": "The date is familiar; the family is different",
+      "text": "Back in 1985, Marty discovers that Doc survived the attack after reading his warning. At home, George is confident and successful, and Biff’s relationship to the family has changed. Marty recognises the differences because he remembers his departure.",
+      "whenLabel": "1985 · the changed homecoming",
+      "people": [
+        "marty"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Marty",
+    "personRef": "marty",
+    "chapters": [
+      {
+        "title": "Leave home",
+        "eventRefs": [
+          "escape",
+          "arrival"
+        ]
+      },
+      {
+        "title": "Repair the meeting",
+        "eventRefs": [
+          "disruption",
+          "dance"
+        ]
+      },
+      {
+        "title": "Return to a changed present",
+        "eventRefs": [
+          "lightning",
+          "home"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/back-to-the-future.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "outbound",
+      "kind": "journey",
+      "personRef": "marty",
+      "fromEvent": "escape",
+      "toEvent": "arrival",
+      "label": "Marty travels from 1985 to 1955."
+    },
+    {
+      "id": "return",
+      "kind": "journey",
+      "personRef": "marty",
+      "fromEvent": "lightning",
+      "toEvent": "home",
+      "label": "Marty travels back to 1985."
+    },
+    {
+      "id": "parents",
+      "kind": "influence",
+      "fromEvent": "dance",
+      "toEvent": "home",
+      "label": "George’s new confidence changes the family Marty comes home to."
+    }
+  ],
+  "comparisons": [
+    {
+      "title": "What changed at home?",
+      "rows": [
+        {
+          "subject": "George and the family",
+          "beforeText": "George is intimidated by Biff; Marty sees his family as defeated.",
+          "afterText": "George has become confident and successful; Biff is deferential.",
+          "eventRefs": [
+            "escape",
+            "dance",
+            "home"
+          ],
+          "sourceRefs": [
+            "archive"
+          ]
+        },
+        {
+          "subject": "Doc at the mall",
+          "beforeText": "Marty believes the attack has killed Doc.",
+          "afterText": "Doc’s precautions, prompted by Marty’s warning, allow him to survive.",
+          "eventRefs": [
+            "escape",
+            "lightning",
+            "home"
+          ],
+          "sourceRefs": [
+            "archive"
+          ]
+        }
+      ]
+    }
+  ],
+  "views": [
+    {
+      "id": "marty",
+      "kind": "journey",
+      "title": "Marty’s experienced order",
+      "personRef": "marty",
+      "eventRefs": [
+        "escape",
+        "arrival",
+        "disruption",
+        "dance",
+        "lightning",
+        "home"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,379 @@
+{
+  "version": 1,
+  "storyId": "back-to-the-future",
+  "status": "editorial-draft",
+  "source": {
+    "url": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/back-to-the-future.json",
+    "sha256": "9267acceed05dd024d94895d968926a79a770f3687137d7b2096280a325d2ead",
+    "eventCount": 23,
+    "edgeCount": 30
+  },
+  "scope": "The 1985 film · Marty’s trip and the changed homecoming",
+  "events": [
+    {
+      "oldId": "e_terrorists",
+      "disposition": "prose",
+      "newIds": [
+        "escape"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_depart_85",
+      "disposition": "prose",
+      "newIds": [
+        "escape"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_arrive_55",
+      "disposition": "prose",
+      "newIds": [
+        "arrival"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_interfere",
+      "disposition": "prose",
+      "newIds": [
+        "disruption"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_fade",
+      "disposition": "prose",
+      "newIds": [
+        "disruption"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_doc55",
+      "disposition": "prose",
+      "newIds": [
+        "arrival"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_dance",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_lightning",
+      "disposition": "prose",
+      "newIds": [
+        "lightning"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_save_doc",
+      "disposition": "prose",
+      "newIds": [
+        "home"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_new_85",
+      "disposition": "prose",
+      "newIds": [
+        "home"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_future_tease",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "Outside the selected explanation, or unnecessary as a separate beat. Scope: The 1985 film · Marty’s trip and the changed homecoming. Original remains in the pinned archive."
+    },
+    {
+      "oldId": "ev_1955",
+      "disposition": "prose",
+      "newIds": [
+        "arrival"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_enchantment",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_lightning",
+      "disposition": "prose",
+      "newIds": [
+        "lightning"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "ev_1985b",
+      "disposition": "prose",
+      "newIds": [
+        "home"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_libyans",
+      "disposition": "prose",
+      "newIds": [
+        "escape"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_1955",
+      "disposition": "prose",
+      "newIds": [
+        "arrival"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_parents",
+      "disposition": "prose",
+      "newIds": [
+        "disruption"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_enchantment",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_1985b",
+      "disposition": "prose",
+      "newIds": [
+        "home"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_photo",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_darth_vader",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    },
+    {
+      "oldId": "e_george_lorraine",
+      "disposition": "prose",
+      "newIds": [
+        "dance"
+      ],
+      "reason": "Candidate evidence considered for this editorial beat; overlapping records are not asserted to be identical occurrences. Wording still awaits primary-source review."
+    }
+  ],
+  "edges": [
+    {
+      "oldId": "wr1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "wr4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c6",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c7",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c8",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c9",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c10",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "id1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "iv1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "rep_3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "nbac1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "nbac2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "nbac3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "nbac4",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "nbac5",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bridge_back-to-",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bx1",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bx2",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "bx3",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c_darth",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    },
+    {
+      "oldId": "c_glor",
+      "disposition": "omitted",
+      "newIds": [],
+      "reason": "No legacy relation is promoted automatically. Reader connections were authored separately; the original relationship remains in the pinned archive."
+    }
+  ],
+  "addedBeats": []
+}

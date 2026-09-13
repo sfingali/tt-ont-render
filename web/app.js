@@ -10,7 +10,7 @@
 import { render, listProfiles } from './renderer.js';
 
 const $ = (id) => document.getElementById(id);
-const state = { story: null, storyId: '', source: '', profile: 'counterpoint', doc: null, audit: null, scene: null, zoom: 1, autoFit: true };
+const state = { story: null, storyId: '', source: '', profile: 'atlas', doc: null, audit: null, scene: null, zoom: 1, autoFit: true };
 
 const PROFILES = listProfiles().map(p => ({ id: p.id, label: p.label, medium: p.medium, affinity: p.topoAffinity }));
 const MEDIUM_LABEL = { '2d-svg': '2d', '2.5d-svg': '2.5d', '3d-html': '3d' };

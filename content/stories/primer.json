@@ -1,0 +1,121 @@
+{
+  "version": "2.0",
+  "id": "primer",
+  "title": "Primer",
+  "scope": "The 2004 film · the basic first-box method only",
+  "premise": "Abe cannot simply dial a date into his machine. Returning to an earlier point requires the box to have been running—and requires him to spend time inside it.",
+  "ending": "The box connects a later entry to an earlier exit within its operating interval. Abe’s preparation prevents his earlier self from casually meeting the returning traveller. Later failsafes and competing plans are deliberately outside this guide.",
+  "people": [
+    {
+      "id": "abe",
+      "name": "Abe",
+      "introduction": "An engineer demonstrating the first method of travelling with the box."
+    }
+  ],
+  "events": [
+    {
+      "id": "start",
+      "title": "Start the box before the destination time",
+      "text": "Abe arranges for the machine to begin running before the point to which he intends to return. The usable interval is limited by the machine’s operation.",
+      "whenLabel": "Earlier in the ordinary day",
+      "people": [
+        "abe"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "wait",
+      "title": "Keep the earlier self out of the way",
+      "text": "Abe isolates himself while the day passes. This gives the version who will emerge earlier a window in which to act without immediately meeting him.",
+      "whenLabel": "While the box is running",
+      "people": [
+        "abe"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "enter",
+      "title": "Enter the box later",
+      "text": "Abe reaches the running box at the later end of the trip. The process involves time spent inside; it is not an instantaneous leap selected on a calendar.",
+      "whenLabel": "Later in the ordinary day",
+      "people": [
+        "abe"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "emerge",
+      "title": "Emerge near the beginning of its run",
+      "text": "After the journey through the box, Abe exits at an earlier point in the machine’s operating interval. His experienced order has moved from the later entry to the earlier exit.",
+      "whenLabel": "Earlier on the calendar · later in Abe’s experience",
+      "people": [
+        "abe"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "overlap",
+      "title": "Two stages of Abe now share the day",
+      "text": "The returned Abe can act while the earlier Abe is still following his isolation plan. Those are two stages of one person’s life. Avoiding contact is a practical precaution, not proof that the story has split into separate universes.",
+      "whenLabel": "During the overlapping interval",
+      "people": [
+        "abe"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Abe",
+    "personRef": "abe",
+    "chapters": [
+      {
+        "title": "Prepare the interval",
+        "eventRefs": [
+          "start",
+          "wait"
+        ]
+      },
+      {
+        "title": "Travel through it",
+        "eventRefs": [
+          "enter",
+          "emerge"
+        ]
+      },
+      {
+        "title": "Understand the overlap",
+        "eventRefs": [
+          "overlap"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/primer.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "box-trip",
+      "kind": "journey",
+      "personRef": "abe",
+      "fromEvent": "enter",
+      "toEvent": "emerge",
+      "label": "Abe enters later and emerges earlier within the box’s operating interval."
+    }
+  ]
+}

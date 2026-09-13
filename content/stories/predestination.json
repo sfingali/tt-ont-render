@@ -1,0 +1,159 @@
+{
+  "version": "2.0",
+  "id": "predestination",
+  "title": "Predestination",
+  "scope": "The 2014 film · the central character’s identity loop",
+  "premise": "Several people appear to occupy different roles in this story. Following one life reveals that they are stages of the same person.",
+  "ending": "Jane, John, the agent and the Fizzle Bomber are stages of one life. The child is also that same person: the story closes the parentage loop rather than providing an outside origin. Names here identify stages and roles; they do not imply separate people.",
+  "people": [
+    {
+      "id": "traveller",
+      "name": "Jane / John / the agent",
+      "introduction": "One person described by the names and roles used at different stages of their life."
+    }
+  ],
+  "events": [
+    {
+      "id": "child",
+      "title": "A baby grows up as Jane",
+      "text": "A baby is left at an orphanage and grows up as Jane. The identity of that child will connect the apparent beginning of this life to its later events.",
+      "whenLabel": "Childhood",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "parent",
+      "title": "Jane has a child with a stranger",
+      "text": "Jane meets a man who later disappears. After childbirth and medical intervention, the character comes to live as John. The child is taken away.",
+      "whenLabel": "Young adulthood",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "meeting",
+      "title": "John tells the bartender about that life",
+      "text": "John recounts these events to a bartender, who is a temporal agent. The agent offers John a chance to confront the man who abandoned Jane.",
+      "whenLabel": "John’s encounter with the agent",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "lover",
+      "title": "John becomes the stranger Jane met",
+      "text": "The journey into the past puts John in the role of Jane’s lover. The parents of the child are different stages of this same person.",
+      "whenLabel": "The earlier relationship, revisited",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "agent",
+      "title": "The agent closes the child’s loop",
+      "text": "John’s life leads toward becoming the agent. The agent takes Jane’s baby to the orphanage in the past, where the child grows up as Jane. The baby has no separate identity outside this loop.",
+      "whenLabel": "The agent’s journeys",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    },
+    {
+      "id": "bomber",
+      "title": "The final enemy is another future stage",
+      "text": "The agent confronts the Fizzle Bomber and discovers an older version of himself. The ending links the attempt to prevent the bomber with the life that becomes him.",
+      "whenLabel": "The confrontation with the older self",
+      "people": [
+        "traveller"
+      ],
+      "sourceRefs": [
+        "archive"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow Jane",
+    "personRef": "traveller",
+    "chapters": [
+      {
+        "title": "Begin with a life story",
+        "eventRefs": [
+          "child",
+          "parent",
+          "meeting"
+        ]
+      },
+      {
+        "title": "Connect the apparent strangers",
+        "eventRefs": [
+          "lover",
+          "agent",
+          "bomber"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "archive",
+      "title": "Repository story record",
+      "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/predestination.json",
+      "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    }
+  ],
+  "connections": [
+    {
+      "id": "return-child",
+      "kind": "influence",
+      "fromEvent": "agent",
+      "toEvent": "child",
+      "label": "The agent leaves the baby at the orphanage, completing the loop of the same life."
+    }
+  ],
+  "comparisons": [
+    {
+      "title": "What the identities reveal",
+      "rows": [
+        {
+          "subject": "The stranger in Jane’s life",
+          "beforeText": "An apparently separate man who leaves her.",
+          "afterText": "John at a later stage of the same life.",
+          "eventRefs": [
+            "parent",
+            "lover"
+          ],
+          "sourceRefs": [
+            "archive"
+          ]
+        },
+        {
+          "subject": "The child",
+          "beforeText": "An apparently separate next generation.",
+          "afterText": "The same person returned to the beginning of their life.",
+          "eventRefs": [
+            "child",
+            "agent"
+          ],
+          "sourceRefs": [
+            "archive"
+          ]
+        }
+      ]
+    }
+  ]
+}

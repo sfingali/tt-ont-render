@@ -4,7 +4,16 @@ import { escapeHtml as e } from "./html.ts";
 
 const INK = "#263633",
   GREEN = "#28745c",
-  BLUE = "#265d9f";
+  BLUE = "#265d9f",
+  PURPLE = "#795386";
+const originLabel = (origin: string) =>
+  origin === "existing"
+    ? "already exists"
+    : origin === "split"
+      ? "begins at a split"
+      : "origin not established";
+const routeColor = (kind: string) =>
+  kind === "split" ? GREEN : kind === "travel" ? BLUE : PURPLE;
 const CARD = 260,
   GAP = 82,
   LEFT = 36;
@@ -90,8 +99,17 @@ export function layoutFlowchart(story: Story) {
         62,
     ),
   );
-  const routeGap = 62 + f.links.length * 36;
-  let y = head + laneHead + routeGap;
+  // Reserve routing space only where a connector actually enters or leaves a row.
+  const exits = new Map<number, number>(),
+    entries = new Map<number, number>();
+  f.links.forEach((link, i) => {
+    const from = f.nodes.find((n) => n.id === link.from)!;
+    const to = f.nodes.find((n) => n.id === link.to)!;
+    exits.set(from.row, Math.max(exits.get(from.row) ?? 0, 28 + i * 18));
+    if (link.kind !== "split")
+      entries.set(to.row, Math.max(entries.get(to.row) ?? 0, 28 + i * 18));
+  });
+  let y = head + laneHead + Math.max(48, (entries.get(rowIds[0]) ?? 0) + 20);
   const heights = new Map(
     rowIds.map((row) => [
       row,
@@ -110,9 +128,14 @@ export function layoutFlowchart(story: Story) {
     ]),
   );
   const rowY = new Map<number, number>();
-  for (const row of rowIds) {
+  for (const [index, row] of rowIds.entries()) {
     rowY.set(row, y);
-    y += heights.get(row)! + routeGap;
+    y +=
+      heights.get(row)! +
+      Math.max(
+        48,
+        (exits.get(row) ?? 0) + (entries.get(rowIds[index + 1]) ?? 0) + 20,
+      );
   }
   const nodes = f.nodes.map((n) => ({
     ...n,
@@ -124,12 +147,17 @@ export function layoutFlowchart(story: Story) {
   }));
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   let splitNumber = 0,
-    travelNumber = 0;
+    travelNumber = 0,
+    sequenceNumber = 0;
   const routes = f.links.map((link, i) => {
     const from = nodeMap.get(link.from)!,
       to = nodeMap.get(link.to)!;
     const code =
-      link.kind === "split" ? `S${++splitNumber}` : `T${++travelNumber}`;
+      link.kind === "split"
+        ? `S${++splitNumber}`
+        : link.kind === "travel"
+          ? `T${++travelNumber}`
+          : `R${++sequenceNumber}`;
     if (link.kind === "split") {
       const sy = from.y + from.height + 24 + i * 18;
       return {
@@ -176,7 +204,11 @@ export function layoutFlowchart(story: Story) {
     topLines,
     frameLines,
     width,
-    chartEnd: y - routeGap + 30,
+    chartEnd: Math.max(
+      ...nodes.map(
+        (n) => n.y + n.height + Math.max(30, (exits.get(n.row) ?? 0) + 20),
+      ),
+    ),
   };
 }
 
@@ -220,7 +252,7 @@ export function renderFlowSvg(story: Story, draft = true): string {
     marks.push(text(title, x + 14, g.head + 26, 17, INK, 700, 24));
     marks.push(
       text(
-        [lane.origin === "existing" ? "ALREADY EXISTS" : "BEGINS AT A SPLIT"],
+        [originLabel(lane.origin).toUpperCase()],
         x + 14,
         g.head + title.length * 24 + 26,
         11,
@@ -246,7 +278,7 @@ export function renderFlowSvg(story: Story, draft = true): string {
       last = placed[placed.length - 1];
     const start = lane.origin === "existing" ? g.head + g.laneHead : first.y;
     marks.push(
-      `<path data-timeline="${e(lane.id)}" data-origin="${lane.origin}" d="M${x + CARD / 2} ${start}V${last.y + last.height}" fill="none" stroke="#a5b4ab" stroke-width="3"/>`,
+      `<path data-timeline="${e(lane.id)}" data-origin="${lane.origin}" d="M${x + CARD / 2} ${start}V${last.y + last.height}" fill="none" stroke="#a5b4ab" stroke-width="3" ${lane.origin === "unspecified" ? 'stroke-dasharray="3 5"' : ""}/>`,
     );
     for (let i = 0; i < placed.length - 1; i++) {
       const from = placed[i],
@@ -257,9 +289,9 @@ export function renderFlowSvg(story: Story, draft = true): string {
     }
   }
   for (const route of g.routes) {
-    const color = route.kind === "split" ? GREEN : BLUE;
+    const color = routeColor(route.kind);
     marks.push(
-      `<path data-link="${e(route.id)}" data-kind="${route.kind}" d="${route.points.map((p, i) => `${i ? "L" : "M"}${p.x} ${p.y}`).join(" ")}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" ${route.kind === "travel" ? 'stroke-dasharray="8 5"' : ""} marker-end="url(#flow-${route.kind})"/>`,
+      `<path data-link="${e(route.id)}" data-kind="${route.kind}" d="${route.points.map((p, i) => `${i ? "L" : "M"}${p.x} ${p.y}`).join(" ")}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" ${route.kind === "travel" ? 'stroke-dasharray="8 5"' : route.kind === "sequence" ? 'stroke-dasharray="2 6"' : ""} marker-end="url(#flow-${route.kind})"/>`,
     );
   }
   for (const n of g.nodes) {
@@ -283,7 +315,7 @@ export function renderFlowSvg(story: Story, draft = true): string {
   }
   for (const r of g.routes)
     marks.push(
-      `<g><rect x="${r.badge.x - 19}" y="${r.badge.y - 12}" width="38" height="24" rx="12" fill="${r.kind === "split" ? GREEN : BLUE}"/><text x="${r.badge.x}" y="${r.badge.y + 5}" text-anchor="middle" font-size="12" font-weight="700" fill="white">${r.code}</text></g>`,
+      `<g><rect x="${r.badge.x - 19}" y="${r.badge.y - 12}" width="38" height="24" rx="12" fill="${routeColor(r.kind)}"/><text x="${r.badge.x}" y="${r.badge.y + 5}" text-anchor="middle" font-size="12" font-weight="700" fill="white">${r.code}</text></g>`,
     );
   let y = g.chartEnd + 38;
   const note = (copy: string, size = 14, color = INK, weight = 400) => {
@@ -299,6 +331,16 @@ export function renderFlowSvg(story: Story, draft = true): string {
     "Grey line: order within a lane. Solid green arrow: a new timeline splits off. Dashed blue arrow: a named person travels.",
     14,
   );
+  if (f.links.some((l) => l.kind === "sequence"))
+    note(
+      "Dotted purple arrow: reading order only. It does not establish travel, survival or the creation of a world.",
+      14,
+    );
+  if (f.timelines.some((l) => l.origin === "unspecified"))
+    note(
+      "Origin not established: a sequence whose relationship to other worlds remains unresolved. A separate lane is not proof of a separate universe.",
+      14,
+    );
   note(
     "Rows and spacing are arranged for reading, not a measured time axis. Separate lanes do not imply simultaneous events.",
     13,
@@ -310,9 +352,9 @@ export function renderFlowSvg(story: Story, draft = true): string {
     const lane = (id: string) => f.timelines.find((l) => l.id === id)!.label;
     const person = story.people?.find((p) => p.id === r.personRef)?.name;
     note(
-      `${r.code} · ${r.kind === "split" ? "SPLIT" : `TRAVEL — ${person}`}: ${r.label}`,
+      `${r.code} · ${r.kind === "split" ? "SPLIT" : r.kind === "sequence" ? "READING ORDER" : `TRAVEL — ${person}`}: ${r.label}`,
       15,
-      r.kind === "split" ? GREEN : BLUE,
+      routeColor(r.kind),
       600,
     );
     note(
@@ -336,6 +378,7 @@ export function renderFlowSvg(story: Story, draft = true): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" class="flow-svg" width="${g.width}" height="${y + 16}" viewBox="0 0 ${g.width} ${y + 16}" role="img" aria-labelledby="flow-title flow-desc"><title id="flow-title">${e(story.title + " — " + f.title)}</title><desc id="flow-desc">${e(desc)}</desc><defs>${[
     ["split", GREEN],
     ["travel", BLUE],
+    ["sequence", PURPLE],
     ["order", "#a5b4ab"],
   ]
     .map(
@@ -356,7 +399,7 @@ export function renderFlowText(story: Story): string {
   return `<section class="flow-text"><h2>Read the diagram as text</h2><p>${e(f.description)}</p>${f.timelines
     .map(
       (l) =>
-        `<section><h3>${e(l.label)} · ${l.origin === "existing" ? "already exists" : "begins at a split"}</h3><p>${e(l.description)}</p><ol>${g.nodes
+        `<section><h3>${e(l.label)} · ${originLabel(l.origin)}</h3><p>${e(l.description)}</p><ol>${g.nodes
           .filter((n) => n.timelineRef === l.id)
           .sort((a, b) => a.row - b.row)
           .map(
@@ -367,11 +410,11 @@ export function renderFlowText(story: Story): string {
     )
     .join("")}${
     g.routes.length
-      ? `<h3>Splits and journeys</h3><ol>${g.routes
+      ? `<h3>Diagram connections</h3><ol>${g.routes
           .map((r) => {
             const from = g.nodes.find((n) => n.id === r.from)!,
               to = g.nodes.find((n) => n.id === r.to)!;
-            return `<li><strong>${r.code} · ${r.kind === "split" ? "Split" : `Travel: ${e(story.people?.find((p) => p.id === r.personRef)?.name)}`}</strong><p>${e(r.label)}</p><p><a href="#flow-note-${e(from.id)}">${e(lane(from.timelineRef))}: ${e(from.event.title)}</a> → <a href="#flow-note-${e(to.id)}">${e(lane(to.timelineRef))}: ${e(to.event.title)}</a></p></li>`;
+            return `<li><strong>${r.code} · ${r.kind === "split" ? "Split" : r.kind === "sequence" ? "Reading order only" : `Travel: ${e(story.people?.find((p) => p.id === r.personRef)?.name)}`}</strong><p>${e(r.label)}</p><p><a href="#flow-note-${e(from.id)}">${e(lane(from.timelineRef))}: ${e(from.event.title)}</a> → <a href="#flow-note-${e(to.id)}">${e(lane(to.timelineRef))}: ${e(to.event.title)}</a></p></li>`;
           })
           .join("")}</ol>`
       : ""

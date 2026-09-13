@@ -9,12 +9,12 @@ export interface TimelineFlowchart {
     id: string;
     label: string;
     description: string;
-    origin: "existing" | "split";
+    origin: "existing" | "split" | "unspecified";
   }[];
   nodes: { id: string; eventRef: string; timelineRef: string; row: number }[];
   links: {
     id: string;
-    kind: "split" | "travel";
+    kind: "split" | "travel" | "sequence";
     from: string;
     to: string;
     label: string;
@@ -119,8 +119,8 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
     const p = `timelines[${i}]`;
     text(l.label, `${p}.label`);
     text(l.description, `${p}.description`);
-    if (!["existing", "split"].includes(String(l.origin)))
-      fail(`${p}.origin`, "Choose existing or split.");
+    if (!["existing", "split", "unspecified"].includes(String(l.origin)))
+      fail(`${p}.origin`, "Choose existing, split or unspecified.");
     const placed = nodes.filter((n) => n.timelineRef === l.id);
     if (!placed.length)
       fail(p, "Include at least one moment on this timeline.");
@@ -132,6 +132,8 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
         p,
         "A pre-existing timeline cannot begin at a split. Use travel to enter it.",
       );
+    if (l.origin === "unspecified" && incoming.length)
+      fail(p, "An unspecified origin cannot have a confirmed split.");
     if (l.origin === "split" && incoming.length !== 1)
       fail(p, "A new timeline needs exactly one split into its first moment.");
   });
@@ -181,7 +183,12 @@ export function validateFlowchart(value: unknown, story: Story): Issue[] {
             ?.people?.includes(String(l.personRef))
         )
           fail(p, "The traveller must be present at both endpoints.");
-    } else fail(`${p}.kind`, "Choose split or travel.");
+    } else if (l.kind === "sequence") {
+      if (l.personRef !== undefined)
+        fail(`${p}.personRef`, "Reading order does not assert a traveller.");
+      if (from && to && Number(to.row) <= Number(from.row))
+        fail(p, "Place the next part of the story below the earlier part.");
+    } else fail(`${p}.kind`, "Choose split, travel or sequence.");
   });
   return issues;
 }

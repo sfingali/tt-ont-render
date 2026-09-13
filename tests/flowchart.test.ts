@@ -16,6 +16,44 @@ const demo = JSON.parse(
   ),
 ) as Story;
 const copy = () => structuredClone(demo);
+test("unresolved sequences remain distinct from confirmed world crossings", () => {
+  const s = copy();
+  s.flowchart!.timelines[1].origin = "unspecified";
+  s.flowchart!.links = [
+    {
+      id: "next",
+      kind: "sequence",
+      from: "h0",
+      to: "b0",
+      label: "The story moves on; the connection is unresolved.",
+    },
+  ];
+  assert.deepEqual(validateStory(s).flowchartErrors, []);
+  const svg = renderFlowSvg(s);
+  assert.match(svg, /data-origin="unspecified"/);
+  assert.match(svg, /ORIGIN NOT ESTABLISHED/);
+  assert.match(svg, /READING ORDER/);
+  assert.match(svg, /does not establish travel/);
+  assert.doesNotMatch(svg, /data-kind="travel"/);
+  assert.match(renderFlowPage(s), /Reading order only/);
+  s.flowchart!.links[0].personRef = "mira";
+  assert.ok(validateStory(s).flowchartErrors.length);
+  delete s.flowchart!.links[0].personRef;
+  s.flowchart!.links[0].from = "b1";
+  assert.ok(validateStory(s).flowchartErrors.length);
+  s.flowchart!.links[0] = {
+    id: "false-split",
+    kind: "split",
+    from: "h0",
+    to: "b0",
+    label: "Cannot certify an unresolved origin.",
+  };
+  assert.ok(
+    validateStory(s).flowchartErrors.some((i) =>
+      i.message.includes("unspecified origin"),
+    ),
+  );
+});
 test("authored demo distinguishes a new branch from travel to an existing world", () => {
   const v = validateStory(demo);
   assert.deepEqual(v.errors, []);

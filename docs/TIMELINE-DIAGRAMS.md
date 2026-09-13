@@ -21,6 +21,10 @@ Line style, explicit labels and arrow direction supplement colour. The numbered 
 
 ## Authoring
 
+When a source leaves the relationship between two sequences open, use `origin: "unspecified"` for the unresolved lane. It is labelled **Origin not established**; its line does not extend to the heading as though a pre-existing history had been established. A separate lane is not proof of a separate universe.
+
+Use `kind: "sequence"` for a dotted purple **Reading order only** arrow, numbered R1, R2… . It connects the next part of an explanation without claiming travel, survival or creation of a world. It has no `personRef` and must point to a later reading row. Give its label the actual reason the connection is unresolved. An unspecified origin cannot receive a confirmed split arrow. Existing split and travel notation retains its original meaning.
+
 In **Edit a guide**, load a story and choose **Add timeline diagram** to create a single-lane starting point in guide order. Then edit its names, frame and placements in the document. Use the downloadable branching example as a complete multi-lane template. Preview the draft to inspect the chart. **Export diagram page** and **Export diagram SVG** validate the current document, so edits cannot accidentally export an older preview.
 
 There is no drag-and-drop graph editor in this increment. The existing document editor owns the chart alongside the prose, and a small optional field expresses the extra information. The ontology importer does not guess lanes, split points or destinations.

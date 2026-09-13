@@ -879,3 +879,7 @@ ul {
 #editor-preview a[download] {
   display: none;
 }
+/* The diagram is an optional companion; the authored reading path stays primary. */
+.diagram-example { margin: 3rem 0; padding: 1.5rem; border: 1px solid #cdd9cf; border-radius: .6rem; }
+.diagram-example h2 { margin-top: 0; }
+.reading-toolbar > div { flex-wrap: wrap; }

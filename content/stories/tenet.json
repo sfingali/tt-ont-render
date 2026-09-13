@@ -168,5 +168,66 @@
         }
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "These cards follow the same person through both sides of the encounter. This is one timeline shown through his experience; inversion does not create another lane.",
+    "frame": "Order experienced by the Protagonist. His return to Oslo runs backwards on the calendar.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "The Protagonist’s reading path",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "first-entry",
+        "eventRef": "first-entry",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "first-fight",
+        "eventRef": "first-fight",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "invert",
+        "eventRef": "invert",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "return",
+        "eventRef": "return",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "other-fight",
+        "eventRef": "other-fight",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "exit",
+        "eventRef": "exit",
+        "timelineRef": "story",
+        "row": 5
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "invert",
+        "to": "return",
+        "label": "The inverted Protagonist travels back toward the earlier Oslo operation.",
+        "personRef": "protagonist"
+      }
+    ]
+  }
 }

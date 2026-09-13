@@ -67,6 +67,8 @@ Remaining corpus entries stay in the research archive. Migrate another work when
 
 Each moment has a self-contained SVG export with text, direction, story context and a scope/spacing note. Its height grows with its content. The reader has an A4 print stylesheet and a Print guide action. Full print proofing on target browsers remains a release check. SVG export is the local explanation, not a claim to draw every event in one chart.
 
+The optional [timeline flow chart](TIMELINE-DIAGRAMS.md) adds an overview of explicitly authored timelines, split points and character journeys. It distinguishes a new branch from travel into an existing world. Every pilot has a scoped diagram, and an original example demonstrates the multi-lane notation. The separate overview exports as standalone HTML or SVG; its own print layout uses A3 landscape. This does not change the guide’s primary reading path or infer branches from the old ontology.
+
 The old CLI and design profiles remain available. The research viewer now defaults to Atlas rather than a profile that only draws the first world. Its ordering resolver accepts only explicit chronological constraints within a world, processes all predecessors correctly, and leaves isolated, partial and cyclic orders unresolved. Atlas reserves space above unresolved cards for their relationship routes and allows its assignment pass to settle before final verification.
 
 ## Acceptance and release checks

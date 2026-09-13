@@ -211,5 +211,74 @@
         "home"
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "Follow Marty’s two trips through Hill Valley. The changed homecoming is explained in the guide; this diagram does not claim that the film creates coexisting parallel universes.",
+    "frame": "Selected dates: 1955, then 1985. The homecoming card groups its aftermath.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Hill Valley",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "arrival",
+        "eventRef": "arrival",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "disruption",
+        "eventRef": "disruption",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "dance",
+        "eventRef": "dance",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "lightning",
+        "eventRef": "lightning",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "escape",
+        "eventRef": "escape",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "home",
+        "eventRef": "home",
+        "timelineRef": "story",
+        "row": 5
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "escape",
+        "to": "arrival",
+        "label": "Marty travels from 1985 to 1955.",
+        "personRef": "marty"
+      },
+      {
+        "id": "trip-2",
+        "kind": "travel",
+        "from": "lightning",
+        "to": "home",
+        "label": "Marty returns to 1985 and discovers the changed homecoming.",
+        "personRef": "marty"
+      }
+    ]
+  }
 }

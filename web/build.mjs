@@ -56,28 +56,47 @@ const { renderDiagram } = await import(
   `data:text/javascript;base64,${Buffer.from(diagram.outputFiles[0].text).toString("base64")}`
 );
 const stories = [];
-for (const entry of catalog) {
+for (const entry of [
+  ...catalog,
+  { id: "the-observatory-door", example: true },
+]) {
   if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(entry.id))
     throw new Error("Invalid catalog ID");
   const raw = await readFile(
-    join(ROOT, "content/stories", `${entry.id}.json`),
+    entry.example
+      ? join(ROOT, "examples/branching-guide.json")
+      : join(ROOT, "content/stories", `${entry.id}.json`),
     "utf8",
   );
   const result = validateStory(JSON.parse(raw));
   if (!result.story) throw new Error(JSON.stringify(result.errors));
+  if (result.flowchartErrors.length)
+    throw new Error(
+      `Invalid timeline diagram in ${entry.id}: ${JSON.stringify(result.flowchartErrors)}`,
+    );
   if (Object.keys(result.viewErrors).length)
     throw new Error(
       `Invalid optional view in ${entry.id}: ${JSON.stringify(result.viewErrors)}`,
     );
   if (result.story.id !== entry.id || stories.some((s) => s.id === entry.id))
     throw new Error(`Catalog ID mismatch or duplicate: ${entry.id}`);
-  stories.push(result.story);
+  if (!entry.example) stories.push(result.story);
   await mkdir(join(DIST, "read", entry.id), { recursive: true });
   await mkdir(join(DIST, "stories"), { recursive: true });
   await writeFile(
     join(DIST, "read", entry.id, "index.html"),
-    renderer.renderStoryPage(result.story, !release),
+    renderer.renderStoryPage(result.story, !release || entry.example),
   );
+  if (result.story.flowchart) {
+    await writeFile(
+      join(DIST, "read", entry.id, "timeline.html"),
+      renderer.renderFlowPage(result.story, !release || entry.example),
+    );
+    await writeFile(
+      join(DIST, "read", entry.id, "timeline.svg"),
+      renderer.renderFlowSvg(result.story, !release || entry.example),
+    );
+  }
   await writeFile(join(DIST, "stories", `${entry.id}.json`), raw);
   await mkdir(join(DIST, "diagrams", entry.id), { recursive: true });
   for (const event of result.story.events)
@@ -91,6 +110,11 @@ await writeFile(
   renderer.renderLibrary(stories, !release),
 );
 await writeFile(join(DIST, "edit.html"), renderer.renderEditor());
+await mkdir(join(DIST, "examples"), { recursive: true });
+await cp(
+  join(ROOT, "examples/branching-guide.json"),
+  join(DIST, "examples/branching-guide.json"),
+);
 await cp(join(HERE, "reader.css"), join(DIST, "reader.css"));
 await cp(join(HERE, "favicon.svg"), join(DIST, "favicon.svg"));
 await build({

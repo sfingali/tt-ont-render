@@ -9,7 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "tsx tests/run.ts && tsx --test tests/reader.test.ts",
+    "test": "tsx tests/run.ts && tsx --test tests/reader.test.ts tests/flowchart.test.ts",
     "typecheck": "tsc --noEmit",
     "render": "tsx src/cli.ts",
     "coverage": "tsx src/coverage-cli.ts",

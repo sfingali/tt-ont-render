@@ -45,6 +45,8 @@ Use **Edit a guide** to open or paste a document, preview it, recover a local dr
 
 The reader works as static HTML without JavaScript. JavaScript adds moment selection, optional authored reading orders and print controls. Phone layouts place connection details beside their moments. Each moment also has a downloadable SVG explanation.
 
+Each pilot also has a **Timeline diagram** and **Export static diagram** action. The optional flow chart shows authored lanes, explicit splits and named journeys, including travel into a timeline that already exists. Its standalone HTML page contains the drawing, text and sources; SVG export is also available. Try the library’s branching example, then see [timeline diagram authoring and export](docs/TIMELINE-DIAGRAMS.md).
+
 ## Where things live
 
 | Location | Responsibility |

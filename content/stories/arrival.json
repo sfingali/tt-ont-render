@@ -140,5 +140,57 @@
       "toEvent": "call",
       "label": "Words learned at the later meeting enable Louise’s earlier phone call."
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "The family scenes and reception belong to Louise’s future. Learning from them is shown in the cards; no physical journey or timeline split is asserted.",
+    "frame": "Order of explanation. The date labels distinguish a future event from experiencing it during the crisis.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Louise’s understanding",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "visions",
+        "eventRef": "visions",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "contact",
+        "eventRef": "contact",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "recognition",
+        "eventRef": "recognition",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "future-shang",
+        "eventRef": "future-shang",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "call",
+        "eventRef": "call",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "choice",
+        "eventRef": "choice",
+        "timelineRef": "story",
+        "row": 5
+      }
+    ],
+    "links": []
+  }
 }

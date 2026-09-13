@@ -162,5 +162,74 @@
         }
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "The roles belong to one person. The journey arrows show the return to the relationship and the baby’s transfer to the orphanage. Separate names do not create separate timelines.",
+    "frame": "Order of the central character’s experiences, with the returned baby explained at the end of the loop.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "One life, several roles",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "child",
+        "eventRef": "child",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "parent",
+        "eventRef": "parent",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "meeting",
+        "eventRef": "meeting",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "lover",
+        "eventRef": "lover",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "agent",
+        "eventRef": "agent",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "bomber",
+        "eventRef": "bomber",
+        "timelineRef": "story",
+        "row": 5
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "meeting",
+        "to": "lover",
+        "label": "The agent takes John into the past, where John becomes Jane’s lover.",
+        "personRef": "traveller"
+      },
+      {
+        "id": "trip-2",
+        "kind": "travel",
+        "from": "agent",
+        "to": "child",
+        "label": "The agent carries the baby into the past; the baby grows up as Jane.",
+        "personRef": "traveller"
+      }
+    ]
+  }
 }

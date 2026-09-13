@@ -126,5 +126,60 @@
       "toEvent": "emerge",
       "label": "Abe enters later and emerges earlier within the box’s operating interval."
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "The loop arrow connects the later entry to the earlier exit. Waiting, emerging and overlap are explanatory cards for overlapping portions of the day, not three successive dates. Only the basic method is shown.",
+    "frame": "Abe’s preparation and the overlapping interval, arranged by the explanation rather than an exact clock.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "The box’s operating interval",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "start",
+        "eventRef": "start",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "wait",
+        "eventRef": "wait",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "emerge",
+        "eventRef": "emerge",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "overlap",
+        "eventRef": "overlap",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "enter",
+        "eventRef": "enter",
+        "timelineRef": "story",
+        "row": 4
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "enter",
+        "to": "emerge",
+        "label": "After spending time inside the box, Abe exits earlier in its operating interval.",
+        "personRef": "abe"
+      }
+    ]
+  }
 }

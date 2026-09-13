@@ -150,5 +150,63 @@
       "label": "The town returns to the same morning.",
       "retainedText": "Phil remembers previous days. This example stands for the repetition that continues throughout the guide."
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "Follow the changes Phil experiences while the town repeats the same day. The cards condense many repetitions. They do not create a new timeline for each day.",
+    "frame": "Selected phases across repeated days, followed by the new morning. This is not calendar order or a count of repetitions.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Phil’s experience",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "first-day",
+        "eventRef": "first-day",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "again",
+        "eventRef": "again",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "exploit",
+        "eventRef": "exploit",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "despair",
+        "eventRef": "despair",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "learn",
+        "eventRef": "learn",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "last-day",
+        "eventRef": "last-day",
+        "timelineRef": "story",
+        "row": 5
+      },
+      {
+        "id": "tomorrow",
+        "eventRef": "tomorrow",
+        "timelineRef": "story",
+        "row": 6
+      }
+    ],
+    "links": []
+  }
 }

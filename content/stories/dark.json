@@ -164,5 +164,60 @@
         }
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "One life crosses from 2019 to 1986, then continues toward adulthood. The two names are stages of the same person. No later-season worlds are included.",
+    "frame": "Calendar order for the season 1 Mikkel–Michael strand; broad periods only.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Winden",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "past",
+        "eventRef": "past",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "grow",
+        "eventRef": "grow",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "father",
+        "eventRef": "father",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "letter",
+        "eventRef": "letter",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "disappear",
+        "eventRef": "disappear",
+        "timelineRef": "story",
+        "row": 4
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "disappear",
+        "to": "past",
+        "label": "Mikkel travels from the disappearance in 2019 to Winden in 1986.",
+        "personRef": "mikkel"
+      }
+    ]
+  }
 }

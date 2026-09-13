@@ -3,14 +3,11 @@ import {
   type Story,
   type StoryEvent,
 } from "../content/story.ts";
+import { escapeHtml } from "./html.ts";
+import { hasFlowchart } from "./flowchart.ts";
+export { escapeHtml } from "./html.ts";
+export { renderFlowSvg, renderFlowPage } from "./flowchart.ts";
 
-export const escapeHtml = (s: unknown) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 const e = escapeHtml;
 export const eventAnchor = (id: string, occurrence = 0) =>
   `event-${id}${occurrence ? `-visit-${occurrence}` : ""}`;
@@ -127,7 +124,7 @@ export function renderStoryPage(story: Story, draft = false): string {
     first = ids[0];
   const body = `<main id="main" class="story-page">${draft ? '<p class="preview-banner">Editorial preview · source and reader reviews pending</p>' : ""}<header class="story-heading"><p class="eyebrow">A story explained</p><h1>${e(story.title)}</h1><p class="premise">${e(story.premise)}</p><p class="story-meta">${e(story.scope)} <span>Full spoilers</span></p>
     ${story.people?.length ? `<details class="cast"><summary>Meet the people</summary><dl>${story.people.map((p) => `<div><dt>${e(p.name)}</dt><dd>${e(p.introduction ?? "")}</dd></div>`).join("")}</dl></details>` : ""}</header>
-    <div class="reading-toolbar"><p>${e(story.guide.title)} <span>· ${ids.length} moments</span></p><div>${views.length ? `<label class="enhancement" hidden>Reading order <select id="view-select"><option value="guide">${e(story.guide.title)}</option>${views.map((v) => `<option value="${e(v.id)}">${e(v.title)}</option>`).join("")}</select></label>` : ""}<button type="button" class="enhancement" id="print" hidden>Print guide</button><a href="../../stories/${e(story.id)}.json" download>Story file</a></div></div>
+    <div class="reading-toolbar"><p>${e(story.guide.title)} <span>· ${ids.length} moments</span></p><div>${views.length ? `<label class="enhancement" hidden>Reading order <select id="view-select"><option value="guide">${e(story.guide.title)}</option>${views.map((v) => `<option value="${e(v.id)}">${e(v.title)}</option>`).join("")}</select></label>` : ""}${hasFlowchart(story) ? `<a href="timeline.html">Timeline diagram</a><a href="timeline.html" download="${e(story.id)}-timeline.html">Export static diagram</a>` : ""}<button type="button" class="enhancement" id="print" hidden>Print guide</button><a href="../../stories/${e(story.id)}.json" download>Story file</a></div></div>
     <p id="reader-notice" class="notice" role="status" hidden></p><div class="reading-layout"><div id="reading-content">${renderReading(story)}</div><aside class="focus-panel" aria-label="Connections for the selected moment"><div id="focus-content">${renderFocus(story, first)}</div><div class="step-controls enhancement" hidden><button id="previous" type="button">← Previous</button><button id="next" type="button">Next →</button></div><a id="diagram-download" href="../../diagrams/${e(story.id)}/${e(first)}.svg" download>Download this explanation</a></aside></div>
     ${renderEnding(story)}<section class="source-section"><h2>Sources & interpretation</h2><p>This guide selects the moments needed for its stated question. It is not an exhaustive plot record.</p><ul>${sourceMarkup(
       story,
@@ -140,13 +137,13 @@ export function renderStoryPage(story: Story, draft = false): string {
 export function renderLibrary(stories: Story[], draft = false): string {
   return shell(
     "Stories",
-    `<main id="main" class="library">${draft ? '<p class="preview-banner">Editorial preview · seven guides for source and reader review</p>' : ""}<header><p class="eyebrow">Read the story. Understand the time.</p><h1>A way through<br>the complicated bits.</h1><p class="library-intro">Clear, illustrated guides to stories that bend time. Follow a person, see what changes, and understand why it matters.</p></header><div class="library-label"><h2>Choose a story</h2><span>All guides contain spoilers</span></div><div class="story-list">${stories.map((s, i) => `<a class="story-card" href="read/${e(s.id)}/index.html"><span class="story-index">${String(i + 1).padStart(2, "0")}</span><div><h3>${e(s.title)}</h3><p>${e(s.premise)}</p><span class="card-meta">${e(s.scope)} · ${guideIds(s).length} moments</span></div><span aria-hidden="true" class="card-arrow">↗</span></a>`).join("")}</div></main>`,
+    `<main id="main" class="library">${draft ? '<p class="preview-banner">Editorial preview · seven guides for source and reader review</p>' : ""}<header><p class="eyebrow">Read the story. Understand the time.</p><h1>A way through<br>the complicated bits.</h1><p class="library-intro">Clear, illustrated guides to stories that bend time. Follow a person, see what changes, and understand why it matters.</p></header><div class="library-label"><h2>Choose a story</h2><span>All guides contain spoilers</span></div><div class="story-list">${stories.map((s, i) => `<a class="story-card" href="read/${e(s.id)}/index.html"><span class="story-index">${String(i + 1).padStart(2, "0")}</span><div><h3>${e(s.title)}</h3><p>${e(s.premise)}</p><span class="card-meta">${e(s.scope)} · ${guideIds(s).length} moments</span></div><span aria-hidden="true" class="card-arrow">↗</span></a>`).join("")}</div><section class="diagram-example"><h2>See how timeline diagrams work</h2><p>An original example shows a new branch alongside a world that already exists, with journeys between them.</p><a href="read/the-observatory-door/timeline.html">Explore a branching timeline</a> · <a href="examples/branching-guide.json" download>Download the example story</a></section></main>`,
   );
 }
 
 export function renderEditor(): string {
   return shell(
     "Edit a guide",
-    `<main id="main" class="editor"><header><p class="eyebrow">Author workspace</p><h1>Start with the explanation.</h1><p>Choose a story file or paste a draft. Preview it as a reader will see it. Your work stays in this browser until you download it.</p></header><section class="editor-input"><label for="story-file">Open a story or legacy file</label><input id="story-file" type="file" accept=".json,application/json"><label for="draft">Story document</label><textarea id="draft" rows="18" spellcheck="false" placeholder="Paste a version 2.0 story document here"></textarea><div class="editor-actions"><button id="preview" type="button">Preview guide</button><button id="download-draft" type="button">Download draft</button><button id="download-ledger" type="button" hidden>Download import record</button><button id="restore" type="button" hidden>Restore saved draft</button></div><p id="editor-status" role="status"></p><ul id="editor-errors" role="alert"></ul></section><section id="editor-preview" aria-label="Draft preview"><p>The reader preview will appear here. Legacy imports are unreviewed candidates: write a scope, premise, ending and reading path before previewing them.</p></section></main><script type="module" src="editor.js"></script>`,
+    `<main id="main" class="editor"><header><p class="eyebrow">Author workspace</p><h1>Start with the explanation.</h1><p>Choose a story file or paste a draft. Preview it as a reader will see it. Your work stays in this browser until you download it.</p><p><a href="examples/branching-guide.json" download>Download a branching example</a> to try splits and travel between existing timelines.</p></header><section class="editor-input"><label for="story-file">Open a story or legacy file</label><input id="story-file" type="file" accept=".json,application/json"><label for="draft">Story document</label><textarea id="draft" rows="18" spellcheck="false" placeholder="Paste a version 2.0 story document here"></textarea><div class="editor-actions"><button id="preview" type="button">Preview guide</button><button id="add-flowchart" type="button">Add timeline diagram</button><button id="export-flow-page" type="button">Export diagram page</button><button id="export-flow-svg" type="button">Export diagram SVG</button><button id="download-draft" type="button">Download draft</button><button id="download-ledger" type="button" hidden>Download import record</button><button id="restore" type="button" hidden>Restore saved draft</button></div><p id="editor-status" role="status"></p><ul id="editor-errors" role="alert"></ul></section><section id="editor-preview" aria-label="Draft preview"><p>The reader preview will appear here. Legacy imports are unreviewed candidates: write a scope, premise, ending and reading path before previewing them.</p></section></main><script type="module" src="editor.js"></script>`,
   );
 }

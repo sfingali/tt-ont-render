@@ -49,6 +49,8 @@ The model distinguishes an explanatory phase from a timestamp through ordinary w
 
 These are editorial drafts based on existing repository material. They have not been independently checked against every scene of the primary works. `content/catalog.json` therefore records source and reader review as pending. Preview builds work; `npm run build:release` fails until both reviews pass. A passing schema is never recorded as a source review.
 
+The [source and editorial review](SOURCE-AND-READER-REVIEW.md) records the subsequent wording changes, specific corroboration and outstanding checks. The [reader study kit](READER-STUDY.md) supplies a session protocol and per-guide questions. No participant results are claimed.
+
 ## Author workspace and migration
 
 `/edit.html` accepts a format 2.0 JSON file or a legacy ontology file. It supports editing, validation, guide preview, local draft recovery and download. This is a minimal document editor, not a visual graph editor. Browser storage is best-effort; downloading is the durable handoff.
@@ -64,6 +66,8 @@ Remaining corpus entries stay in the research archive. Migrate another work when
 `web/build.mjs` writes the static library, story pages, story JSON, SVG explanations, author workspace and legacy viewer into `web/dist`. Paths are relative, so it supports a subdirectory host. Browser bundles import no Node runtime. There are no remote fonts, analytics or required third-party services.
 
 Each moment has a self-contained SVG export with text, direction, story context and a scope/spacing note. Its height grows with its content. The reader has an A4 print stylesheet and a Print guide action. Full print proofing on target browsers remains a release check. SVG export is the local explanation, not a claim to draw every event in one chart.
+
+The optional [timeline flow chart](TIMELINE-DIAGRAMS.md) adds an overview of explicitly authored timelines, split points and character journeys. It distinguishes a new branch from travel into an existing world. Every pilot has a scoped diagram, and an original example demonstrates the multi-lane notation. The separate overview exports as standalone HTML or SVG; its own print layout uses A3 landscape. This does not change the guide’s primary reading path or infer branches from the old ontology.
 
 The old CLI and design profiles remain available. The research viewer now defaults to Atlas rather than a profile that only draws the first world. Its ordering resolver accepts only explicit chronological constraints within a world, processes all predecessors correctly, and leaves isolated, partial and cyclic orders unresolved. Atlas reserves space above unresolved cards for their relationship routes and allows its assignment pass to settle before final verification.
 

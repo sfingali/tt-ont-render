@@ -3,7 +3,7 @@
   "id": "dark",
   "title": "Dark",
   "scope": "Season 1 · the Mikkel–Michael relationship only",
-  "premise": "Mikkel disappears from 2019. The child’s life in the past explains how Jonas can be searching for his own father without knowing it.",
+  "premise": "Jonas’s father, Michael, has died. Then a boy named Mikkel goes missing. How can the missing child and the dead father be the same person?",
   "ending": "Mikkel grows up as Michael Kahnwald, Jonas’s father. Michael’s adult life occurs before Mikkel’s disappearance on the calendar, but after that disappearance in Mikkel’s own experience. This is one strand of Dark, not an explanation of its entire family knot.",
   "people": [
     {
@@ -40,8 +40,8 @@
     {
       "id": "grow",
       "title": "The missing child grows up as Michael",
-      "text": "Mikkel remains in the past and is raised by Ines Kahnwald. The adult known as Michael is the same person, not a separate counterpart.",
-      "whenLabel": "From 1986 onward",
+      "text": "Ines Kahnwald takes care of Mikkel. Over the following years, he grows up using the name Michael Kahnwald.",
+      "whenLabel": "Growing up from 1986 onward",
       "people": [
         "mikkel"
       ],
@@ -52,7 +52,7 @@
     {
       "id": "father",
       "title": "Michael becomes Jonas’s father",
-      "text": "Michael’s life with Hannah leads to Jonas’s birth. The missing boy and Jonas’s father belong to different stages of one life.",
+      "text": "As an adult, Michael has a son, Jonas, with Hannah. Jonas therefore grows up knowing Michael as his father, without knowing that his father was once the missing boy Mikkel.",
       "whenLabel": "Before the 2019 disappearance",
       "people": [
         "mikkel"
@@ -63,8 +63,8 @@
     },
     {
       "id": "letter",
-      "title": "His letter connects the two names",
-      "text": "Michael dies before Mikkel’s disappearance in 2019. His letter explains the identity connecting the child to the father. The sequence is strange on a calendar but continuous within his life.",
+      "title": "Michael leaves a letter before he dies",
+      "text": "Michael dies in 2019 before the child Mikkel disappears. His letter explains that he was Mikkel. The date on this card belongs to Michael’s death and the letter he leaves; Jonas learns the truth later, after the disappearance.",
       "whenLabel": "2019 · before Mikkel goes missing",
       "people": [
         "mikkel"
@@ -75,7 +75,7 @@
     }
   ],
   "guide": {
-    "title": "Follow Mikkel",
+    "title": "Follow Mikkel into Michael’s life",
     "personRef": "mikkel",
     "chapters": [
       {
@@ -83,7 +83,8 @@
         "eventRefs": [
           "disappear",
           "past"
-        ]
+        ],
+        "introduction": "Follow one person’s life from childhood to adulthood. This differs from both calendar order and the order in which Jonas learns the truth."
       },
       {
         "title": "Follow the life he lives",
@@ -101,6 +102,12 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/dark.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "netflix-episodes",
+      "title": "Netflix: Dark, season 1 episode listing",
+      "locator": "https://www.netflix.com/title/80100172",
+      "note": "The episode descriptions establish the 2019 setting, the 1986 strand and Jonas’s search. They do not substantiate the Mikkel–Michael identity or the letter’s full chronology. Those claims still require viewing the relevant episodes."
     }
   ],
   "connections": [
@@ -121,23 +128,35 @@
       "frame": "Winden’s calendar, at the broad periods stated here",
       "groups": [
         {
-          "label": "1986 and the following years",
+          "label": "1986 · arrival",
           "eventRefs": [
-            "past",
+            "past"
+          ],
+          "withinGroup": "unspecified"
+        },
+        {
+          "label": "The following years · growing up",
+          "eventRefs": [
             "grow"
           ],
           "withinGroup": "unspecified"
         },
         {
-          "label": "Before the disappearance",
+          "label": "Adult life · becoming Jonas’s father",
           "eventRefs": [
-            "father",
+            "father"
+          ],
+          "withinGroup": "unspecified"
+        },
+        {
+          "label": "2019 · before the disappearance",
+          "eventRefs": [
             "letter"
           ],
           "withinGroup": "unspecified"
         },
         {
-          "label": "The disappearance in 2019",
+          "label": "2019 · the disappearance",
           "eventRefs": [
             "disappear"
           ],
@@ -145,5 +164,60 @@
         }
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "One life crosses from 2019 to 1986, then continues toward adulthood. The two names are stages of the same person. No later-season worlds are included.",
+    "frame": "Calendar order for the season 1 Mikkel–Michael strand; broad periods only.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Winden",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "past",
+        "eventRef": "past",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "grow",
+        "eventRef": "grow",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "father",
+        "eventRef": "father",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "letter",
+        "eventRef": "letter",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "disappear",
+        "eventRef": "disappear",
+        "timelineRef": "story",
+        "row": 4
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "disappear",
+        "to": "past",
+        "label": "Mikkel travels from the disappearance in 2019 to Winden in 1986.",
+        "personRef": "mikkel"
+      }
+    ]
+  }
 }

@@ -1,0 +1,200 @@
+{
+  "version": "2.0",
+  "id": "the-observatory-door",
+  "title": "The observatory door",
+  "scope": "Original illustration · timeline splits and travel between existing worlds",
+  "premise": "Mira can open a new course of events at home, and she can visit a world that existed before she arrived. What is the difference?",
+  "ending": "The new harbour timeline starts at the gate decision. Orchard already existed. Mira’s journeys connect these timelines; the journeys themselves do not create Orchard.",
+  "people": [
+    {
+      "id": "mira",
+      "name": "Mira",
+      "introduction": "A traveller who can move between timelines."
+    }
+  ],
+  "events": [
+    {
+      "id": "harbour",
+      "title": "Mira starts in Harbour",
+      "text": "Harbour is the world Mira calls home. Its gates have always been closed.",
+      "whenLabel": "Before the decision",
+      "people": [
+        "mira"
+      ]
+    },
+    {
+      "id": "orchard",
+      "title": "Orchard already has an observatory",
+      "text": "In another timeline, the people of Orchard built an observatory long before Mira visited. This timeline does not begin with her arrival.",
+      "whenLabel": "Before Mira’s visit"
+    },
+    {
+      "id": "decision",
+      "title": "The gate decision splits the course",
+      "text": "Mira activates a device that lets both outcomes continue: a course with the gates closed, and a new branch with the gates open.",
+      "whenLabel": "The split point",
+      "people": [
+        "mira"
+      ]
+    },
+    {
+      "id": "open",
+      "title": "The new branch opens its gates",
+      "text": "This timeline begins at the decision. From here, Harbour follows a different course.",
+      "whenLabel": "After the split"
+    },
+    {
+      "id": "closed",
+      "title": "The original course keeps its gates closed",
+      "text": "The original Harbour timeline continues. Creating the new branch did not erase it.",
+      "whenLabel": "After the split"
+    },
+    {
+      "id": "visit",
+      "title": "Mira arrives at Orchard’s observatory",
+      "text": "Mira leaves the original Harbour timeline and arrives in Orchard. She meets people whose lives were already under way.",
+      "whenLabel": "Mira’s first journey",
+      "people": [
+        "mira"
+      ]
+    },
+    {
+      "id": "return",
+      "title": "Mira enters the new Harbour branch",
+      "text": "Mira leaves Orchard and travels into the branch where the gates opened. That branch began at the decision, before this arrival.",
+      "whenLabel": "Mira’s second journey",
+      "people": [
+        "mira"
+      ]
+    }
+  ],
+  "guide": {
+    "title": "Follow the split and the journeys",
+    "chapters": [
+      {
+        "title": "Two worlds already exist",
+        "eventRefs": [
+          "harbour",
+          "orchard"
+        ]
+      },
+      {
+        "title": "One decision creates a branch",
+        "eventRefs": [
+          "decision",
+          "open",
+          "closed"
+        ]
+      },
+      {
+        "title": "A traveller crosses between them",
+        "eventRefs": [
+          "visit",
+          "return"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "original",
+      "title": "Original explanatory example",
+      "locator": "Written for the timeline diagram feature",
+      "note": "Invented to demonstrate the visual notation. This is not a claim about any film or television series."
+    }
+  ],
+  "flowchart": {
+    "title": "A split is different from a journey",
+    "frame": "Read down each lane. Only the stated before/after relationships are asserted; alignment does not synchronise the worlds.",
+    "description": "Grey lanes show each course of events. S1 creates a new Harbour timeline. T1 enters the pre-existing Orchard timeline, and T2 enters the Harbour branch after it has begun.",
+    "timelines": [
+      {
+        "id": "harbour",
+        "label": "Harbour · original course",
+        "description": "Exists before the decision and continues afterwards.",
+        "origin": "existing"
+      },
+      {
+        "id": "branch",
+        "label": "Harbour · new branch",
+        "description": "Starts at S1, where the gates open.",
+        "origin": "split"
+      },
+      {
+        "id": "orchard",
+        "label": "Orchard · another world",
+        "description": "Exists before Mira’s arrival at T1.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "h0",
+        "eventRef": "harbour",
+        "timelineRef": "harbour",
+        "row": 0
+      },
+      {
+        "id": "o0",
+        "eventRef": "orchard",
+        "timelineRef": "orchard",
+        "row": 0
+      },
+      {
+        "id": "h1",
+        "eventRef": "decision",
+        "timelineRef": "harbour",
+        "row": 1
+      },
+      {
+        "id": "b0",
+        "eventRef": "open",
+        "timelineRef": "branch",
+        "row": 2
+      },
+      {
+        "id": "o1",
+        "eventRef": "visit",
+        "timelineRef": "orchard",
+        "row": 2
+      },
+      {
+        "id": "h2",
+        "eventRef": "closed",
+        "timelineRef": "harbour",
+        "row": 3
+      },
+      {
+        "id": "b1",
+        "eventRef": "return",
+        "timelineRef": "branch",
+        "row": 4
+      }
+    ],
+    "links": [
+      {
+        "id": "gate",
+        "kind": "split",
+        "from": "h1",
+        "to": "b0",
+        "label": "The gate decision starts the new Harbour branch."
+      },
+      {
+        "id": "orchard-trip",
+        "kind": "travel",
+        "from": "h1",
+        "to": "o1",
+        "personRef": "mira",
+        "label": "Mira enters Orchard, a timeline that already existed."
+      },
+      {
+        "id": "branch-trip",
+        "kind": "travel",
+        "from": "o1",
+        "to": "b1",
+        "personRef": "mira",
+        "label": "Mira enters the Harbour branch after its split point."
+      }
+    ]
+  }
+}

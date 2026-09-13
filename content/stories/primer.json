@@ -15,14 +15,15 @@
   "events": [
     {
       "id": "start",
-      "title": "Start the box before the destination time",
-      "text": "Abe arranges for the machine to begin running before the point to which he intends to return. The usable interval is limited by the machine’s operation.",
+      "title": "Start the box to establish how far back it can reach",
+      "text": "Abe arranges for the box to start running. It cannot take him back to a time before it was operating.",
       "whenLabel": "Earlier in the ordinary day",
       "people": [
         "abe"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "carruth"
       ]
     },
     {
@@ -40,13 +41,14 @@
     {
       "id": "enter",
       "title": "Enter the box later",
-      "text": "Abe reaches the running box at the later end of the trip. The process involves time spent inside; it is not an instantaneous leap selected on a calendar.",
+      "text": "Later, Abe enters the running box. Travelling back takes time inside it: he must experience the duration of the trip.",
       "whenLabel": "Later in the ordinary day",
       "people": [
         "abe"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "carruth"
       ]
     },
     {
@@ -64,7 +66,7 @@
     {
       "id": "overlap",
       "title": "Two stages of Abe now share the day",
-      "text": "The returned Abe can act while the earlier Abe is still following his isolation plan. Those are two stages of one person’s life. Avoiding contact is a practical precaution, not proof that the story has split into separate universes.",
+      "text": "The returned Abe can act during the same interval when his earlier self is still keeping out of the way. Both are Abe, at different stages of his life. This is the overlap made possible by the preparation described earlier.",
       "whenLabel": "During the overlapping interval",
       "people": [
         "abe"
@@ -96,7 +98,8 @@
         "title": "Understand the overlap",
         "eventRefs": [
           "overlap"
-        ]
+        ],
+        "introduction": "Look again at the interval when Abe waited. This final card explains who is present during that interval; it is not an extra step later on the calendar."
       }
     ]
   },
@@ -106,6 +109,12 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/primer.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "carruth",
+      "title": "Shane Carruth explains the machine’s limits",
+      "locator": "https://spectrum.ieee.org/from-math-to-movies",
+      "note": "IEEE Spectrum’s interview asks how the machines operate. The question identifies the start-time limit; Carruth explains that travellers must experience the duration inside. It does not verify Abe’s exact preparation or timings in the released film."
     }
   ],
   "connections": [
@@ -117,5 +126,60 @@
       "toEvent": "emerge",
       "label": "Abe enters later and emerges earlier within the box’s operating interval."
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "The loop arrow connects the later entry to the earlier exit. Waiting, emerging and overlap are explanatory cards for overlapping portions of the day, not three successive dates. Only the basic method is shown.",
+    "frame": "Abe’s preparation and the overlapping interval, arranged by the explanation rather than an exact clock.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "The box’s operating interval",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "start",
+        "eventRef": "start",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "wait",
+        "eventRef": "wait",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "emerge",
+        "eventRef": "emerge",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "overlap",
+        "eventRef": "overlap",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "enter",
+        "eventRef": "enter",
+        "timelineRef": "story",
+        "row": 4
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "enter",
+        "to": "emerge",
+        "label": "After spending time inside the box, Abe exits earlier in its operating interval.",
+        "personRef": "abe"
+      }
+    ]
+  }
 }

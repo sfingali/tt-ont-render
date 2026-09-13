@@ -1,3 +1,4 @@
+import { validateFlowchart, type TimelineFlowchart } from "./flowchart.ts";
 /** The reader validates an authored document. It does not infer a story from a graph. */
 export interface Person {
   id: string;
@@ -97,6 +98,7 @@ export interface Story {
   connections?: Connection[];
   comparisons?: Comparison[];
   views?: StoryView[];
+  flowchart?: TimelineFlowchart;
 }
 export interface Issue {
   path: string;
@@ -107,11 +109,17 @@ export interface Validation {
   errors: Issue[];
   warnings: Issue[];
   viewErrors: Record<string, Issue[]>;
+  flowchartErrors: Issue[];
 }
 type RecordValue = Record<string, unknown>;
 
 export function validateStory(input: unknown): Validation {
-  const result: Validation = { errors: [], warnings: [], viewErrors: {} };
+  const result: Validation = {
+    errors: [],
+    warnings: [],
+    viewErrors: {},
+    flowchartErrors: [],
+  };
   const error = (path: string, message: string) =>
     result.errors.push({ path, message });
   const object = (
@@ -192,6 +200,7 @@ export function validateStory(input: unknown): Validation {
     "connections",
     "comparisons",
     "views",
+    "flowchart",
   ]);
   if (s.version !== "2.0")
     error(
@@ -401,7 +410,11 @@ export function validateStory(input: unknown): Validation {
     const issues = result.errors.splice(start);
     if (issues.length) result.viewErrors[String(v.id)] = issues;
   });
-  if (!result.errors.length) result.story = input as Story;
+  if (!result.errors.length) {
+    result.story = input as Story;
+    if (s.flowchart !== undefined)
+      result.flowchartErrors = validateFlowchart(s.flowchart, result.story);
+  }
   return result;
 }
 

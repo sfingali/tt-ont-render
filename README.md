@@ -45,6 +45,8 @@ Use **Edit a guide** to open or paste a document, preview it, recover a local dr
 
 The reader works as static HTML without JavaScript. JavaScript adds moment selection, optional authored reading orders and print controls. Phone layouts place connection details beside their moments. Each moment also has a downloadable SVG explanation.
 
+Each pilot also has a **Timeline diagram** and **Export static diagram** action. The optional flow chart shows authored lanes, explicit splits and named journeys, including travel into a timeline that already exists. Its standalone HTML page contains the drawing, text and sources; SVG export is also available. Try the library’s branching example, then see [timeline diagram authoring and export](docs/TIMELINE-DIAGRAMS.md).
+
 ## Where things live
 
 | Location | Responsibility |
@@ -62,7 +64,7 @@ See [the reader design contract](docs/READER-DESIGN.md) for the implemented scop
 
 ## Status
 
-Seven pilot guides are implemented. Their wording is adapted from repository material and awaits independent primary-source review and comprehension sessions with readers. Preview and release are intentionally distinct. The remaining ontology corpus has not been bulk-converted into published guides.
+Seven pilot guides are implemented. An [editorial and source review](docs/SOURCE-AND-READER-REVIEW.md) records clarity fixes, limited creator/screenplay corroboration and the remaining scene checks. The [reader study kit](docs/READER-STUDY.md) is ready for actual comprehension sessions; none have been conducted. Both review flags remain pending for every guide. The remaining ontology corpus has not been bulk-converted into published guides.
 
 ## Legacy renderer
 

@@ -4,7 +4,7 @@
   "title": "Tenet",
   "scope": "The 2020 film · the two sides of the Oslo encounter",
   "premise": "At Oslo, the Protagonist fights a masked figure. Returning to that encounter reveals why both sides looked so strange.",
-  "ending": "The masked opponent was the Protagonist himself, travelling through the encounter while inverted. The later visit supplies the other participant in the fight already shown; this guide makes no claim to explain every operation in the film.",
+  "ending": "The Protagonist first fights a stranger, later returns as that masked fighter, then uses the turnstile to become the figure Neil chases. One person supplies all three appearances. The return explains the encounter he already experienced.",
   "people": [
     {
       "id": "protagonist",
@@ -16,7 +16,7 @@
     {
       "id": "first-entry",
       "title": "He enters the Oslo freeport",
-      "text": "The Protagonist and Neil enter the freeport while a staged plane crash provides cover. They find a turnstile whose function they do not yet understand.",
+      "text": "The Protagonist and his colleague Neil enter a storage facility at Oslo airport, called the freeport. A staged plane crash provides cover. Inside, they find a machine with two revolving doors: a turnstile.",
       "whenLabel": "Oslo · the first visit",
       "people": [
         "protagonist"
@@ -28,25 +28,27 @@
     {
       "id": "first-fight",
       "title": "He fights someone moving strangely",
-      "text": "A masked opponent emerges at the turnstile. The fight looks physically wrong because the two participants are moving in opposite temporal directions.",
+      "text": "Two masked figures appear on opposite sides of the turnstile. One fights the Protagonist, moving backwards relative to him. The other runs away, with Neil in pursuit.",
       "whenLabel": "Oslo · the forward side of the encounter",
       "people": [
         "protagonist"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "nolan-oslo"
       ]
     },
     {
       "id": "invert",
       "title": "Later, he becomes inverted",
-      "text": "After the events in Tallinn, the Protagonist joins an inverted journey back toward the earlier Oslo operation. He now needs the freeport’s turnstile.",
+      "text": "Later, in Tallinn, the Protagonist passes through a turnstile. He is now inverted: while he experiences life normally, the world around him runs backwards. Travelling this way brings him back toward the day of the Oslo operation.",
       "whenLabel": "Tallinn · later by the ordinary calendar",
       "people": [
         "protagonist"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "nolan-inversion"
       ]
     },
     {
@@ -58,7 +60,8 @@
         "protagonist"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "nolan-oslo"
       ]
     },
     {
@@ -70,24 +73,26 @@
         "protagonist"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "nolan-oslo"
       ]
     },
     {
       "id": "exit",
       "title": "The turnstile lets him move forward again",
-      "text": "He passes through the turnstile and leaves in the ordinary temporal direction. The apparent mystery opponent now has a place in his own journey.",
+      "text": "He passes through the Oslo turnstile and moves forward in time again. He is now the second masked figure, running from Neil. The fighter and the runner are the same traveller immediately before and after using the machine.",
       "whenLabel": "Oslo · after his passage through the turnstile",
       "people": [
         "protagonist"
       ],
       "sourceRefs": [
-        "archive"
+        "archive",
+        "nolan-oslo"
       ]
     }
   ],
   "guide": {
-    "title": "Follow The",
+    "title": "Follow the Protagonist",
     "personRef": "protagonist",
     "chapters": [
       {
@@ -102,7 +107,8 @@
         "eventRefs": [
           "invert",
           "return"
-        ]
+        ],
+        "introduction": "The next steps happen later in his life, even as the calendar takes him back to the earlier encounter."
       },
       {
         "title": "Recognise the other participant",
@@ -119,6 +125,18 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/tenet.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "nolan-oslo",
+      "title": "Christopher Nolan: Tenet screenplay, Oslo scenes",
+      "locator": "https://thescriptsavant.com/movies/Tenet.pdf#page=47",
+      "note": "Script Savant mirror; version date unconfirmed. Printed pages 46–48 show the first encounter; pages 104–106 show the return and turnstile passage (PDF pages 47–49 and 105–107). The screenplay corroborates these actions; comparison with the released film remains pending."
+    },
+    {
+      "id": "nolan-inversion",
+      "title": "Christopher Nolan: Tenet screenplay, Tallinn turnstile",
+      "locator": "https://thescriptsavant.com/movies/Tenet.pdf#page=92",
+      "note": "Printed pages 91–92 (PDF pages 92–93) cover the Protagonist entering the turnstile and the reversed outside world. Same undated screenplay mirror; final-film verification remains pending."
     }
   ],
   "connections": [
@@ -144,10 +162,72 @@
             "other-fight"
           ],
           "sourceRefs": [
-            "archive"
+            "archive",
+            "nolan-oslo"
           ]
         }
       ]
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "These cards follow the same person through both sides of the encounter. This is one timeline shown through his experience; inversion does not create another lane.",
+    "frame": "Order experienced by the Protagonist. His return to Oslo runs backwards on the calendar.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "The Protagonist’s reading path",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "first-entry",
+        "eventRef": "first-entry",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "first-fight",
+        "eventRef": "first-fight",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "invert",
+        "eventRef": "invert",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "return",
+        "eventRef": "return",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "other-fight",
+        "eventRef": "other-fight",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "exit",
+        "eventRef": "exit",
+        "timelineRef": "story",
+        "row": 5
+      }
+    ],
+    "links": [
+      {
+        "id": "trip-1",
+        "kind": "travel",
+        "from": "invert",
+        "to": "return",
+        "label": "The inverted Protagonist travels back toward the earlier Oslo operation.",
+        "personRef": "protagonist"
+      }
+    ]
+  }
 }

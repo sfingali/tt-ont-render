@@ -16,7 +16,7 @@
     {
       "id": "first-day",
       "title": "An ordinary assignment becomes a trap",
-      "text": "Phil reports on Groundhog Day in Punxsutawney. A blizzard prevents him from leaving town.",
+      "text": "Weather presenter Phil reports on Groundhog Day in Punxsutawney with his producer, Rita. A blizzard prevents the crew from leaving town.",
       "whenLabel": "February 2 · first shown day",
       "people": [
         "phil"
@@ -29,7 +29,7 @@
       "id": "again",
       "title": "The morning starts again",
       "text": "Phil wakes to the same alarm and finds the day repeating. Other people behave as though yesterday’s encounters have not happened. Phil remembers them.",
-      "whenLabel": "February 2 · another iteration",
+      "whenLabel": "February 2 · the morning repeats",
       "people": [
         "phil"
       ],
@@ -52,7 +52,7 @@
     {
       "id": "despair",
       "title": "Knowing the day does not give him control",
-      "text": "Phil’s attempts to escape the repetition fail. Even extreme actions lead back to the familiar morning. This is a phase of many days, not one documented iteration.",
+      "text": "Phil’s attempts to escape the repetition fail. Even extreme actions lead back to the familiar morning.",
       "whenLabel": "Across repeated days",
       "people": [
         "phil"
@@ -77,7 +77,7 @@
       "id": "last-day",
       "title": "He spends the day caring for other people",
       "text": "Phil’s actions express the person he has become. His relationship with Rita is no longer just a sequence of tricks designed to obtain a particular response.",
-      "whenLabel": "February 2 · the final shown iteration",
+      "whenLabel": "February 2 · the last repeated day shown",
       "people": [
         "phil"
       ],
@@ -115,7 +115,8 @@
           "exploit",
           "despair",
           "learn"
-        ]
+        ],
+        "introduction": "These are selected phases across many repetitions. Each card can cover several days; the guide does not assign a count to them."
       },
       {
         "title": "Reach tomorrow",
@@ -132,6 +133,12 @@
       "title": "Repository story record",
       "locator": "https://github.com/sfingali/time-travel-ontology/blob/021e23d9c23d1fba5e5b7fdbc6400e6be1c949a2/instances/groundhog-day.json",
       "note": "Editorial pilot adapted from the repository. Scene wording and interpretation await a separate review against the primary work."
+    },
+    {
+      "id": "rubin-duration",
+      "title": "Danny Rubin on the length of the loop",
+      "locator": "https://www.theringer.com/2017/12/20/movies/groundhog-day-screenwriter-interview-danny-rubin",
+      "note": "In this 20 December 2017 interview, Rubin declines to assign a number and discusses the removal of duration references. It supports leaving the day count unspecified; the interview does not verify the individual scenes below."
     }
   ],
   "connections": [
@@ -141,7 +148,65 @@
       "fromEvent": "first-day",
       "toEvent": "again",
       "label": "The town returns to the same morning.",
-      "retainedText": "Phil carries his memory into the next iteration. This pair illustrates the repeated reset; it does not count every day."
+      "retainedText": "Phil remembers previous days. This example stands for the repetition that continues throughout the guide."
     }
-  ]
+  ],
+  "flowchart": {
+    "title": "Timeline flow chart",
+    "description": "Follow the changes Phil experiences while the town repeats the same day. The cards condense many repetitions. They do not create a new timeline for each day.",
+    "frame": "Selected phases across repeated days, followed by the new morning. This is not calendar order or a count of repetitions.",
+    "timelines": [
+      {
+        "id": "story",
+        "label": "Phil’s experience",
+        "description": "The timeline already exists within this guide’s stated scope.",
+        "origin": "existing"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "first-day",
+        "eventRef": "first-day",
+        "timelineRef": "story",
+        "row": 0
+      },
+      {
+        "id": "again",
+        "eventRef": "again",
+        "timelineRef": "story",
+        "row": 1
+      },
+      {
+        "id": "exploit",
+        "eventRef": "exploit",
+        "timelineRef": "story",
+        "row": 2
+      },
+      {
+        "id": "despair",
+        "eventRef": "despair",
+        "timelineRef": "story",
+        "row": 3
+      },
+      {
+        "id": "learn",
+        "eventRef": "learn",
+        "timelineRef": "story",
+        "row": 4
+      },
+      {
+        "id": "last-day",
+        "eventRef": "last-day",
+        "timelineRef": "story",
+        "row": 5
+      },
+      {
+        "id": "tomorrow",
+        "eventRef": "tomorrow",
+        "timelineRef": "story",
+        "row": 6
+      }
+    ],
+    "links": []
+  }
 }

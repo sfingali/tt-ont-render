@@ -72,7 +72,9 @@ test("every pilot has a valid authored diagram and a static export link", () => 
     assert.ok(s.flowchart, name);
     assert.deepEqual(validateStory(s).flowchartErrors, [], name);
     assert.match(renderStoryPage(s), /href="timeline.html"/);
-    assert.match(renderFlowPage(s), /Read the diagram as text/);
+    // Both layouts must offer a text alternative; the branch view titles it
+    // "Read the branching diagram as text".
+    assert.match(renderFlowPage(s), /Read the (branching )?diagram as text/);
   }
 });
 test("a journey cannot masquerade as the origin of a new timeline", () => {

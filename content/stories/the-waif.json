@@ -1,0 +1,87 @@
+{
+  "version": "2.0",
+  "id": "the-waif",
+  "title": "The Waif",
+  "scope": "The accident, the crossings and their outcomes",
+  "premise": "A car crash kills Ben's son. Ben finds a revolver, and every time he uses it on himself he wakes somewhere the crash went differently. What is actually happening to him?",
+  "ending": "Ben ends up in a world where his family is alive, having never once undone the crash. Each shot left a world behind in which he died, and the worlds he woke into were already under way without him.",
+  "people": [
+    { "id": "ben", "name": "Ben", "introduction": "The man the film follows. He remembers nothing of the worlds he leaves." },
+    { "id": "waif", "name": "The Waif", "introduction": "The woman who falls onto the car. She is the one person who remembers between worlds." },
+    { "id": "jack", "name": "Jack", "introduction": "Ben's son." },
+    { "id": "marie", "name": "Marie", "introduction": "Ben's partner." }
+  ],
+  "events": [
+    { "id": "accident", "title": "The falling-car accident splits the outcomes", "text": "A woman falls from an office window onto the roof of the family car. The crash separates into distinct outcomes, and the film follows only one of them.", "whenLabel": "Scene 10", "people": ["ben", "waif", "jack"], "sourceRefs": ["archive"] },
+    { "id": "jack-dies", "title": "The fall kills the Waif and Jack", "text": "In the outcome the film follows, the woman dies on the roof of the car and Jack is killed beside his father.", "whenLabel": "Scene 10", "people": ["ben", "waif", "jack"], "sourceRefs": ["archive"] },
+    { "id": "jack-lives-start", "title": "Jack lives; Ben dies in the accident", "text": "A separate outcome of the same crash, running from this moment onward. Jack survives it. The Ben of that outcome does not.", "whenLabel": "From scene 10", "people": ["ben", "jack"], "sourceRefs": ["archive"] },
+    { "id": "waif-lives-start", "title": "The Waif survives the fall", "text": "Another outcome of the same crash, running from this moment onward. The woman is not killed by the fall, and lives on in it.", "whenLabel": "From scene 10", "people": ["waif"], "sourceRefs": ["archive"] },
+    { "id": "aftermath", "title": "The motel, the courthouse and the cabin", "text": "Ben's life after the crash. At the cabin he finds a book about how all of this works, and a revolver hidden in the crawlspace.", "whenLabel": "Scenes 11-46", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "pull-78", "title": "Ben pulls the trigger for the first time", "text": "Ben turns the revolver on himself. The moment separates: in one outcome the shot kills him, and the man we follow carries on elsewhere.", "whenLabel": "Scene 78", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "dies-78", "title": "He dies at the shot in the storm", "text": "The outcome where the shot is simply fatal. This is where that perspective ends.", "whenLabel": "Scene 78", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "ben-with-waif", "title": "Ben wakes in the world where she lived", "text": "He comes round in the outcome where the woman survived the fall. It has been running without him, and the woman here is not the one who died on his car.", "whenLabel": "Scene 78", "people": ["ben", "waif"], "sourceRefs": ["archive"] },
+    { "id": "waif-at-door", "title": "The living Waif arrives at the cabin", "text": "She comes to the door. She knows him, and she remembers what he does not.", "whenLabel": "Scenes 79-105", "people": ["ben", "waif"], "sourceRefs": ["archive"] },
+    { "id": "pull-114", "title": "He pulls the trigger again, at her encouragement", "text": "She tells him to do it. The moment separates again: one outcome keeps his body, the other keeps him.", "whenLabel": "Scene 114", "people": ["ben", "waif"], "sourceRefs": ["archive"] },
+    { "id": "dies-114", "title": "He dies at the shot in the cabin", "text": "The outcome where this shot is fatal. That perspective ends here.", "whenLabel": "Scene 114", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "ben-where-jack-lives", "title": "Ben wakes where Jack lived and he did not", "text": "He comes round in the outcome that separated at the crash, the one where Jack survived. It has been running since scene 10, and its own Ben died in the accident.", "whenLabel": "Scene 114", "people": ["ben", "jack"], "sourceRefs": ["archive"] },
+    { "id": "family-saw-him-die", "title": "Jack is alive here, but this family watched Ben die", "text": "He has his son back and is a stranger in his own house. Later the house is attacked and Marie and Jack are killed.", "whenLabel": "Scenes 168-256", "people": ["ben", "jack", "marie"], "sourceRefs": ["archive"] },
+    { "id": "pull-184", "title": "He goes back to the cabin and fires again", "text": "After the reunion fails he returns to the cabin and uses the revolver a third time.", "whenLabel": "Scene 184", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "dies-184", "title": "He dies at the last shot", "text": "The outcome where the last shot is fatal. That perspective ends here.", "whenLabel": "Scene 184", "people": ["ben"], "sourceRefs": ["archive"] },
+    { "id": "red-light", "title": "The light stays red and Jack draws on the glass", "text": "A morning that resembles the opening: the family are together in the car and the boy draws on the window. Nothing connects this to what happened to Ben.", "whenLabel": "Scenes 267-277", "people": ["ben", "jack", "marie"], "sourceRefs": ["archive"] }
+  ],
+  "guide": {
+    "title": "Read the explanation",
+    "personRef": "ben",
+    "chapters": [
+      { "title": "The crash and what it separates", "eventRefs": ["accident", "jack-dies", "jack-lives-start", "waif-lives-start", "aftermath"], "introduction": "The accident does not have one result. Follow the outcome the film follows, and keep the other two in mind: they carry on without being shown." },
+      { "title": "The first crossing", "eventRefs": ["pull-78", "dies-78", "ben-with-waif", "waif-at-door"], "introduction": "The revolver does not undo the crash. It separates the moment, and the man we follow wakes somewhere that was already happening." },
+      { "title": "The second crossing", "eventRefs": ["pull-114", "dies-114", "ben-where-jack-lives", "family-saw-him-die"], "introduction": "The second shot puts him in the outcome that separated back at the crash, where his son survived and he did not." },
+      { "title": "The last shot, and the morning after", "eventRefs": ["pull-184", "dies-184", "red-light"], "introduction": "A third shot, a third outcome left behind, and a closing morning that belongs to no part of his journey." }
+    ]
+  },
+  "sources": [
+    { "id": "archive", "title": "Repository story record", "locator": "https://github.com/sfingali/time-travel-ontology/blob/main/instances/the-waif.json", "note": "Editorial pilot adapted from the repository encoding. Scene wording and interpretation await review against the primary work." }
+  ],
+  "flowchart": {
+    "layout": "branches",
+    "title": "The accident, the crossings and their outcomes",
+    "description": "The crash separates into three outcomes. Ben crosses into two of them; each crossing leaves behind an outcome in which he died.",
+    "frame": "Read downwards. An outcome begins at the moment that separates it, and keeps running afterwards whether or not the film shows it. Arrows that move a person are dashed; they never create the place they arrive at.",
+    "timelines": [
+      { "id": "followed", "label": "The outcome the film follows", "description": "Ben lives, Jack dies. This is where the film opens.", "origin": "existing" },
+      { "id": "jack-lives", "label": "Jack lives; Ben dies", "description": "Separates at the crash and keeps running. Ben enters it much later, at his second pull.", "origin": "split" },
+      { "id": "waif-lives", "label": "The Waif survives", "description": "Separates at the crash and keeps running. Ben enters it at his first pull.", "origin": "split" },
+      { "id": "end-78", "label": "The shot is fatal", "description": "The outcome of the first pull in which Ben dies.", "origin": "split" },
+      { "id": "end-114", "label": "The shot is fatal", "description": "The outcome of the second pull in which Ben dies.", "origin": "split" },
+      { "id": "end-184", "label": "The shot is fatal", "description": "The outcome of the last pull in which Ben dies.", "origin": "split" },
+      { "id": "independent", "label": "An independent morning", "description": "A parallel universe shown at the end. Nothing links it to Ben's journey.", "origin": "existing" }
+    ],
+    "nodes": [
+      { "id": "n-accident", "eventRef": "accident", "timelineRef": "followed", "row": 0 },
+      { "id": "n-jack-dies", "eventRef": "jack-dies", "timelineRef": "followed", "row": 1 },
+      { "id": "n-jack-lives", "eventRef": "jack-lives-start", "timelineRef": "jack-lives", "row": 1 },
+      { "id": "n-waif-lives", "eventRef": "waif-lives-start", "timelineRef": "waif-lives", "row": 1 },
+      { "id": "n-aftermath", "eventRef": "aftermath", "timelineRef": "followed", "row": 2 },
+      { "id": "n-pull78", "eventRef": "pull-78", "timelineRef": "followed", "row": 3 },
+      { "id": "n-dies78", "eventRef": "dies-78", "timelineRef": "end-78", "row": 4 },
+      { "id": "n-ben-waif", "eventRef": "ben-with-waif", "timelineRef": "waif-lives", "row": 4 },
+      { "id": "n-door", "eventRef": "waif-at-door", "timelineRef": "waif-lives", "row": 5 },
+      { "id": "n-pull114", "eventRef": "pull-114", "timelineRef": "waif-lives", "row": 6 },
+      { "id": "n-dies114", "eventRef": "dies-114", "timelineRef": "end-114", "row": 7 },
+      { "id": "n-ben-jack", "eventRef": "ben-where-jack-lives", "timelineRef": "jack-lives", "row": 7 },
+      { "id": "n-family", "eventRef": "family-saw-him-die", "timelineRef": "jack-lives", "row": 8 },
+      { "id": "n-pull184", "eventRef": "pull-184", "timelineRef": "jack-lives", "row": 9 },
+      { "id": "n-dies184", "eventRef": "dies-184", "timelineRef": "end-184", "row": 10 },
+      { "id": "n-red", "eventRef": "red-light", "timelineRef": "independent", "row": 11 }
+    ],
+    "links": [
+      { "id": "s-jack", "kind": "split", "from": "n-accident", "to": "n-jack-lives", "label": "The crash separates an outcome in which Jack survives and Ben does not." },
+      { "id": "s-waif", "kind": "split", "from": "n-accident", "to": "n-waif-lives", "label": "The crash separates an outcome in which the falling woman survives." },
+      { "id": "s-78", "kind": "split", "from": "n-pull78", "to": "n-dies78", "label": "The first pull separates an outcome in which the shot kills him." },
+      { "id": "s-114", "kind": "split", "from": "n-pull114", "to": "n-dies114", "label": "The second pull separates an outcome in which the shot kills him." },
+      { "id": "s-184", "kind": "split", "from": "n-pull184", "to": "n-dies184", "label": "The last pull separates an outcome in which the shot kills him." },
+      { "id": "t-78", "kind": "travel", "from": "n-pull78", "to": "n-ben-waif", "personRef": "ben", "label": "Ben wakes in the outcome where she survived. It was already running; his arrival did not begin it." },
+      { "id": "t-114", "kind": "travel", "from": "n-pull114", "to": "n-ben-jack", "personRef": "ben", "label": "Ben wakes in the outcome that separated at the crash, where Jack survived." }
+    ]
+  }
+}

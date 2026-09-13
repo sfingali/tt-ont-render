@@ -32,41 +32,22 @@ export function layoutBranches(story: Story) {
   );
   const active = lanes.filter((l) => !independent.has(l.id));
   const cols = new Map<string, number>();
-  const occupied: { col: number; start: number; end: number }[] = [];
-  const depth = (id: string): number => {
-    const l = laneMap.get(id)!;
-    return (
-      l.placed.length +
-      Math.max(
-        0,
-        ...f.links
-          .filter(
-            (k) => k.kind === "split" && l.placed.some((n) => n.id === k.from),
-          )
-          .map((k) => depth(nodeMap.get(k.to)!.timelineRef)),
-      )
-    );
-  };
-  function assign(id: string, preferred: number) {
+  // One vertical, one universe. Columns are never reused: a reused column
+  // holds several unrelated histories at different depths, which cannot be
+  // named at the head of the chart without the name being wrong for most of
+  // its length. Depth-first assignment keeps a universe beside the one it
+  // separated from; the cost is width, and the chart scrolls.
+  let nextCol = 0;
+  function assign(id: string) {
     if (cols.has(id)) return;
-    const l = laneMap.get(id)!,
-      start = l.placed[0].row,
-      end = l.placed.at(-1)!.row;
-    let col = preferred;
-    const free = (c: number) =>
-      !occupied.some((o) => o.col === c && o.start <= end && o.end >= start);
-    for (let distance = 1; !free(col); distance++)
-      col =
-        preferred + (distance % 2 ? -Math.ceil(distance / 2) : distance / 2);
-    cols.set(id, col);
-    occupied.push({ col, start, end });
-    const children = f.links
+    cols.set(id, nextCol++);
+    const l = laneMap.get(id)!;
+    f.links
       .filter(
         (k) => k.kind === "split" && l.placed.some((n) => n.id === k.from),
       )
       .map((k) => nodeMap.get(k.to)!.timelineRef)
-      .sort((a, b) => depth(b) - depth(a));
-    children.forEach((child) => assign(child, col));
+      .forEach((child) => assign(child));
   }
   active
     .filter(
@@ -75,12 +56,19 @@ export function layoutBranches(story: Story) {
           (k) => k.kind === "split" && l.placed.some((n) => n.id === k.to),
         ),
     )
-    .forEach((l) => assign(l.id, 1));
+    .forEach((l) => assign(l.id));
+  // A lane reached only by travel has no split parent; give it its own column too.
+  active.forEach((l) => assign(l.id));
   const min = Math.min(0, ...cols.values());
   for (const [id, col] of cols) cols.set(id, col - min);
   const width = Math.max(
     760,
     LEFT * 2 + (Math.max(0, ...cols.values()) + 1) * STEP - 70,
+  );
+  const priorLaneIds = new Set(
+    active
+      .filter((l) => l.origin === "existing")
+      .map((l) => l.id),
   );
   const rows = [
     ...new Set(
@@ -101,8 +89,19 @@ export function layoutBranches(story: Story) {
     Math.floor(width / 12),
   ).length;
   const introY = 36 + headingLines * 30 + 24;
+  // A pre-existing lane is named at the top of the chart, where its line
+  // begins; reserve a band for those names so they clear the intro line.
+  // Every column carries its universe's name at the head of the chart. This is
+  // only honest because columns are never reused: the name is true for the
+  // whole length of the column.
+  const firstRowEarly = Math.min(...rows);
+  const headLines = Math.max(
+    1,
+    ...active.map((l) => wrapFlowText(l.label, 30).length),
+  );
+  const headBand = headLines * 17 + 22;
   const yByRow = new Map<number, number>();
-  let y = introY + 50;
+  let y = introY + 50 + headBand;
   for (const row of rows) {
     yByRow.set(row, y);
     y +=
@@ -177,12 +176,27 @@ export function layoutBranches(story: Story) {
       return {
         timelineRef: l.id,
         x: first.x - (STEP - CARD) / 2,
-        top: introY + 12,
+        top: introY + headBand,
+        label: l.label,
         join: first.y + 26,
         cardX: first.x,
       };
     })
     .filter((l) => l.join - l.top > 40);
+
+  // Columns are reused, so a column is not a universe and cannot be named at
+  // the head of the chart. Each lane is named where it begins instead: at its
+  // fork for a lane a split created, at the top for one already running.
+  const headers = active.map((l) => ({
+    timelineRef: l.id,
+    label: l.label,
+    origin: l.origin,
+    x: LEFT + cols.get(l.id)! * STEP,
+    y: introY + 26,
+    // A name at the head does not claim the universe existed from the top;
+    // only a pre-existing one gets a line reaching up to meet its name.
+    prior: priorLaneIds.has(l.id) && l.placed[0].row > firstRowEarly,
+  }));
 
   const panels = lanes
     .filter((l) => independent.has(l.id))
@@ -196,6 +210,7 @@ export function layoutBranches(story: Story) {
     routes,
     panels,
     priorLines,
+    headers,
     width: width + (exterior ? 70 + exterior * 30 : 0),
     chartEnd: y,
     cols,
@@ -239,13 +254,31 @@ export function renderBranchSvg(story: Story): string {
       14,
     ),
   ];
+  // Column headers: one vertical is one universe, so the name holds for the
+  // whole column. The origin tag says whether it was running before the chart
+  // begins or was created by a split further down.
+  for (const h of g.headers) {
+    marks.push(txt(h.label, h.x, h.y, 30, 13, "#263633", 700));
+    marks.push(
+      txt(
+        h.origin === "split"
+          ? "BEGINS AT A SPLIT"
+          : h.origin === "unspecified"
+            ? "ORIGIN NOT ESTABLISHED"
+            : "ALREADY RUNNING",
+        h.x,
+        h.y + wrapFlowText(h.label, 30).length * 17 + 2,
+        30,
+        10,
+        h.origin === "split" ? GREEN : "#586862",
+        700,
+      ),
+    );
+  }
   // Drawn before routes and cards so the arrows and boxes sit over it.
   for (const l of g.priorLines) {
     marks.push(
       `<path data-timeline="${e(l.timelineRef)}" data-origin="existing" d="M${l.x} ${l.top}V${l.join}H${l.cardX}" fill="none" stroke="#a5b4ab" stroke-width="3"><title>This history was already running before anyone reached it.</title></path>`,
-    );
-    marks.push(
-      txt("ALREADY RUNNING", l.x - 4, l.top - 8, 30, 11, "#586862", 700),
     );
   }
   for (const r of g.routes)

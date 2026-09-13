@@ -76,9 +76,20 @@ test("successive forks connect both new universes and keep terminal paths beside
   assert.deepEqual(validateStory(s).flowchartErrors, []);
   const g = layoutBranches(s);
   assert.equal(g.nodes.length, 9);
+  // Columns used to be reused once a perspective ended, which kept the chart
+  // narrow but put several unrelated universes in one vertical, so a column
+  // could not be named. One vertical is now one universe for its whole length.
+  // The chart is wider as a result and scrolls; what must not happen is a
+  // universe sharing a column with another.
+  const columns = [...g.cols.values()];
+  assert.equal(
+    new Set(columns).size,
+    columns.length,
+    "Every universe must hold a column of its own",
+  );
   assert.ok(
-    g.width < 900,
-    "Repeated deaths must not allocate a widening set of world columns",
+    g.width <= 36 * 2 + columns.length * 320,
+    "Width must stay proportional to the number of universes",
   );
   for (let i = 1; i <= 3; i++) {
     const from = g.nodes.find((n) => n.id === `choice-${i}`)!,
@@ -221,7 +232,12 @@ test("a world entered partway down is drawn as already running; a forked one is 
 
   const first = g.nodes.find((n) => n.id === "prior-1")!;
   assert.ok(line.top < first.y, "its line reaches back above its first moment");
-  assert.ok(line.top <= g.introY + 20, "and runs to the top of the chart");
+  const header = g.headers.find((h) => h.timelineRef === "prior")!;
+  assert.ok(
+    line.top >= header.y && line.top < g.nodes[0].y,
+    "and runs up to meet its name at the head of the chart",
+  );
+  assert.equal(header.prior, true, "its header is tagged as already running");
 
   // Columns are reused, so the line must not run down a column centre.
   for (const n of g.nodes)
@@ -244,4 +260,33 @@ test("a world present from the first row needs no prior-history line", () => {
   const g = layoutBranches(example());
   assert.equal(g.priorLines.length, 0);
   assert.doesNotMatch(renderFlowSvg(example()), /data-origin="existing"/);
+});
+test("every universe is named at the head of its own column", () => {
+  const s = withPriorWorld();
+  const g = layoutBranches(s);
+  const f = s.flowchart!;
+  const active = f.timelines.filter((t) =>
+    f.nodes.some((n) => n.timelineRef === t.id),
+  );
+  // Every column-holding universe is named, and no two share a column.
+  for (const [id, col] of g.cols) {
+    const h = g.headers.find((x) => x.timelineRef === id)!;
+    assert.ok(h, `${id} must be named`);
+    assert.equal(h.label, active.find((t) => t.id === id)!.label);
+    assert.equal(h.x, 36 + col * 320, "the name sits over its own column");
+  }
+  const svg = renderFlowSvg(s);
+  assert.match(svg, /A world already under way/);
+  assert.match(svg, /ALREADY RUNNING/);
+  assert.match(svg, /BEGINS AT A SPLIT/);
+});
+test("a root world present from the start is not labelled as split-created", () => {
+  const g = layoutBranches(example());
+  const root = g.headers.find((h) => h.timelineRef === "root")!;
+  assert.equal(root.origin, "existing");
+  assert.equal(root.prior, false, "nothing above it to distinguish it from");
+  const svg = renderFlowSvg(example());
+  // It draws no prior-history line, but must not be tagged as a split either.
+  assert.doesNotMatch(svg, /data-origin="existing"/);
+  assert.match(svg, /ALREADY RUNNING/);
 });
